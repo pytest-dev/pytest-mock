@@ -1,12 +1,12 @@
 pytest-mock
 ===========
 
-Thin-wrapper around the mock package for easier use with py.test.
-
-This plugin provides a fixture named `mock` that has the same patching API 
+This plugin installs a fixture ``mock`` which is a thin-wrapper around the patching API 
 provided by the excellent `mock <http://pypi.python.org/pypi/mock>`_ package,
 but with the benefit of not having to worry about undoing patches at the end
-of a test::
+of a test:
+
+.. code-block:: python
 
  
     def test_unix_fs(mock):
@@ -18,9 +18,11 @@ of a test::
 Usage
 -----
 
-The `mock` fixture has the same API as 
- `mock.patch <http://www.voidspace.org.uk/python/mock/patch.html#patch-decorators>`_, 
- supporting the same arguments::
+The ``mock`` fixture has the same API as 
+`mock.patch <http://www.voidspace.org.uk/python/mock/patch.html#patch-decorators>`_, 
+supporting the same arguments:
+
+.. code-block:: python
 
     # all valid calls
     mock.patch('os.remove')
@@ -29,20 +31,22 @@ The `mock` fixture has the same API as
     
 The supported methods are:
     
-- `mock.patch`: see http://www.voidspace.org.uk/python/mock/patch.html#patch.
-- `mock.patch.object`: see `http://www.voidspace.org.uk/python/mock/patch.html#patch-object.
-- `mock.patch.multiple`: see `http://www.voidspace.org.uk/python/mock/patch.html#patch-multiple.
-- `mock.stopall()`: stops all active patches at this point. 
+* ``mock.patch``: see http://www.voidspace.org.uk/python/mock/patch.html#patch.
+* ``mock.patch.object``: see `http://www.voidspace.org.uk/python/mock/patch.html#patch-object.
+* ``mock.patch.multiple``: see `http://www.voidspace.org.uk/python/mock/patch.html#patch-multiple.
+* ``mock.stopall()``: stops all active patches at this point. 
         
 Why bother with a plugin?
 -------------------------
 
-There are a number of different `patch` usages in the standard `mock` API, 
- but IMHO they don't scale very well when you have a more than one or two 
- patches to apply.
+There are a number of different ``patch`` usages in the standard ``mock`` API, 
+but IMHO they don't scale very well when you have a more than one or two 
+patches to apply.
 
-It may lead to an excessive nesting of `with` statements, breaking the flow
- of the test::
+It may lead to an excessive nesting of ``with`` statements, breaking the flow
+of the test:
+
+.. code-block:: python
 
     import mock
     
@@ -60,8 +64,10 @@ It may lead to an excessive nesting of `with` statements, breaking the flow
             # ...
             
         
-One can use `patch` as a decorator to improve the flow of the test, but now the 
- test functions must receive the mock objects::
+One can use ``patch`` as a decorator to improve the flow of the test, but now the 
+test functions must receive the mock objects:
+
+.. code-block:: python
 
     @mock.patch('os.remove')
     @mock.patch('os.listdir')

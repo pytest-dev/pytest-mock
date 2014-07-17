@@ -55,28 +55,30 @@ class UnixFS(object):
 
 @pytest.fixture
 def check_unix_fs_mocked(tmpdir, mock):
-    def check(mocked_rm):
-        (tmpdir / 'foo.txt').ensure()
-        UnixFS.rm(tmpdir / 'foo.txt')
-        os.remove.assert_called_once_with(tmpdir / 'foo.txt')
-        mocked_rm.assert_called_once_with(tmpdir / 'foo.txt')
-        assert os.path.isfile(str(tmpdir / 'foo.txt'))
+    def check(mocked_rm, mocked_ls):
+        file_name = tmpdir / 'foo.txt'
+        file_name.ensure()
+        UnixFS.rm(str(file_name))
+        os.remove.assert_called_once_with(str(file_name))
+        mocked_rm.assert_called_once_with(str(file_name))
+        assert os.path.isfile(str(file_name))
         mock.stopall()
-        UnixFS.rm(str(tmpdir / 'foo.txt'))
-        assert not os.path.isfile(str(tmpdir / 'foo.txt'))
+        UnixFS.rm(str(file_name))
+        assert not os.path.isfile(str(file_name))
 
     return check
 
 
 def mock_using_patch_object(mock):
-    return mock.patch.object(os, 'remove')
+    return mock.patch.object(os, 'remove'), mock.patch.object(os, 'listdir')
+
 
 def mock_using_patch(mock):
-    return mock.patch('os.remove')
+    return mock.patch('os.remove'), mock.patch('os.listdir')
+
 
 @pytest.mark.parametrize('mock_fs', [mock_using_patch_object, mock_using_patch],
 )
 def test_fixture(mock_fs, mock, check_unix_fs_mocked):
-    mocked_rm = mock_fs(mock)
-    #mocked_rm = mock.patch(os, 'remove')
-    check_unix_fs_mocked(mocked_rm)
+    mocked_rm, mocked_ls = mock_fs(mock)
+    check_unix_fs_mocked(mocked_rm, mocked_ls)

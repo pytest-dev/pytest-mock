@@ -1,7 +1,8 @@
+===========
 pytest-mock
 ===========
 
-This plugin installs a fixture ``mock`` which is a thin-wrapper around the patching API 
+This plugin installs a ``mock`` fixture which is a thin-wrapper around the patching API 
 provided by the excellent `mock <http://pypi.python.org/pypi/mock>`_ package,
 but with the benefit of not having to worry about undoing patches at the end
 of a test:
@@ -16,7 +17,7 @@ of a test:
         
         
 Usage
------
+=====
 
 The ``mock`` fixture has the same API as 
 `mock.patch <http://www.voidspace.org.uk/python/mock/patch.html#patch-decorators>`_, 
@@ -24,20 +25,21 @@ supporting the same arguments:
 
 .. code-block:: python
 
-    # all valid calls
-    mock.patch('os.remove')
-    mock.patch.object(os, 'listdir', autospec=True)
-    mocked = mock.patch('os.remove')
+    def test_foo(mock):
+        # all valid calls
+        mock.patch('os.remove')
+        mock.patch.object(os, 'listdir', autospec=True)
+        mocked = mock.patch('os.path.isfile')
     
 The supported methods are:
     
 * ``mock.patch``: see http://www.voidspace.org.uk/python/mock/patch.html#patch.
-* ``mock.patch.object``: see `http://www.voidspace.org.uk/python/mock/patch.html#patch-object.
-* ``mock.patch.multiple``: see `http://www.voidspace.org.uk/python/mock/patch.html#patch-multiple.
+* ``mock.patch.object``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-object.
+* ``mock.patch.multiple``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-multiple.
 * ``mock.stopall()``: stops all active patches at this point. 
         
 Why bother with a plugin?
--------------------------
+=========================
 
 There are a number of different ``patch`` usages in the standard ``mock`` API, 
 but IMHO they don't scale very well when you have a more than one or two 

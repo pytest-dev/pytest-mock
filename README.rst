@@ -82,5 +82,6 @@ test functions must receive the mock objects:
         UnixFS.cp('src', 'dst')
         # ...
         
-Even when you prefer to access the mocks using the original references. Plus 
-now you cannot easily undo the mocking if you follow this approach.
+Even when you prefer to access the mocks using the original references. Besides
+don't mixing nicely with other fixtures (although it works), you can't 
+easily undo the mocking if you follow this approach.

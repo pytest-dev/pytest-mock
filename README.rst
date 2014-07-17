@@ -15,7 +15,17 @@ of a test:
         UnixFS.rm('file')
         os.remove.assert_called_once_with('file')
         
-        
+|version| |downloads| |ci|
+
+.. |version| image:: http://img.shields.io/pypi/v/pytest-mock.png
+  :target: https://crate.io/packages/pytest-mock
+  
+.. |downloads| image:: http://img.shields.io/pypi/dm/pytest-mock.png
+  :target: https://crate.io/packages/pytest-mock
+  
+.. |ci| image:: http://img.shields.io/travis/nicoddemus/pytest-mock.png
+  :target: https://travis-ci.org/nicoddemus/pytest-mock
+  
 Usage
 =====
 

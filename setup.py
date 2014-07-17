@@ -1,5 +1,11 @@
+import sys
+
 from setuptools import setup
 
+
+dependencies = ['pytest>=2.4']
+if sys.version_info < (3, 3):
+    dependencies.append('mock')
 
 setup(
     name='pytest-mock',
@@ -7,8 +13,9 @@ setup(
     entry_points={
         'pytest11': ['pytest-mock = pytest_mock'],
     },
-    modules=['pytest_mock'],
-    install_requires=['pytest>=2.3.4', 'mock'],
+    py_modules=['pytest_mock'],
+    platforms='any',
+    install_requires=dependencies,
     url='https://github.com/nicoddemus/pytest-mock/',
     license='LGPL',
     author='Bruno Oliveira',

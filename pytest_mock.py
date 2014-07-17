@@ -1,5 +1,12 @@
+import sys
+
 import pytest
-import mock as mock_module
+
+
+if sys.version_info >= (3, 3):
+    import unittest.mock as mock_module
+else:
+    import mock as mock_module
 
 
 class MockFixture(object):

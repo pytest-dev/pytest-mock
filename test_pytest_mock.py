@@ -58,9 +58,10 @@ def mock_using_patch(mock):
 
 
 def mock_using_patch_multiple(mock):
-    from mock import DEFAULT
+    from pytest_mock import mock_module
 
-    r = mock.patch.multiple('os', remove=DEFAULT, listdir=DEFAULT)
+    r = mock.patch.multiple('os', remove=mock_module.DEFAULT,
+                            listdir=mock_module.DEFAULT)
     return r['remove'], r['listdir']
 
 

@@ -2,7 +2,13 @@ import os
 
 import pytest
 
+
 class UnixFS(object):
+    """
+    Wrapper to os functions to simulate a Unix file system, used for testing
+    the mock fixture.
+    """
+
     @classmethod
     def rm(cls, filename):
         os.remove(filename)
@@ -14,6 +20,11 @@ class UnixFS(object):
 
 @pytest.fixture
 def check_unix_fs_mocked(tmpdir, mock):
+    """
+    performs a standard test in a UnixFS, assuming that both `os.remove` and
+    `os.listdir` have been mocked previously.
+    """
+
     def check(mocked_rm, mocked_ls):
         assert mocked_rm is os.remove
         assert mocked_ls is os.listdir
@@ -56,6 +67,11 @@ def mock_using_patch_multiple(mock):
 @pytest.mark.parametrize('mock_fs', [mock_using_patch_object, mock_using_patch,
                                      mock_using_patch_multiple],
 )
-def test_fixture(mock_fs, mock, check_unix_fs_mocked):
+def test_mock_fixture(mock_fs, mock, check_unix_fs_mocked):
+    """
+    Installs mocks into `os` functions and performs a standard testing of
+    mock functionality. We parametrize different mock methods to ensure
+    all (intended, at least) mock API is covered.
+    """
     mocked_rm, mocked_ls = mock_fs(mock)
     check_unix_fs_mocked(mocked_rm, mocked_ls)

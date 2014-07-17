@@ -13,7 +13,7 @@ setup(
     license='LGPL',
     author='Bruno Oliveira',
     author_email='nicoddemus@gmail.com',
-    description='Use mock package easily within py.test',
+    description='Thin-wrapper around the mock package for easier use with py.test',
     keywords="pytest mock",
     classifiers=[
         'Development Status :: 3 - Alpha',

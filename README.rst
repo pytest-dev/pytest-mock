@@ -53,7 +53,7 @@ The supported methods are:
 Requirements
 ============
 
-* Python 2.5+, including Python 3
+* Python 2.6+, including Python 3
 * pytest
 * mock (for Python < 3.3)
 

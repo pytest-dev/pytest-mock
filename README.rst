@@ -26,6 +26,22 @@ of a test:
 .. |ci| image:: http://img.shields.io/travis/nicoddemus/pytest-mock.png
   :target: https://travis-ci.org/nicoddemus/pytest-mock
   
+Requirements
+============
+
+* Python 2.5+, including Python 3
+* pytest
+* mock (for Python < 3.3)
+
+Install
+=======
+
+Install using `pip <http://pip-installer.org/>`_:
+
+.. code-block:: console
+    
+    $ pip install pytest-mock
+  
 Usage
 =====
 

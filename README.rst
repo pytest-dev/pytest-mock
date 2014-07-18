@@ -46,6 +46,7 @@ The supported methods are:
 * ``mock.patch``: see http://www.voidspace.org.uk/python/mock/patch.html#patch.
 * ``mock.patch.object``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-object.
 * ``mock.patch.multiple``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-multiple.
+* ``mock.patch.dict``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-dict.
 * ``mock.stopall()``: stops all active patches at this point. 
         
 Why bother with a plugin?

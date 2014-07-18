@@ -68,7 +68,7 @@ def mock_using_patch_multiple(mock):
 @pytest.mark.parametrize('mock_fs', [mock_using_patch_object, mock_using_patch,
                                      mock_using_patch_multiple],
 )
-def test_mock_fixture(mock_fs, mock, check_unix_fs_mocked):
+def test_mock_patches(mock_fs, mock, check_unix_fs_mocked):
     """
     Installs mocks into `os` functions and performs a standard testing of
     mock functionality. We parametrize different mock methods to ensure
@@ -76,3 +76,15 @@ def test_mock_fixture(mock_fs, mock, check_unix_fs_mocked):
     """
     mocked_rm, mocked_ls = mock_fs(mock)
     check_unix_fs_mocked(mocked_rm, mocked_ls)
+
+
+def test_mock_patch_dict(mock):
+    """
+    Testing
+    :param mock:
+    """
+    x = {'original': 1}
+    mock.patch.dict(x, values=[('new', 10)], clear=True)
+    assert x == {'new': 10}
+    mock.stopall()
+    assert x == {'original': 1}

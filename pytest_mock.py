@@ -57,6 +57,10 @@ class MockFixture(object):
             return self._start_patch(mock_module.patch.multiple, *args,
                                      **kwargs)
 
+        def dict(self, *args, **kwargs):
+            """API to mock.patch.dict"""
+            return self._start_patch(mock_module.patch.dict, *args, **kwargs)
+
 
         def __call__(self, *args, **kwargs):
             """API to mock.patch"""

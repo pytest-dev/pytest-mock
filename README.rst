@@ -26,22 +26,6 @@ of a test:
 .. |ci| image:: http://img.shields.io/travis/nicoddemus/pytest-mock.png
   :target: https://travis-ci.org/nicoddemus/pytest-mock
   
-Requirements
-============
-
-* Python 2.5+, including Python 3
-* pytest
-* mock (for Python < 3.3)
-
-Install
-=======
-
-Install using `pip <http://pip-installer.org/>`_:
-
-.. code-block:: console
-    
-    $ pip install pytest-mock
-  
 Usage
 =====
 
@@ -63,7 +47,26 @@ The supported methods are:
 * ``mock.patch.object``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-object.
 * ``mock.patch.multiple``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-multiple.
 * ``mock.patch.dict``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-dict.
-* ``mock.stopall()``: stops all active patches at this point. 
+* ``mock.stopall()``: stops all active patches at this point.
+
+
+Requirements
+============
+
+* Python 2.5+, including Python 3
+* pytest
+* mock (for Python < 3.3)
+
+
+Install
+=======
+
+Install using `pip <http://pip-installer.org/>`_:
+
+.. code-block:: console
+    
+    $ pip install pytest-mock
+
         
 Why bother with a plugin?
 =========================

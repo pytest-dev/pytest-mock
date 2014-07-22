@@ -25,6 +25,9 @@ of a test:
   
 .. |ci| image:: http://img.shields.io/travis/nicoddemus/pytest-mock.png
   :target: https://travis-ci.org/nicoddemus/pytest-mock
+
+.. |coverage| image:: http://img.shields.io/coveralls/nicoddemus/pytest-mock.png
+  :target: https://coveralls.io/r/nicoddemus/pytest-mock
   
 Usage
 =====

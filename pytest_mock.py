@@ -3,7 +3,7 @@ import sys
 import pytest
 
 
-if sys.version_info >= (3, 3):
+if sys.version_info >= (3, 3): # pragma: no cover
     import unittest.mock as mock_module
 else:
     import mock as mock_module

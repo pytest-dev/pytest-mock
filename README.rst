@@ -89,7 +89,7 @@ of the test:
     def test_unix_fs():
         with mock.patch('os.remove'):
             UnixFS.rm('file')
-            os.remote.assert_called_once_with('file')
+            os.remove.assert_called_once_with('file')
             
             with mock.patch('os.listdir'):
                 assert UnixFS.ls('dir') == expected
@@ -100,8 +100,7 @@ of the test:
             # ...
             
         
-One can use ``patch`` as a decorator to improve the flow of the test, but now the 
-test functions must receive the mock objects:
+One can use ``patch`` as a decorator to improve the flow of the test:
 
 .. code-block:: python
 
@@ -110,7 +109,7 @@ test functions must receive the mock objects:
     @mock.patch('shutil.copy')
     def test_unix_fs(mocked_copy, mocked_listdir, mocked_copy):
         UnixFS.rm('file')
-        os.remote.assert_called_once_with('file')
+        os.remove.assert_called_once_with('file')
         
         assert UnixFS.ls('dir') == expected
         # ...
@@ -118,6 +117,11 @@ test functions must receive the mock objects:
         UnixFS.cp('src', 'dst')
         # ...
         
-Even when you prefer to access the mocks using the original references. Besides
-don't mixing nicely with other fixtures (although it works), you can't 
-easily undo the mocking if you follow this approach.
+But this poses a few disadvantages:        
+
+- test functions must receive the mock objects as parameter, even if you don't plan to 
+  access them directly; also, order depends on the order of the decorated ``patch`` 
+  functions;
+- receiving the mocks as parameters doesn't mix nicely with pytest's approach of
+  naming fixtures as parameters, or ``pytest.mark.parametrize``;
+- you can't easily undo the mocking during the test execution;

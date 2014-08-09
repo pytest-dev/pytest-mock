@@ -1,0 +1,5 @@
+*.exe
+*.obj
+*.pyc
+*.pdb
+*.o

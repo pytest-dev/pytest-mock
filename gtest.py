@@ -1,10 +1,60 @@
+import os
+import string
 import subprocess
 import tempfile
 from xml.etree import ElementTree
 
 
 class GTestError(Exception):
-    pass
+
+    def __init__(self, failure):
+        import colorama
+        lines = failure.splitlines()
+        if lines:
+            filename, linenum = self._extract_file_reference(lines)
+            code = self._get_code(filename, linenum)
+            error_color = colorama.Fore.RED + colorama.Style.BRIGHT
+            reset = colorama.Style.RESET_ALL
+            if code:
+                code_indent = self._get_line_indent(code[-1])
+                code_color = colorama.Fore.WHITE + colorama.Style.BRIGHT
+                code = [code_color + x.rstrip() + reset for x in code]
+                lines = [code_indent + error_color + x + reset for x in lines]
+                failure = '\n'.join(code + lines)
+                failure += '\n\n{0}:{1}'.format(filename, linenum)
+            else:
+                failure = error_color + ''.join(lines) + reset
+
+        Exception.__init__(self, failure)
+
+
+    def _extract_file_reference(self, lines):
+        first_line = lines.pop(0)
+        fields = first_line.rsplit(':', 1)
+        if len(fields) == 2:
+            filename, linenum = fields
+        else:
+            filename = fields[0]
+            linenum = '-1'
+        return filename, int(linenum)
+
+
+    def _get_code(self, filename, linenum):
+        index = linenum - 1
+        if os.path.isfile(filename):
+            with open(filename) as f:
+                return f.readlines()[index-2:index+1]
+
+
+    def _get_line_indent(self, line):
+        result = ''
+        for c in line:
+            if c not in string.whitespace:
+                break
+            else:
+                result += c
+        return result
+
 
 class GTestFacade(object):
 

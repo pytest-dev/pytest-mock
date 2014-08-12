@@ -3,5 +3,8 @@
 def test_1():
     assert 1
 
+def get():
+    return 4
+
 def test_2():
-    assert 0
+    assert get() / 2 == 3

@@ -4,3 +4,4 @@
 *.pdb
 *.o
 *.egg-info/
+.cache/

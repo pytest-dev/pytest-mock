@@ -1,6 +1,6 @@
 import pytest
 
-from gtest import GTestFacade, GTestError
+from pytest_cpp.gtest import GTestFacade, GTestError
 
 
 def pytest_collect_file(parent, path):

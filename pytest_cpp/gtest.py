@@ -61,7 +61,7 @@ class GTestFacade(object):
     @classmethod
     def is_test_suite(cls, executable):
         try:
-            output = subprocess.check_output([executable, '--help'])
+            output = subprocess.check_output([executable, '--help'], universal_newlines=True)
         except (subprocess.CalledProcessError, OSError):
             return False
         else:
@@ -69,7 +69,7 @@ class GTestFacade(object):
 
 
     def list_tests(self, executable):
-        output = subprocess.check_output([executable, '--gtest_list_tests'])
+        output = subprocess.check_output([executable, '--gtest_list_tests'], universal_newlines=True)
         test_suite = None
         result = []
         for line in output.splitlines():

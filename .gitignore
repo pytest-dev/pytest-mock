@@ -3,3 +3,4 @@
 *.pyc
 *.pdb
 *.o
+*.egg-info/

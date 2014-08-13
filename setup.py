@@ -8,7 +8,7 @@ setup(
     entry_points={
         'pytest11': ['cpp = pytest_cpp.plugin'],
     },
-    install_requires=['pytest>=2.5.2'],
+    install_requires=['pytest', 'colorama'],
 
     # metadata for upload to PyPI
     author="Bruno Oliveira",

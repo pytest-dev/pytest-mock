@@ -1,14 +1,16 @@
-import os
 import string
 import subprocess
 import tempfile
 from xml.etree import ElementTree
 
+import os
+import pytest
+
 
 class GTestError(Exception):
-
     def __init__(self, failure):
         import colorama
+
         lines = failure.splitlines()
         if lines:
             filename, linenum = self._extract_file_reference(lines[0])
@@ -42,7 +44,7 @@ class GTestError(Exception):
     def _get_code(self, filename, linenum):
         index = linenum - 1
         with open(filename) as f:
-            return f.readlines()[index-2:index+1]
+            return f.readlines()[index - 2:index + 1]
 
 
     def _get_line_indent(self, line):
@@ -56,11 +58,11 @@ class GTestError(Exception):
 
 
 class GTestFacade(object):
-
     @classmethod
     def is_test_suite(cls, executable):
         try:
-            output = subprocess.check_output([executable, '--help'], universal_newlines=True)
+            output = subprocess.check_output([executable, '--help'],
+                                             universal_newlines=True)
         except (subprocess.CalledProcessError, OSError):
             return False
         else:
@@ -68,7 +70,8 @@ class GTestFacade(object):
 
 
     def list_tests(self, executable):
-        output = subprocess.check_output([executable, '--gtest_list_tests'], universal_newlines=True)
+        output = subprocess.check_output([executable, '--gtest_list_tests'],
+                                         universal_newlines=True)
         test_suite = None
         result = []
         for line in output.splitlines():
@@ -99,10 +102,12 @@ class GTestFacade(object):
                                returncode=e.returncode))
 
         results = self.parse_xml(xml_filename)
-        for (executed_test_id, failure) in results:
+        for (executed_test_id, failure, skipped) in results:
             if executed_test_id == test_id:
                 if failure is not None:
                     raise GTestError(failure)
+                elif skipped:
+                    pytest.skip()
                 else:
                     return
 
@@ -124,6 +129,8 @@ class GTestFacade(object):
                     failure = failure_elem.text
                 else:
                     failure = None
-                result.append((test_suite_name + '.' + test_name, failure))
+                skipped = test_case.attrib['status'] == 'notrun'
+                result.append(
+                    (test_suite_name + '.' + test_name, failure, skipped))
 
         return result

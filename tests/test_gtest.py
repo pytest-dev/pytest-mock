@@ -36,6 +36,7 @@ def test_list_tests(facade, gtest_executable):
         'FooTest.test_success',
         'FooTest.test_failure',
         'FooTest.test_error',
+        'FooTest.DISABLED_test_disabled',
     ]
 
 
@@ -62,6 +63,11 @@ def test_error(facade, gtest_executable):
     assert '"unexpected exception"' in str(e.value)
 
 
+def test_disabled(facade, gtest_executable):
+    with pytest.raises(pytest.skip.Exception):
+        facade.run_test(gtest_executable, 'FooTest.DISABLED_test_disabled')
+
+
 @pytest.mark.usefixtures('gtest_executable')
 def test_run(testdir):
     result = testdir.runpytest('-v')
@@ -69,4 +75,5 @@ def test_run(testdir):
         '*test_success PASSED*',
         '*test_failure FAILED*',
         '*test_error FAILED*',
+        '*test_disabled SKIPPED*',
     ])

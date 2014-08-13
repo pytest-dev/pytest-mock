@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites tests="3" failures="2" disabled="0" errors="0" timestamp="2014-08-09T18:20:29" time="0.002" name="AllTests">
-  <testsuite name="FooTest" tests="3" failures="2" disabled="0" errors="0" time="0.001">
+<testsuites tests="4" failures="2" disabled="1" errors="0" timestamp="2014-08-12T23:11:14" time="0.003" name="AllTests">
+  <testsuite name="FooTest" tests="4" failures="2" disabled="1" errors="0" time="0.001">
     <testcase name="test_success" status="run" time="0" classname="FooTest" />
-    <testcase name="test_failure" status="run" time="0.001" classname="FooTest">
-      <failure message="test_gtest.cpp:43&#x0A;Value of: 5&#x0A;Expected: 2 * 3&#x0A;Which is: 6" type=""><![CDATA[test_gtest.cpp:43
+    <testcase name="test_failure" status="run" time="0" classname="FooTest">
+      <failure message="gtest.cpp:17&#x0A;Value of: 5&#x0A;Expected: 2 * 3&#x0A;Which is: 6" type=""><![CDATA[gtest.cpp:17
 Value of: 5
 Expected: 2 * 3
 Which is: 6]]></failure>
@@ -12,5 +12,6 @@ Which is: 6]]></failure>
       <failure message="unknown file&#x0A;C++ exception with description &quot;unexpected exception&quot; thrown in the test body." type=""><![CDATA[unknown file
 C++ exception with description "unexpected exception" thrown in the test body.]]></failure>
     </testcase>
+    <testcase name="DISABLED_test_disabled" status="notrun" time="0" classname="FooTest" />
   </testsuite>
 </testsuites>

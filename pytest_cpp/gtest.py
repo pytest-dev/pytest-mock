@@ -11,11 +11,12 @@ class GTestError(Exception):
         import colorama
         lines = failure.splitlines()
         if lines:
-            filename, linenum = self._extract_file_reference(lines)
-            code = self._get_code(filename, linenum)
+            filename, linenum = self._extract_file_reference(lines[0])
             error_color = colorama.Fore.RED + colorama.Style.BRIGHT
             reset = colorama.Style.RESET_ALL
-            if code:
+            if filename:
+                lines = lines[1:]  # remove filename and linenum
+                code = self._get_code(filename, linenum)
                 code_indent = self._get_line_indent(code[-1])
                 code_color = colorama.Fore.WHITE + colorama.Style.BRIGHT
                 code = [code_color + x.rstrip() + reset for x in code]
@@ -23,36 +24,34 @@ class GTestError(Exception):
                 failure = '\n'.join(code + lines)
                 failure += '\n\n{0}:{1}'.format(filename, linenum)
             else:
-                failure = error_color + ''.join(lines) + reset
+                failure = error_color + '\n'.join(lines) + reset
 
         Exception.__init__(self, failure)
 
 
-    def _extract_file_reference(self, lines):
-        first_line = lines.pop(0)
+    def _extract_file_reference(self, first_line):
         fields = first_line.rsplit(':', 1)
         if len(fields) == 2:
             filename, linenum = fields
-        else:
-            filename = fields[0]
-            linenum = '-1'
-        return filename, int(linenum)
+            if os.path.isfile(filename):
+                return filename, int(linenum)
+
+        return None, None
 
 
     def _get_code(self, filename, linenum):
         index = linenum - 1
-        if os.path.isfile(filename):
-            with open(filename) as f:
-                return f.readlines()[index-2:index+1]
+        with open(filename) as f:
+            return f.readlines()[index-2:index+1]
 
 
     def _get_line_indent(self, line):
         result = ''
         for c in line:
-            if c not in string.whitespace:
-                break
-            else:
+            if c in string.whitespace:
                 result += c
+            else:
+                break
         return result
 
 
@@ -113,7 +112,6 @@ class GTestFacade(object):
         raise GTestError(msg.format(test_id=test_id, results=results_list))
 
 
-
     def parse_xml(self, xml_filename):
         root = ElementTree.parse(xml_filename)
         result = []
@@ -123,7 +121,7 @@ class GTestFacade(object):
                 test_name = test_case.attrib['name']
                 failure_elem = test_case.find('failure')
                 if failure_elem is not None:
-                    failure = failure_elem.attrib['message']
+                    failure = failure_elem.text
                 else:
                     failure = None
                 result.append((test_suite_name + '.' + test_name, failure))

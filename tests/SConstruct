@@ -3,18 +3,20 @@ import sys
 
 if sys.platform.startswith('win'):
     CCFLAGS = ['/EHsc', '/nologo']
+    LIBS = []
 else:
     CCFLAGS = ''
+    LIBS = ['pthread']
 
 Program(
     'gtest.cpp', 
-    CPPPATH=os.environ['INCLUDE'],
+    CPPPATH=os.environ.get('INCLUDE'),
     CCFLAGS=CCFLAGS,
-    LIBPATH=os.environ['LIBPATH'],
-    LIBS='gtest',
+    LIBPATH=os.environ.get('LIBPATH'),
+    LIBS=['gtest'] + LIBS,
 )
 Program(
     'boost.cpp', 
-    CPPPATH=os.environ['INCLUDE'],
+    CPPPATH=os.environ.get('INCLUDE'),
     CCFLAGS=CCFLAGS,
 )

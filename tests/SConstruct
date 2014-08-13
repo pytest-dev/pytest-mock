@@ -1,0 +1,20 @@
+import os
+import sys
+
+if sys.platform.startswith('win'):
+    CCFLAGS = ['/EHsc', '/nologo']
+else:
+    CCFLAGS = ''
+
+Program(
+    'gtest.cpp', 
+    CPPPATH=os.environ['INCLUDE'],
+    CCFLAGS=CCFLAGS,
+    LIBPATH=os.environ['LIBPATH'],
+    LIBS='gtest',
+)
+Program(
+    'boost.cpp', 
+    CPPPATH=os.environ['INCLUDE'],
+    CCFLAGS=CCFLAGS,
+)

@@ -5,3 +5,4 @@
 *.o
 *.egg-info/
 .cache/
+.sconsign.dblite

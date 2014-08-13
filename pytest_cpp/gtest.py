@@ -1,63 +1,16 @@
-import string
 import subprocess
 import tempfile
 from xml.etree import ElementTree
 
-import os
 import pytest
-
-
-class GTestError(Exception):
-    def __init__(self, failure):
-        import colorama
-
-        lines = failure.splitlines()
-        if lines:
-            filename, linenum = self._extract_file_reference(lines[0])
-            error_color = colorama.Fore.RED + colorama.Style.BRIGHT
-            reset = colorama.Style.RESET_ALL
-            if filename:
-                lines = lines[1:]  # remove filename and linenum
-                code = self._get_code(filename, linenum)
-                code_indent = self._get_line_indent(code[-1])
-                code_color = colorama.Fore.WHITE + colorama.Style.BRIGHT
-                code = [code_color + x.rstrip() + reset for x in code]
-                lines = [code_indent + error_color + x + reset for x in lines]
-                failure = '\n'.join(code + lines)
-                failure += '\n\n{0}:{1}'.format(filename, linenum)
-            else:
-                failure = error_color + '\n'.join(lines) + reset
-
-        Exception.__init__(self, failure)
-
-
-    def _extract_file_reference(self, first_line):
-        fields = first_line.rsplit(':', 1)
-        if len(fields) == 2:
-            filename, linenum = fields
-            if os.path.isfile(filename):
-                return filename, int(linenum)
-
-        return None, None
-
-
-    def _get_code(self, filename, linenum):
-        index = linenum - 1
-        with open(filename) as f:
-            return f.readlines()[index - 2:index + 1]
-
-
-    def _get_line_indent(self, line):
-        result = ''
-        for c in line:
-            if c in string.whitespace:
-                result += c
-            else:
-                break
-        return result
+from pytest_cpp.error import CppFailure
 
 
 class GTestFacade(object):
+    """
+    Facade for GoogleTests.
+    """
+
     @classmethod
     def is_test_suite(cls, executable):
         try:
@@ -67,7 +20,6 @@ class GTestFacade(object):
             return False
         else:
             return '--gtest_list_tests' in output
-
 
     def list_tests(self, executable):
         output = subprocess.check_output([executable, '--gtest_list_tests'],
@@ -80,7 +32,6 @@ class GTestFacade(object):
             elif line.startswith('  '):
                 result.append(test_suite + line.strip())
         return result
-
 
     def run_test(self, executable, test_id):
         xml_filename = tempfile.mktemp()
@@ -101,7 +52,7 @@ class GTestFacade(object):
                                output=e.output,
                                returncode=e.returncode))
 
-        results = self.parse_xml(xml_filename)
+        results = self._parse_xml(xml_filename)
         for (executed_test_id, failure, skipped) in results:
             if executed_test_id == test_id:
                 if failure is not None:
@@ -116,8 +67,7 @@ class GTestFacade(object):
         results_list = '\n'.join(x for (x, f) in results)
         raise GTestError(msg.format(test_id=test_id, results=results_list))
 
-
-    def parse_xml(self, xml_filename):
+    def _parse_xml(self, xml_filename):
         root = ElementTree.parse(xml_filename)
         result = []
         for test_suite in root.findall('testsuite'):
@@ -134,3 +84,25 @@ class GTestFacade(object):
                     (test_suite_name + '.' + test_name, failure, skipped))
 
         return result
+
+
+class GTestError(CppFailure):
+    def __init__(self, contents):
+        Exception.__init__(self, contents)
+
+        self.error_lines = contents.splitlines()
+        self.filename = 'unknown file'
+        self.linenum = 0
+        if self.error_lines:
+            fields = self.error_lines[0].rsplit(':', 1)
+            if len(fields) == 2:
+                self.filename = fields[0]
+                self.linenum = int(fields[1])
+                self.error_lines.pop(0)
+
+    def get_error_lines(self):
+        return self.error_lines
+
+
+    def get_file_reference(self):
+        return self.filename, self.linenum

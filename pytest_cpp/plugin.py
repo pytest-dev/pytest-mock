@@ -1,6 +1,8 @@
 import pytest
 
-from pytest_cpp.gtest import GTestFacade, GTestError
+from pytest_cpp.error import CppFailure, CppFailureRepr
+
+from pytest_cpp.gtest import GTestFacade
 
 
 def pytest_collect_file(parent, path):
@@ -8,8 +10,8 @@ def pytest_collect_file(parent, path):
         if GTestFacade.is_test_suite(str(path)):
             return CppFile(path, parent, GTestFacade())
 
-class CppFile(pytest.File):
 
+class CppFile(pytest.File):
     def __init__(self, path, parent, facade):
         pytest.File.__init__(self, path, parent)
         self.facade = facade
@@ -20,7 +22,6 @@ class CppFile(pytest.File):
 
 
 class CppItem(pytest.Item):
-
     def __init__(self, name, collector, facade):
         pytest.Item.__init__(self, name, collector)
         self.facade = facade
@@ -29,9 +30,11 @@ class CppItem(pytest.Item):
         self.facade.run_test(str(self.fspath), self.name)
 
     def repr_failure(self, excinfo):
-        """ called when self.runtest() raises an exception. """
-        if isinstance(excinfo.value, GTestError):
-            return str(excinfo.value)
+        if isinstance(excinfo.value, CppFailure):
+            return CppFailureRepr(excinfo.value)
 
     def reportinfo(self):
         return self.fspath, 0, self.name
+
+
+

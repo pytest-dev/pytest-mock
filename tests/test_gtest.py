@@ -3,6 +3,7 @@ import shutil
 import sys
 
 import pytest
+from pytest_cpp.error import CppFailure, CppFailureRepr
 
 from pytest_cpp.gtest import GTestError, GTestFacade
 
@@ -28,6 +29,24 @@ def other_executable():
 @pytest.fixture
 def facade():
     return GTestFacade()
+
+
+@pytest.fixture
+def dummy_failure():
+
+    class DummyFailure(CppFailure):
+
+        def __init__(self):
+            self.lines = []
+            self.file_reference = 'unknown', 0
+
+        def get_lines(self):
+            return self.lines
+
+        def get_file_reference(self):
+            return self.file_reference
+
+    return DummyFailure()
 
 
 def test_list_tests(facade, gtest_executable):
@@ -77,3 +96,11 @@ def test_run(testdir):
         '*test_error FAILED*',
         '*test_disabled SKIPPED*',
     ])
+
+
+def test_cpp_failure_repr(dummy_failure):
+    dummy_failure.lines = [('error message', {'red'})]
+    dummy_failure.file_reference = 'test_suite', 20
+    failure_repr = CppFailureRepr(dummy_failure)
+    assert str(failure_repr) == 'error message\ntest_suite:20: C++ failure'
+

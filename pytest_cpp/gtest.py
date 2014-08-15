@@ -90,18 +90,19 @@ class GTestError(CppFailure):
     def __init__(self, contents):
         Exception.__init__(self, contents)
 
-        self.error_lines = contents.splitlines()
+        self.lines = contents.splitlines()
         self.filename = 'unknown file'
         self.linenum = 0
-        if self.error_lines:
-            fields = self.error_lines[0].rsplit(':', 1)
+        if self.lines:
+            fields = self.lines[0].rsplit(':', 1)
             if len(fields) == 2:
                 self.filename = fields[0]
                 self.linenum = int(fields[1])
-                self.error_lines.pop(0)
+                self.lines.pop(0)
 
-    def get_error_lines(self):
-        return self.error_lines
+    def get_lines(self):
+        m = ('red', 'bold')
+        return [(x, m) for x in self.lines]
 
 
     def get_file_reference(self):

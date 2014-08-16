@@ -3,10 +3,10 @@ import tempfile
 from xml.etree import ElementTree
 
 import pytest
-from pytest_cpp.error import CppFailure
+from pytest_cpp.error import CppTestFailure
 
 
-class GTestFacade(object):
+class GoogleTestFacade(object):
     """
     Facade for GoogleTests.
     """
@@ -47,7 +47,7 @@ class GTestFacade(object):
                 msg = ('Internal Error: calling {executable} '
                        'for test {test_id} failed (returncode={returncode}):\n'
                        '{output}')
-                raise GTestError(
+                return GoogleTestFailure(
                     msg.format(executable=executable, test_id=test_id,
                                output=e.output,
                                returncode=e.returncode))
@@ -56,16 +56,16 @@ class GTestFacade(object):
         for (executed_test_id, failure, skipped) in results:
             if executed_test_id == test_id:
                 if failure is not None:
-                    raise GTestError(failure)
+                    return GoogleTestFailure(failure)
                 elif skipped:
                     pytest.skip()
                 else:
-                    return
+                    return None
 
         msg = ('Internal Error: could not find test '
                '{test_id} in results:\n{results}')
         results_list = '\n'.join(x for (x, f) in results)
-        raise GTestError(msg.format(test_id=test_id, results=results_list))
+        return GoogleTestFailure(msg.format(test_id=test_id, results=results_list))
 
     def _parse_xml(self, xml_filename):
         root = ElementTree.parse(xml_filename)
@@ -86,10 +86,8 @@ class GTestFacade(object):
         return result
 
 
-class GTestError(CppFailure):
+class GoogleTestFailure(CppTestFailure):
     def __init__(self, contents):
-        Exception.__init__(self, contents)
-
         self.lines = contents.splitlines()
         self.filename = 'unknown file'
         self.linenum = 0
@@ -103,7 +101,6 @@ class GTestError(CppFailure):
     def get_lines(self):
         m = ('red', 'bold')
         return [(x, m) for x in self.lines]
-
 
     def get_file_reference(self):
         return self.filename, self.linenum

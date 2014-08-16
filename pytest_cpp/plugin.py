@@ -1,14 +1,14 @@
 import pytest
 
-from pytest_cpp.error import CppFailure, CppFailureRepr
+from pytest_cpp.error import CppTestFailure, CppFailureRepr, CppFailureError
 
-from pytest_cpp.gtest import GTestFacade
+from pytest_cpp.google import GoogleTestFacade
 
 
 def pytest_collect_file(parent, path):
     if path.basename.startswith('test_'):
-        if GTestFacade.is_test_suite(str(path)):
-            return CppFile(path, parent, GTestFacade())
+        if GoogleTestFacade.is_test_suite(str(path)):
+            return CppFile(path, parent, GoogleTestFacade())
 
 
 class CppFile(pytest.File):
@@ -27,11 +27,13 @@ class CppItem(pytest.Item):
         self.facade = facade
 
     def runtest(self):
-        self.facade.run_test(str(self.fspath), self.name)
+        failures = self.facade.run_test(str(self.fspath), self.name)
+        if failures:
+            raise CppFailureError(failures)
 
     def repr_failure(self, excinfo):
-        if isinstance(excinfo.value, CppFailure):
-            return CppFailureRepr(excinfo.value)
+        if isinstance(excinfo.value, CppFailureError):
+            return CppFailureRepr(excinfo.value.failures)
 
     def reportinfo(self):
         return self.fspath, 0, self.name

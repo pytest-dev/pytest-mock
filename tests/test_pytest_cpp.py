@@ -3,9 +3,9 @@ import shutil
 import sys
 
 import pytest
-from pytest_cpp.error import CppFailure, CppFailureRepr
+from pytest_cpp.error import CppTestFailure, CppFailureRepr
 
-from pytest_cpp.gtest import GTestError, GTestFacade
+from pytest_cpp.google import GoogleTestFailure, GoogleTestFacade
 
 
 pytest_plugins = 'pytester'
@@ -28,13 +28,13 @@ def other_executable():
 
 @pytest.fixture
 def facade():
-    return GTestFacade()
+    return GoogleTestFacade()
 
 
 @pytest.fixture
 def dummy_failure():
 
-    class DummyFailure(CppFailure):
+    class DummyTestFailure(CppTestFailure):
 
         def __init__(self):
             self.lines = []
@@ -46,7 +46,7 @@ def dummy_failure():
         def get_file_reference(self):
             return self.file_reference
 
-    return DummyFailure()
+    return DummyTestFailure()
 
 
 def test_list_tests(facade, gtest_executable):
@@ -71,15 +71,25 @@ def test_success(facade, gtest_executable):
 
 
 def test_failure(facade, gtest_executable):
-    with pytest.raises(GTestError) as e:
-        facade.run_test(gtest_executable, 'FooTest.test_failure')
-    assert 'Expected: 2 * 3' in str(e.value)
+    failure = facade.run_test(gtest_executable, 'FooTest.test_failure')
+    colors = ('red', 'bold')
+    assert failure.get_lines() == [
+        ('Value of: 5', colors),
+        ('Expected: 2 * 3', colors),
+        ('Which is: 6', colors),
+    ]
+
+    assert 'gtest.cpp' in failure.get_file_reference()[0]
+    assert failure.get_file_reference()[1] == 17
 
 
 def test_error(facade, gtest_executable):
-    with pytest.raises(GTestError) as e:
-        facade.run_test(gtest_executable, 'FooTest.test_error')
-    assert '"unexpected exception"' in str(e.value)
+    failure = facade.run_test(gtest_executable, 'FooTest.test_error')
+    colors = ('red', 'bold')
+    assert failure.get_lines() == [
+        ('unknown file', colors),
+        ('C++ exception with description "unexpected exception"'
+            ' thrown in the test body.', colors)]
 
 
 def test_disabled(facade, gtest_executable):
@@ -101,6 +111,6 @@ def test_run(testdir):
 def test_cpp_failure_repr(dummy_failure):
     dummy_failure.lines = [('error message', {'red'})]
     dummy_failure.file_reference = 'test_suite', 20
-    failure_repr = CppFailureRepr(dummy_failure)
+    failure_repr = CppFailureRepr([dummy_failure])
     assert str(failure_repr) == 'error message\ntest_suite:20: C++ failure'
 

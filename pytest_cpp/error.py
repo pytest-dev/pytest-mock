@@ -65,8 +65,9 @@ class CppFailureRepr(object):
         return ReprFileLocation(filename, linenum, 'C++ failure')
 
     def toterminal(self, tw):
-        for index, failure in self.failures:
-            code_lines = self._get_code_lines(self.filename, self.linenum)
+        for index, failure in enumerate(self.failures):
+            filename, linenum = failure.get_file_reference()
+            code_lines = self._get_code_lines(filename, linenum)
             for line in code_lines:
                 tw.line(line, white=True, bold=True)
 
@@ -76,11 +77,11 @@ class CppFailureRepr(object):
             else:
                 indent = ''
 
-            for line, markup in self.lines:
+            for line, markup in failure.get_lines():
                 markup_params = {m: True for m in markup}
                 tw.line(indent + line, **markup_params)
 
-            location = ReprFileLocation(self.filename, self.linenum, 'C++ failure')
+            location = self._get_repr_file_location(failure)
             location.toterminal(tw)
 
             if index != len(self.failures) - 1:

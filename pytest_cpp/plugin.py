@@ -1,14 +1,18 @@
 import pytest
+from pytest_cpp.boost import BoostTestFacade
 
-from pytest_cpp.error import CppTestFailure, CppFailureRepr, CppFailureError
+from pytest_cpp.error import CppFailureRepr, CppFailureError
 
 from pytest_cpp.google import GoogleTestFacade
+
+FACADES = [GoogleTestFacade, BoostTestFacade]
 
 
 def pytest_collect_file(parent, path):
     if path.basename.startswith('test_'):
-        if GoogleTestFacade.is_test_suite(str(path)):
-            return CppFile(path, parent, GoogleTestFacade())
+        for facade_class in FACADES:
+            if facade_class.is_test_suite(str(path)):
+                return CppFile(path, parent, facade_class())
 
 
 class CppFile(pytest.File):

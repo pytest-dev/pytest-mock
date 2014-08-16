@@ -4,9 +4,21 @@ import os
 from py._code.code import ReprFileLocation
 
 
-class CppFailure(Exception):
+class CppFailureError(Exception):
     """
-    Should be raised by test Facades when a test fails. Each framework
+    Should be raised by test Facades when a test fails.
+
+    Contains a list of `CppFailure` instances.
+    """
+    def __init__(self, failures):
+        if type(failures) not in (list, tuple):
+            failures = [failures]
+        self.failures = failures
+
+
+class CppTestFailure(object):
+    """
+    Represents a failure in a C++ test. Each framework
     must implement the abstract functions to build the final exception
     message that will be displayed in the terminal.
     """
@@ -35,34 +47,45 @@ class CppFailureRepr(object):
     "repr" object for pytest that knows how to print a CppFailure instance
     into both terminal and files.
     """
-    def __init__(self, failure):
-        self.lines = failure.get_lines()
-        self.filename, self.linenum = failure.get_file_reference()
-        self.repr_location = ReprFileLocation(self.filename, self.linenum,
-                                              'C++ failure')
+    failure_sep = '---'
+
+    def __init__(self, failures):
+        self.failures = failures
 
     def __str__(self):
-        pure_lines = [x[0] for x in self.lines]
-        return "%s\n%s" % ("\n".join(pure_lines),
-                           self.repr_location)
+        reprs = []
+        for failure in self.failures:
+            pure_lines = '\n'.join(x[0] for x in failure.get_lines())
+            repr_loc = self._get_repr_file_location(failure)
+            reprs.append("%s\n%s" % (pure_lines, repr_loc))
+        return self.failure_sep.join(reprs)
+
+    def _get_repr_file_location(self, failure):
+        filename, linenum = failure.get_file_reference()
+        return ReprFileLocation(filename, linenum, 'C++ failure')
 
     def toterminal(self, tw):
-        code_lines = self._get_code_lines(self.filename, self.linenum)
-        for line in code_lines:
-            tw.line(line, white=True, bold=True)
+        for index, failure in enumerate(self.failures):
+            filename, linenum = failure.get_file_reference()
+            code_lines = self._get_code_lines(filename, linenum)
+            for line in code_lines:
+                tw.line(line, white=True, bold=True)
 
-        if code_lines:
-            # get indent used by the code that triggered the error
-            indent = self._get_left_whitespace(code_lines[-1])
-        else:
-            indent = ''
+            if code_lines:
+                # get indent used by the code that triggered the error
+                indent = self._get_left_whitespace(code_lines[-1])
+            else:
+                indent = ''
 
-        for line, markup in self.lines:
-            markup_params = {m: True for m in markup}
-            tw.line(indent + line, **markup_params)
+            for line, markup in failure.get_lines():
+                markup_params = {m: True for m in markup}
+                tw.line(indent + line, **markup_params)
 
-        location = ReprFileLocation(self.filename, self.linenum, 'C++ failure')
-        location.toterminal(tw)
+            location = self._get_repr_file_location(failure)
+            location.toterminal(tw)
+
+            if index != len(self.failures) - 1:
+                tw.line(self.failure_sep, cyan=True)
 
     def _get_code_lines(self, filename, linenum):
         """

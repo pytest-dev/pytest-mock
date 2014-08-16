@@ -15,8 +15,10 @@ Program(
     LIBPATH=os.environ.get('LIBPATH'),
     LIBS=['gtest'] + LIBS,
 )
-Program(
-    'boost.cpp', 
-    CPPPATH=os.environ.get('INCLUDE'),
-    CCFLAGS=CCFLAGS,
-)
+
+for filename in ('boost_success.cpp', 'boost_failure.cpp', 'boost_error.cpp'):
+    Program(
+        filename,
+        CPPPATH=os.environ.get('INCLUDE'),
+        CCFLAGS=CCFLAGS,
+    )

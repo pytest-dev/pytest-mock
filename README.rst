@@ -7,7 +7,7 @@ Use `pytest <https://pypi.python.org/pypi/pytest>`_ runner to discover and execu
 Supports both `Google Test <https://code.google.com/p/googletest>`_ and
 `Boost::Test <www.boost.org/doc/libs/release/libs/test>`_:
 
-.. image:: https://github.com/nicoddemus/pytest-cpp/blob/readme/images/google.png
+.. image:: https://github.com/nicoddemus/pytest-cpp/blob/master/images/screenshot.png
 
 |version| |downloads| |ci|
 

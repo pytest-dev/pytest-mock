@@ -14,7 +14,7 @@ setup(
     author="Bruno Oliveira",
     author_email="nicoddemus@gmail.com",
     description="Use pytest's runner to discover and execute C++ tests",
-    long_description=open('README.md').read(),
+    long_description=open('README.rst').read(),
     license="MIT",
     keywords="pytest test unittest",
     url="http://github.com/nicoddemus/pytest-cpp",

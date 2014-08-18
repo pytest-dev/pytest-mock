@@ -35,8 +35,17 @@ Usage
 =====
 
 Once installed, when py.test runs it will search and run tests
-founds in ``test*`` executable files, detecting if the suites are
+founds in executable files, detecting if the suites are
 Google or Boost tests automatically.
+
+You can configure which files are tested for suites by using the ``cpp_files``
+ini configuration.
+
+.. code-block:: ini
+    [pytest]
+    cpp_files=test_suite*
+
+Default is to match ``test_*`` and ``*_test`` file names.
 
 Requirements
 ============

@@ -7,17 +7,20 @@ from pytest_cpp.error import CppFailureRepr, CppFailureError
 from pytest_cpp.google import GoogleTestFacade
 
 FACADES = [GoogleTestFacade, BoostTestFacade]
-
+DEFAULT_MASKS = ('test_*', '*_test')
 
 def pytest_collect_file(parent, path):
-    mask = parent.config.getini('cpp_files') or 'test_*'
-    if fnmatch.fnmatch(path.basename, mask):
-        for facade_class in FACADES:
-            if facade_class.is_test_suite(str(path)):
-                return CppFile(path, parent, facade_class())
+    masks = parent.config.getini('cpp_files') or DEFAULT_MASKS
+    for mask in masks:
+        if fnmatch.fnmatch(path.basename, mask):
+            for facade_class in FACADES:
+                if facade_class.is_test_suite(str(path)):
+                    return CppFile(path, parent, facade_class())
 
 def pytest_addoption(parser):
-    parser.addini('cpp_files', 'glob-style file patterns for C++ test discovery')
+    parser.addini("cpp_files", type="args",
+        default=DEFAULT_MASKS,
+        help="glob-style file patterns for C++ test module discovery")
 
 
 class CppFile(pytest.File):

@@ -1,3 +1,4 @@
+import fnmatch
 import pytest
 from pytest_cpp.boost import BoostTestFacade
 
@@ -9,10 +10,14 @@ FACADES = [GoogleTestFacade, BoostTestFacade]
 
 
 def pytest_collect_file(parent, path):
-    if path.basename.startswith('test_'):
+    mask = parent.config.getini('cpp_files') or 'test_*'
+    if fnmatch.fnmatch(path.basename, mask):
         for facade_class in FACADES:
             if facade_class.is_test_suite(str(path)):
                 return CppFile(path, parent, facade_class())
+
+def pytest_addoption(parser):
+    parser.addini('cpp_files', 'glob-style file patterns for C++ test discovery')
 
 
 class CppFile(pytest.File):

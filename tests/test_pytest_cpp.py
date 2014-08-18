@@ -168,3 +168,14 @@ def test_cpp_failure_repr(dummy_failure):
     failure_repr = CppFailureRepr([dummy_failure])
     assert str(failure_repr) == 'error message\ntest_suite:20: C++ failure'
 
+
+def test_cpp_files_option(testdir, suites):
+    testdir.makeini('''
+        [pytest]
+        cpp_files = gtest*
+    ''')
+    result = testdir.runpytest('--collect-only', suites.get('gtest'))
+    result.stdout.fnmatch_lines([
+        "*<CppItem 'FooTest.test_success'>*",
+    ])
+

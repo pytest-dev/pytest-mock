@@ -1,6 +1,9 @@
 import os
 import subprocess
+import tempfile
 from xml.etree import ElementTree
+import io
+import shutil
 from pytest_cpp.error import CppTestFailure
 
 
@@ -25,30 +28,48 @@ class BoostTestFacade(object):
         return [os.path.basename(os.path.splitext(executable)[0])]
 
     def run_test(self, executable, test_id):
+
+        def read_file(name):
+            try:
+                with io.open(name) as f:
+                    return f.read()
+            except IOError:
+                return None
+
+        temp_dir = tempfile.mkdtemp()
+        log_xml = os.path.join(temp_dir, 'log.xml')
+        report_xml = os.path.join(temp_dir, 'report.xml')
         args = [
             executable,
             '--output_format=xml',
-            '--log_sink=stdout',
-            '--report_sink=stderr',
+            '--log_sink=%s' % log_xml,
+            '--report_sink=%s' % report_xml,
         ]
-        p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = p.communicate()
+        p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        stdout, _ = p.communicate()
+
+        log = read_file(log_xml)
+        report = read_file(report_xml)
+
         if p.returncode not in (0, 201):
             msg = ('Internal Error: calling {executable} '
                    'for test {test_id} failed (returncode={returncode}):\n'
-                   'stdout:{stdout}\n'
-                   'stderr:{stderr}')
+                   'output:{stdout}\n'
+                   'log:{log}\n'
+                   'report:{report}')
             failure = BoostTestFailure(
                 executable,
                 linenum=0,
                 contents=msg.format(executable=executable,
                                     test_id=test_id,
                                     stdout=stdout,
-                                    stderr=stderr,
+                                    log=log,
+                                    report=report,
                                     returncode=p.returncode))
             return [failure]
 
-        results = self._parse_xml(log=stdout, report=stderr)
+        results = self._parse_xml(log=log, report=report)
+        shutil.rmtree(temp_dir)
         if results:
             return results
 

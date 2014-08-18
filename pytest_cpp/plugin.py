@@ -38,6 +38,7 @@ class CppItem(pytest.Item):
     def repr_failure(self, excinfo):
         if isinstance(excinfo.value, CppFailureError):
             return CppFailureRepr(excinfo.value.failures)
+        return pytest.Item.repr_failure(self, excinfo)
 
     def reportinfo(self):
         return self.fspath, 0, self.name

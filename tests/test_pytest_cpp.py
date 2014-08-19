@@ -84,22 +84,30 @@ def test_success(facade, name, test_id, suites):
 
 def test_google_failure(suites):
     facade = GoogleTestFacade()
-    failure = facade.run_test(suites.get('gtest'), 'FooTest.test_failure')
+    failures = facade.run_test(suites.get('gtest'), 'FooTest.test_failure')
+    assert len(failures) == 2
     colors = ('red', 'bold')
-    assert failure.get_lines() == [
+    assert failures[0].get_lines() == [
         ('Value of: 5', colors),
         ('Expected: 2 * 3', colors),
         ('Which is: 6', colors),
     ]
+    assert failures[0].get_file_reference() == ('gtest.cpp', 17)
 
-    assert failure.get_file_reference() == ('gtest.cpp', 17)
+    assert failures[1].get_lines() == [
+        ('Value of: 15', colors),
+        ('Expected: 2 * 6', colors),
+        ('Which is: 12', colors),
+    ]
+    assert failures[1].get_file_reference() == ('gtest.cpp', 18)
 
 
 def test_google_error(suites):
     facade = GoogleTestFacade()
-    failure = facade.run_test(suites.get('gtest'), 'FooTest.test_error')
+    failures = facade.run_test(suites.get('gtest'), 'FooTest.test_error')
+    assert len(failures) == 1
     colors = ('red', 'bold')
-    assert failure.get_lines() == [
+    assert failures[0].get_lines() == [
         ('unknown file', colors),
         ('C++ exception with description "unexpected exception"'
             ' thrown in the test body.', colors)]

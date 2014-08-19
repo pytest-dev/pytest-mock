@@ -53,10 +53,10 @@ class GoogleTestFacade(object):
                                returncode=e.returncode))
 
         results = self._parse_xml(xml_filename)
-        for (executed_test_id, failure, skipped) in results:
+        for (executed_test_id, failures, skipped) in results:
             if executed_test_id == test_id:
-                if failure is not None:
-                    return GoogleTestFailure(failure)
+                if failures:
+                    return [GoogleTestFailure(x) for x in failures]
                 elif skipped:
                     pytest.skip()
                 else:
@@ -65,7 +65,8 @@ class GoogleTestFacade(object):
         msg = ('Internal Error: could not find test '
                '{test_id} in results:\n{results}')
         results_list = '\n'.join(x for (x, f) in results)
-        return GoogleTestFailure(msg.format(test_id=test_id, results=results_list))
+        return GoogleTestFailure(
+            msg.format(test_id=test_id, results=results_list))
 
     def _parse_xml(self, xml_filename):
         root = ElementTree.parse(xml_filename)
@@ -74,14 +75,13 @@ class GoogleTestFacade(object):
             test_suite_name = test_suite.attrib['name']
             for test_case in test_suite.findall('testcase'):
                 test_name = test_case.attrib['name']
-                failure_elem = test_case.find('failure')
-                if failure_elem is not None:
-                    failure = failure_elem.text
-                else:
-                    failure = None
+                failures = []
+                failure_elements = test_case.findall('failure')
+                for failure_elem in failure_elements:
+                    failures.append(failure_elem.text)
                 skipped = test_case.attrib['status'] == 'notrun'
                 result.append(
-                    (test_suite_name + '.' + test_name, failure, skipped))
+                    (test_suite_name + '.' + test_name, failures, skipped))
 
         return result
 

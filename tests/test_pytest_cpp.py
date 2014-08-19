@@ -178,12 +178,18 @@ def test_cpp_failure_repr(dummy_failure):
 
 
 def test_cpp_files_option(testdir, suites):
+    suites.get('boost_success')
+    suites.get('gtest')
+    
+    result = testdir.runpytest('--collect-only')
+    result.stdout.fnmatch_lines([
+        "*collected 0 items*",
+    ])
+
     testdir.makeini('''
         [pytest]
         cpp_files = gtest* boost*
     ''')
-    suites.get('boost_success')
-    suites.get('gtest')
     result = testdir.runpytest('--collect-only')
     result.stdout.fnmatch_lines([
         "*<CppItem 'boost_success'>*",

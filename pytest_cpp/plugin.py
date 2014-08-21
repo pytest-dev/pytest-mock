@@ -1,4 +1,6 @@
 import fnmatch
+import os
+import stat
 import pytest
 from pytest_cpp.boost import BoostTestFacade
 
@@ -10,6 +12,9 @@ FACADES = [GoogleTestFacade, BoostTestFacade]
 DEFAULT_MASKS = ('test_*', '*_test')
 
 def pytest_collect_file(parent, path):
+    is_executable = os.stat(str(path)).st_mode & stat.S_IXUSR
+    if not is_executable:
+        return
     masks = parent.config.getini('cpp_files') or DEFAULT_MASKS
     for mask in masks:
         if fnmatch.fnmatch(path.basename, mask):

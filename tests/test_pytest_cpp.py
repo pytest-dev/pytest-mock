@@ -36,7 +36,7 @@ def assert_outcomes(result, expected_outcomes):
     __tracebackhide__ = True
     obtained = []
     for test_id, _ in expected_outcomes:
-        rep = result.matchreport(test_id)
+        rep = result.matchreport(test_id, "pytest_runtest_logreport")
         obtained.append((test_id, rep.outcome))
     assert expected_outcomes == obtained
 

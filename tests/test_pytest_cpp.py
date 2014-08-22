@@ -18,16 +18,27 @@ def suites(testdir):
         def get(self, name, new_name=None):
             if not new_name:
                 new_name = name
-            if sys.platform.startswith('win'):
-                name += '.exe'
-                new_name += '.exe'
-            source = os.path.join(os.path.dirname(__file__), name)
-            dest = testdir.tmpdir.join(new_name)
+            source = os.path.join(os.path.dirname(__file__), exe_name(name))
+            dest = testdir.tmpdir.join(exe_name(new_name))
             shutil.copy(str(source), str(dest))
             return str(dest)
 
     return Suites()
 
+
+def exe_name(name):
+    if sys.platform.startswith('win'):
+        name += '.exe'
+    return name
+
+
+def assert_outcomes(result, expected_outcomes):
+    __tracebackhide__ = True
+    obtained = []
+    for test_id, _ in expected_outcomes:
+        rep = result.matchreport(test_id)
+        obtained.append((test_id, rep.outcome))
+    assert expected_outcomes == obtained
 
 
 @pytest.fixture
@@ -150,23 +161,23 @@ def test_boost_error(suites):
 
 
 def test_google_run(testdir, suites):
-    result = testdir.runpytest('-v', suites.get('gtest', 'test_gtest'))
-    result.stdout.fnmatch_lines([
-        '*test_success PASSED*',
-        '*test_failure FAILED*',
-        '*test_error FAILED*',
-        '*test_disabled SKIPPED*',
+    result = testdir.inline_run('-v', suites.get('gtest', 'test_gtest'))
+    assert_outcomes(result, [
+        ('FooTest.test_success', 'passed'),
+        ('FooTest.test_failure', 'failed'),
+        ('FooTest.test_error', 'failed'),
+        ('FooTest.DISABLED_test_disabled', 'skipped'),
     ])
 
 
 def test_boost_run(testdir, suites):
     all_names = ['boost_success', 'boost_error', 'boost_failure']
     all_files = [suites.get(n, 'test_' + n) for n in all_names]
-    result = testdir.runpytest('-v', *all_files)
-    result.stdout.fnmatch_lines([
-        '*boost_success PASSED*',
-        '*boost_error FAILED*',
-        '*boost_failure FAILED*',
+    result = testdir.inline_run('-v', *all_files)
+    assert_outcomes(result, [
+        ('test_boost_success', 'passed'),
+        ('test_boost_error', 'failed'),
+        ('test_boost_failure', 'failed'),
     ])
 
 
@@ -181,18 +192,17 @@ def test_cpp_files_option(testdir, suites):
     suites.get('boost_success')
     suites.get('gtest')
     
-    result = testdir.runpytest('--collect-only')
-    result.stdout.fnmatch_lines([
-        "*collected 0 items*",
-    ])
+    result = testdir.inline_run('--collect-only')
+    reps = result.getreports()
+    assert len(reps) == 1
+    assert reps[0].result == []
 
     testdir.makeini('''
         [pytest]
         cpp_files = gtest* boost*
     ''')
-    result = testdir.runpytest('--collect-only')
-    result.stdout.fnmatch_lines([
-        "*<CppItem 'boost_success'>*",
-        "*<CppItem 'FooTest.test_success'>*",
-    ])
+    result = testdir.inline_run('--collect-only')
+    assert len(result.matchreport(exe_name('boost_success')).result) == 1
+    assert len(result.matchreport(exe_name('gtest')).result) == 4
+
 

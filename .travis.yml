@@ -8,7 +8,7 @@ install:
  - sudo apt-get install libboost-test-dev
  - sudo apt-get install libgtest-dev
  - "cd /usr/src/gtest && sudo cmake . && sudo make && sudo cp *.a /usr/lib ; cd -"
- - pip install tox coveralls --use-wheel
+ - pip install tox coveralls
 
 script:
  - scons -C tests

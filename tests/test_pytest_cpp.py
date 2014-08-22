@@ -3,6 +3,7 @@ import shutil
 import sys
 
 import pytest
+from pytest_cpp import error
 from pytest_cpp.boost import BoostTestFacade
 from pytest_cpp.error import CppTestFailure, CppFailureRepr
 from pytest_cpp.google import GoogleTestFacade
@@ -206,3 +207,26 @@ def test_cpp_files_option(testdir, suites):
     assert len(result.matchreport(exe_name('gtest')).result) == 4
 
 
+class TestError:
+
+    def test_get_whitespace(self):
+        assert error.get_left_whitespace('  foo') == '  '
+        assert error.get_left_whitespace('\t\t foo') == '\t\t '
+
+    def test_get_code_context_around_line(self, tmpdir):
+        f = tmpdir.join('foo.py')
+        f.write('line1\nline2\nline3\nline4\nline5')
+
+        assert error.get_code_context_around_line(str(f), 1) == \
+            ['line1']
+        assert error.get_code_context_around_line(str(f), 2) == \
+            ['line1', 'line2']
+        assert error.get_code_context_around_line(str(f), 3) == \
+            ['line1', 'line2', 'line3']
+        assert error.get_code_context_around_line(str(f), 4) == \
+            ['line2', 'line3', 'line4']
+        assert error.get_code_context_around_line(str(f), 5) == \
+            ['line3', 'line4', 'line5']
+
+        invalid = str(tmpdir.join('invalid'))
+        assert error.get_code_context_around_line(invalid, 10) == []

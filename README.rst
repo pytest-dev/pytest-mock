@@ -107,7 +107,7 @@ One can use ``patch`` as a decorator to improve the flow of the test:
     @mock.patch('os.remove')
     @mock.patch('os.listdir')
     @mock.patch('shutil.copy')
-    def test_unix_fs(mocked_copy, mocked_listdir, mocked_copy):
+    def test_unix_fs(mocked_copy, mocked_listdir, mocked_remove):
         UnixFS.rm('file')
         os.remove.assert_called_once_with('file')
         

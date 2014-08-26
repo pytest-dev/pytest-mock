@@ -1,3 +1,4 @@
+import os
 import subprocess
 import tempfile
 from xml.etree import ElementTree
@@ -34,7 +35,7 @@ class GoogleTestFacade(object):
         return result
 
     def run_test(self, executable, test_id):
-        xml_filename = tempfile.mktemp()
+        xml_filename = self._get_temp_xml_filename()
         args = [
             executable,
             '--gtest_filter=' + test_id,
@@ -47,12 +48,14 @@ class GoogleTestFacade(object):
                 msg = ('Internal Error: calling {executable} '
                        'for test {test_id} failed (returncode={returncode}):\n'
                        '{output}')
-                return GoogleTestFailure(
+                failure = GoogleTestFailure(
                     msg.format(executable=executable, test_id=test_id,
                                output=e.output,
                                returncode=e.returncode))
+                return [failure]
 
         results = self._parse_xml(xml_filename)
+        os.remove(xml_filename)
         for (executed_test_id, failures, skipped) in results:
             if executed_test_id == test_id:
                 if failures:
@@ -65,8 +68,12 @@ class GoogleTestFacade(object):
         msg = ('Internal Error: could not find test '
                '{test_id} in results:\n{results}')
         results_list = '\n'.join(x for (x, f) in results)
-        return GoogleTestFailure(
+        failure = GoogleTestFailure(
             msg.format(test_id=test_id, results=results_list))
+        return [failure]
+
+    def _get_temp_xml_filename(self):
+        return tempfile.mktemp()
 
     def _parse_xml(self, xml_filename):
         root = ElementTree.parse(xml_filename)
@@ -94,8 +101,12 @@ class GoogleTestFailure(CppTestFailure):
         if self.lines:
             fields = self.lines[0].rsplit(':', 1)
             if len(fields) == 2:
+                try:
+                    linenum = int(fields[1])
+                except ValueError:
+                    return
                 self.filename = fields[0]
-                self.linenum = int(fields[1])
+                self.linenum = linenum
                 self.lines.pop(0)
 
     def get_lines(self):

@@ -8,3 +8,4 @@
 .sconsign.dblite
 dist/
 build/
+.coverage

@@ -11,8 +11,6 @@ class CppFailureError(Exception):
     Contains a list of `CppFailure` instances.
     """
     def __init__(self, failures):
-        if type(failures) not in (list, tuple):
-            failures = [failures]
         self.failures = failures
 
 
@@ -33,13 +31,13 @@ class CppTestFailure(object):
             'blue', 'purple', 'cyan', 'white',
             'bold', 'light', 'blink', 'invert'
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     def get_file_reference(self):
         """
         Return tuple of filename, linenum of the failure.
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
 
 class CppFailureRepr(object):
@@ -67,15 +65,11 @@ class CppFailureRepr(object):
     def toterminal(self, tw):
         for index, failure in enumerate(self.failures):
             filename, linenum = failure.get_file_reference()
-            code_lines = self._get_code_lines(filename, linenum)
+            code_lines = get_code_context_around_line(filename, linenum)
             for line in code_lines:
-                tw.line(line, white=True, bold=True)
+                tw.line(line, white=True, bold=True)  # pragma: no cover
 
-            if code_lines:
-                # get indent used by the code that triggered the error
-                indent = self._get_left_whitespace(code_lines[-1])
-            else:
-                indent = ''
+            indent = get_left_whitespace(code_lines[-1]) if code_lines else ''
 
             for line, markup in failure.get_lines():
                 markup_params = {m: True for m in markup}
@@ -87,25 +81,29 @@ class CppFailureRepr(object):
             if index != len(self.failures) - 1:
                 tw.line(self.failure_sep, cyan=True)
 
-    def _get_code_lines(self, filename, linenum):
-        """
-        return code context lines, with the last line being the line at
-        linenum.
-        """
-        if os.path.isfile(filename):
-            index = linenum - 1
-            with open(filename) as f:
-                return [x.rstrip() for x in f.readlines()[index - 2:index + 1]]
-        return []
 
-    def _get_left_whitespace(self, line):
-        result = ''
-        for c in line:
-            if c in string.whitespace:
-                result += c
-            else:
-                break
-        return result
+def get_code_context_around_line(filename, linenum):
+    """
+    return code context lines, with the last line being the line at
+    linenum.
+    """
+    if os.path.isfile(filename):
+        index = linenum - 1
+        with open(filename) as f:
+            index_above = index - 2
+            index_above = index_above if index_above >= 0 else 0
+            return [x.rstrip() for x in f.readlines()[index_above:index + 1]]
+    return []
+
+
+def get_left_whitespace(line):
+    result = ''
+    for c in line:
+        if c in string.whitespace:
+            result += c
+        else:
+            break
+    return result
 
 
 

@@ -9,7 +9,7 @@ Supports both `Google Test <https://code.google.com/p/googletest>`_ and
 
 .. image:: https://raw.githubusercontent.com/nicoddemus/pytest-cpp/master/images/screenshot.png
 
-|version| |downloads| |ci|
+|version| |downloads| |ci| |coverage|
 
 .. |version| image:: http://img.shields.io/pypi/v/pytest-cpp.png
   :target: https://crate.io/packages/pytest-cpp
@@ -19,6 +19,9 @@ Supports both `Google Test <https://code.google.com/p/googletest>`_ and
 
 .. |ci| image:: http://img.shields.io/travis/nicoddemus/pytest-cpp.png
   :target: https://travis-ci.org/nicoddemus/pytest-cpp
+
+.. |coverage| image:: http://img.shields.io/coveralls/nicoddemus/pytest-cpp.png
+  :target: https://coveralls.io/r/nicoddemus/pytest-cpp
 
 This brings several benefits:
 

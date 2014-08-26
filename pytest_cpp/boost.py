@@ -58,7 +58,7 @@ class BoostTestFacade(object):
                    'log:{log}\n'
                    'report:{report}')
             failure = BoostTestFailure(
-                executable,
+                '<no source file>',
                 linenum=0,
                 contents=msg.format(executable=executable,
                                     test_id=test_id,

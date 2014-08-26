@@ -1,8 +1,11 @@
 import os
 import shutil
 import sys
+from mock import MagicMock
 
 import pytest
+import subprocess
+from pytest_cpp import error
 from pytest_cpp.boost import BoostTestFacade
 from pytest_cpp.error import CppTestFailure, CppFailureRepr
 from pytest_cpp.google import GoogleTestFacade
@@ -18,16 +21,27 @@ def suites(testdir):
         def get(self, name, new_name=None):
             if not new_name:
                 new_name = name
-            if sys.platform.startswith('win'):
-                name += '.exe'
-                new_name += '.exe'
-            source = os.path.join(os.path.dirname(__file__), name)
-            dest = testdir.tmpdir.join(new_name)
+            source = os.path.join(os.path.dirname(__file__), exe_name(name))
+            dest = testdir.tmpdir.join(exe_name(new_name))
             shutil.copy(str(source), str(dest))
             return str(dest)
 
     return Suites()
 
+
+def exe_name(name):
+    if sys.platform.startswith('win'):
+        name += '.exe'
+    return name
+
+
+def assert_outcomes(result, expected_outcomes):
+    __tracebackhide__ = True
+    obtained = []
+    for test_id, _ in expected_outcomes:
+        rep = result.matchreport(test_id, "pytest_runtest_logreport")
+        obtained.append((test_id, rep.outcome))
+    assert expected_outcomes == obtained
 
 
 @pytest.fixture
@@ -150,24 +164,79 @@ def test_boost_error(suites):
 
 
 def test_google_run(testdir, suites):
-    result = testdir.runpytest('-v', suites.get('gtest', 'test_gtest'))
-    result.stdout.fnmatch_lines([
-        '*test_success PASSED*',
-        '*test_failure FAILED*',
-        '*test_error FAILED*',
-        '*test_disabled SKIPPED*',
+    result = testdir.inline_run('-v', suites.get('gtest', 'test_gtest'))
+    assert_outcomes(result, [
+        ('FooTest.test_success', 'passed'),
+        ('FooTest.test_failure', 'failed'),
+        ('FooTest.test_error', 'failed'),
+        ('FooTest.DISABLED_test_disabled', 'skipped'),
     ])
+
+def test_unknown_error(testdir, suites, mock):
+    mock.patch.object(GoogleTestFacade, 'run_test',
+                      side_effect=RuntimeError('unknown error'))
+    result = testdir.inline_run('-v', suites.get('gtest', 'test_gtest'))
+    rep = result.matchreport('FooTest.test_success', 'pytest_runtest_logreport')
+    assert 'unknown error' in str(rep.longrepr)
+
+
+def test_google_internal_errors(mock, testdir, suites, tmpdir):
+    mock.patch.object(GoogleTestFacade, 'is_test_suite', return_value=True)
+    mock.patch.object(GoogleTestFacade, 'list_tests',
+                      return_value=['FooTest.test_success'])
+    mocked = mock.patch.object(subprocess, 'check_output', autospec=True,
+                               return_value='')
+
+    def raise_error(*args, **kwargs):
+        raise subprocess.CalledProcessError(returncode=100, cmd='')
+    mocked.side_effect = raise_error
+    result = testdir.inline_run('-v', suites.get('gtest', 'test_gtest'))
+    rep = result.matchreport(exe_name('test_gtest'),
+                             'pytest_runtest_logreport')
+    assert 'Internal Error: calling' in str(rep.longrepr)
+
+    mocked.side_effect = None
+    xml_file = tmpdir.join('results.xml')
+    xml_file.write('<empty/>')
+    mock.patch.object(GoogleTestFacade, '_get_temp_xml_filename',
+                      return_value=str(xml_file))
+    result = testdir.inline_run('-v', suites.get('gtest', 'test_gtest'))
+    rep = result.matchreport(exe_name('test_gtest'),
+                             'pytest_runtest_logreport')
+
+    assert 'Internal Error: could not find test' in str(rep.longrepr)
 
 
 def test_boost_run(testdir, suites):
     all_names = ['boost_success', 'boost_error', 'boost_failure']
     all_files = [suites.get(n, 'test_' + n) for n in all_names]
-    result = testdir.runpytest('-v', *all_files)
-    result.stdout.fnmatch_lines([
-        '*boost_success PASSED*',
-        '*boost_error FAILED*',
-        '*boost_failure FAILED*',
+    result = testdir.inline_run('-v', *all_files)
+    assert_outcomes(result, [
+        ('test_boost_success', 'passed'),
+        ('test_boost_error', 'failed'),
+        ('test_boost_failure', 'failed'),
     ])
+
+
+def mock_popen(mock, return_code, stdout, stderr):
+    mocked_popen = MagicMock()
+    mocked_popen.__enter__ = mocked_popen
+    mocked_popen.communicate.return_value = stdout, stderr
+    mocked_popen.return_code = return_code
+    mocked_popen.poll.return_value = return_code
+    mock.patch.object(subprocess, 'Popen', return_value=mocked_popen)
+    return mocked_popen
+
+
+def test_boost_internal_error(testdir, suites, mock):
+    exe = suites.get('boost_success', 'test_boost_success')
+    mock_popen(mock, return_code=100, stderr=None, stdout=None)
+    mock.patch.object(BoostTestFacade, 'is_test_suite', return_value=True)
+    mock.patch.object(GoogleTestFacade, 'is_test_suite', return_value=False)
+    result = testdir.inline_run(exe)
+    rep = result.matchreport(exe_name('test_boost_success'),
+                             'pytest_runtest_logreport')
+    assert 'Internal Error:' in str(rep.longrepr)
 
 
 def test_cpp_failure_repr(dummy_failure):
@@ -181,18 +250,40 @@ def test_cpp_files_option(testdir, suites):
     suites.get('boost_success')
     suites.get('gtest')
     
-    result = testdir.runpytest('--collect-only')
-    result.stdout.fnmatch_lines([
-        "*collected 0 items*",
-    ])
+    result = testdir.inline_run('--collect-only')
+    reps = result.getreports()
+    assert len(reps) == 1
+    assert reps[0].result == []
 
     testdir.makeini('''
         [pytest]
         cpp_files = gtest* boost*
     ''')
-    result = testdir.runpytest('--collect-only')
-    result.stdout.fnmatch_lines([
-        "*<CppItem 'boost_success'>*",
-        "*<CppItem 'FooTest.test_success'>*",
-    ])
+    result = testdir.inline_run('--collect-only')
+    assert len(result.matchreport(exe_name('boost_success')).result) == 1
+    assert len(result.matchreport(exe_name('gtest')).result) == 4
 
+
+class TestError:
+
+    def test_get_whitespace(self):
+        assert error.get_left_whitespace('  foo') == '  '
+        assert error.get_left_whitespace('\t\t foo') == '\t\t '
+
+    def test_get_code_context_around_line(self, tmpdir):
+        f = tmpdir.join('foo.py')
+        f.write('line1\nline2\nline3\nline4\nline5')
+
+        assert error.get_code_context_around_line(str(f), 1) == \
+            ['line1']
+        assert error.get_code_context_around_line(str(f), 2) == \
+            ['line1', 'line2']
+        assert error.get_code_context_around_line(str(f), 3) == \
+            ['line1', 'line2', 'line3']
+        assert error.get_code_context_around_line(str(f), 4) == \
+            ['line2', 'line3', 'line4']
+        assert error.get_code_context_around_line(str(f), 5) == \
+            ['line3', 'line4', 'line5']
+
+        invalid = str(tmpdir.join('invalid'))
+        assert error.get_code_context_around_line(invalid, 10) == []

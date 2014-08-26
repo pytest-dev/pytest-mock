@@ -177,14 +177,14 @@ def test_google_internal_errors(mock, testdir, suites, tmpdir):
     mock.patch.object(GoogleTestFacade, 'is_test_suite', return_value=True)
     mock.patch.object(GoogleTestFacade, 'list_tests',
                       return_value=['FooTest.test_success'])
-    mocked_popen = mock_popen(mock, return_code=100, stdout=None, stderr=None)
+    mocked = mock.patch.object(subprocess, 'check_output', autospec=True)
+    mocked.side_effect = subprocess.CalledProcessError(returncode=100, cmd='')
     result = testdir.inline_run('-v', suites.get('gtest', 'test_gtest'))
     rep = result.matchreport(exe_name('test_gtest'),
                              'pytest_runtest_logreport')
     assert 'Internal Error: calling' in str(rep.longrepr)
 
-    mocked_popen.return_code = 0
-    mocked_popen.poll.return_value = 0
+    mocked.side_effect = None
     xml_file = tmpdir.join('results.xml')
     mock.patch.object(GoogleTestFacade, '_get_temp_xml_filename',
                       return_value=str(xml_file))
@@ -209,6 +209,7 @@ def test_boost_run(testdir, suites):
 
 def mock_popen(mock, return_code, stdout, stderr):
     mocked_popen = MagicMock()
+    mocked_popen.__enter__ = mocked_popen
     mocked_popen.communicate.return_value = stdout, stderr
     mocked_popen.return_code = return_code
     mocked_popen.poll.return_value = return_code
@@ -220,6 +221,7 @@ def test_boost_internal_error(testdir, suites, mock):
     exe = suites.get('boost_success', 'test_boost_success')
     mock_popen(mock, return_code=100, stderr=None, stdout=None)
     mock.patch.object(BoostTestFacade, 'is_test_suite', return_value=True)
+    mock.patch.object(GoogleTestFacade, 'is_test_suite', return_value=False)
     result = testdir.inline_run(exe)
     rep = result.matchreport(exe_name('test_boost_success'),
                              'pytest_runtest_logreport')

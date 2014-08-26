@@ -71,6 +71,10 @@ Install using `pip <http://pip-installer.org/>`_:
     
     $ pip install pytest-mock
 
+Changelog
+=========
+
+Please consult `releases <https://github.com/nicoddemus/pytest-mock/releases>`_.
         
 Why bother with a plugin?
 =========================

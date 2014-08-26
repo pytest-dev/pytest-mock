@@ -74,6 +74,7 @@ def test_mock_patches(mock_fs, mock, check_unix_fs_mocked):
     mock functionality. We parametrize different mock methods to ensure
     all (intended, at least) mock API is covered.
     """
+    mock_fs(mock)
     mocked_rm, mocked_ls = mock_fs(mock)
     check_unix_fs_mocked(mocked_rm, mocked_ls)
 

@@ -24,7 +24,7 @@ class MockFixture(object):
         Stop all patchers started by this fixture. Can be safely called multiple
         times.
         """
-        for p in self._patches:
+        for p in reversed(self._patches):
             p.stop()
         self._patches[:] = []
 

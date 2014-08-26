@@ -177,8 +177,12 @@ def test_google_internal_errors(mock, testdir, suites, tmpdir):
     mock.patch.object(GoogleTestFacade, 'is_test_suite', return_value=True)
     mock.patch.object(GoogleTestFacade, 'list_tests',
                       return_value=['FooTest.test_success'])
-    mocked = mock.patch.object(subprocess, 'check_output', autospec=True)
-    mocked.side_effect = subprocess.CalledProcessError(returncode=100, cmd='')
+    mocked = mock.patch.object(subprocess, 'check_output', autospec=True,
+                               return_value='')
+
+    def raise_error(*args, **kwargs):
+        raise subprocess.CalledProcessError(returncode=100, cmd='')
+    mocked.side_effect = raise_error
     result = testdir.inline_run('-v', suites.get('gtest', 'test_gtest'))
     rep = result.matchreport(exe_name('test_gtest'),
                              'pytest_runtest_logreport')
@@ -186,9 +190,9 @@ def test_google_internal_errors(mock, testdir, suites, tmpdir):
 
     mocked.side_effect = None
     xml_file = tmpdir.join('results.xml')
+    xml_file.write('<empty/>')
     mock.patch.object(GoogleTestFacade, '_get_temp_xml_filename',
                       return_value=str(xml_file))
-    xml_file.write('<empty/>')
     result = testdir.inline_run('-v', suites.get('gtest', 'test_gtest'))
     rep = result.matchreport(exe_name('test_gtest'),
                              'pytest_runtest_logreport')

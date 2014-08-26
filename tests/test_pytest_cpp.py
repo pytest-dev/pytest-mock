@@ -1,8 +1,10 @@
 import os
 import shutil
 import sys
+from mock import MagicMock
 
 import pytest
+import subprocess
 from pytest_cpp import error
 from pytest_cpp.boost import BoostTestFacade
 from pytest_cpp.error import CppTestFailure, CppFailureRepr
@@ -180,6 +182,19 @@ def test_boost_run(testdir, suites):
         ('test_boost_error', 'failed'),
         ('test_boost_failure', 'failed'),
     ])
+
+
+def test_boost_internal_error(testdir, suites, mock):
+    exe = suites.get('boost_success', 'test_boost_success')
+    mocked_popen = MagicMock()
+    mocked_popen.communicate.return_value = None, None
+    mocked_popen.return_code = 100
+    mock.patch.object(subprocess, 'Popen', return_value=mocked_popen)
+    mock.patch.object(BoostTestFacade, 'is_test_suite', return_value=True)
+    result = testdir.inline_run(exe)
+    rep = result.matchreport(exe_name('test_boost_success'),
+                             'pytest_runtest_logreport')
+    assert 'Internal Error:' in str(rep.longrepr)
 
 
 def test_cpp_failure_repr(dummy_failure):

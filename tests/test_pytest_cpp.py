@@ -172,6 +172,13 @@ def test_google_run(testdir, suites):
         ('FooTest.DISABLED_test_disabled', 'skipped'),
     ])
 
+def test_unknown_error(testdir, suites, mock):
+    mock.patch.object(GoogleTestFacade, 'run_test',
+                      side_effect=RuntimeError('unknown error'))
+    result = testdir.inline_run('-v', suites.get('gtest', 'test_gtest'))
+    rep = result.matchreport('FooTest.test_success', 'pytest_runtest_logreport')
+    assert 'unknown error' in str(rep.longrepr)
+
 
 def test_google_internal_errors(mock, testdir, suites, tmpdir):
     mock.patch.object(GoogleTestFacade, 'is_test_suite', return_value=True)

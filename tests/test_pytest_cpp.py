@@ -173,6 +173,29 @@ def test_google_run(testdir, suites):
     ])
 
 
+def test_google_internal_errors(mock, testdir, suites, tmpdir):
+    mock.patch.object(GoogleTestFacade, 'is_test_suite', return_value=True)
+    mock.patch.object(GoogleTestFacade, 'list_tests',
+                      return_value=['FooTest.test_success'])
+    mocked_popen = mock_popen(mock, return_code=100, stdout=None, stderr=None)
+    result = testdir.inline_run('-v', suites.get('gtest', 'test_gtest'))
+    rep = result.matchreport(exe_name('test_gtest'),
+                             'pytest_runtest_logreport')
+    assert 'Internal Error: calling' in str(rep.longrepr)
+
+    mocked_popen.return_code = 0
+    mocked_popen.poll.return_value = 0
+    xml_file = tmpdir.join('results.xml')
+    mock.patch.object(GoogleTestFacade, '_get_temp_xml_filename',
+                      return_value=str(xml_file))
+    xml_file.write('<empty/>')
+    result = testdir.inline_run('-v', suites.get('gtest', 'test_gtest'))
+    rep = result.matchreport(exe_name('test_gtest'),
+                             'pytest_runtest_logreport')
+
+    assert 'Internal Error: could not find test' in str(rep.longrepr)
+
+
 def test_boost_run(testdir, suites):
     all_names = ['boost_success', 'boost_error', 'boost_failure']
     all_files = [suites.get(n, 'test_' + n) for n in all_names]
@@ -184,12 +207,18 @@ def test_boost_run(testdir, suites):
     ])
 
 
+def mock_popen(mock, return_code, stdout, stderr):
+    mocked_popen = MagicMock()
+    mocked_popen.communicate.return_value = stdout, stderr
+    mocked_popen.return_code = return_code
+    mocked_popen.poll.return_value = return_code
+    mock.patch.object(subprocess, 'Popen', return_value=mocked_popen)
+    return mocked_popen
+
+
 def test_boost_internal_error(testdir, suites, mock):
     exe = suites.get('boost_success', 'test_boost_success')
-    mocked_popen = MagicMock()
-    mocked_popen.communicate.return_value = None, None
-    mocked_popen.return_code = 100
-    mock.patch.object(subprocess, 'Popen', return_value=mocked_popen)
+    mock_popen(mock, return_code=100, stderr=None, stdout=None)
     mock.patch.object(BoostTestFacade, 'is_test_suite', return_value=True)
     result = testdir.inline_run(exe)
     rep = result.matchreport(exe_name('test_boost_success'),

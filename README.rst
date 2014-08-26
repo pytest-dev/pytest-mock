@@ -64,6 +64,11 @@ Install using `pip <http://pip-installer.org/>`_:
     
     $ pip install pytest-cpp
 
+Changelog
+=========
+
+Please consult `releases <https://github.com/nicoddemus/pytest-cpp/releases>`_.
+
 Support
 =======
 

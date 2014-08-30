@@ -16,6 +16,7 @@ class GoogleTestFacade(object):
     def is_test_suite(cls, executable):
         try:
             output = subprocess.check_output([executable, '--help'],
+                                             stderr=subprocess.STDOUT,
                                              universal_newlines=True)
         except (subprocess.CalledProcessError, OSError):
             return False
@@ -24,6 +25,7 @@ class GoogleTestFacade(object):
 
     def list_tests(self, executable):
         output = subprocess.check_output([executable, '--gtest_list_tests'],
+                                         stderr=subprocess.STDOUT,
                                          universal_newlines=True)
         test_suite = None
         result = []

@@ -16,6 +16,7 @@ class BoostTestFacade(object):
     def is_test_suite(cls, executable):
         try:
             output = subprocess.check_output([executable, '--help'],
+                                             stderr=subprocess.STDOUT,
                                              universal_newlines=True)
         except (subprocess.CalledProcessError, OSError):
             return False

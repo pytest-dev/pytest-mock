@@ -16,23 +16,25 @@ of a test:
         os.remove.assert_called_once_with('file')
         
 
+.. Using PNG badges because PyPI doesn't support SVG
+
 |python| |version| |downloads| |ci| |coverage|
 
-.. |version| image:: http://img.shields.io/pypi/v/pytest-mock.svg
-  :target: https://crate.io/packages/pytest-mock
+.. |version| image:: http://img.shields.io/pypi/v/pytest-mock.png
+  :target: https://pypi.python.org/pypi/pytest-mock
   
-.. |downloads| image:: http://img.shields.io/pypi/dm/pytest-mock.svg
-  :target: https://crate.io/packages/pytest-mock
+.. |downloads| image:: http://img.shields.io/pypi/dm/pytest-mock.png
+  :target: https://pypi.python.org/pypi/pytest-mock
 
-.. |ci| image:: http://img.shields.io/travis/nicoddemus/pytest-mock.svg
+.. |ci| image:: http://img.shields.io/travis/nicoddemus/pytest-mock.png
   :target: https://travis-ci.org/nicoddemus/pytest-mock
 
-.. |coverage| image:: http://img.shields.io/coveralls/nicoddemus/pytest-mock.svg
+.. |coverage| image:: http://img.shields.io/coveralls/nicoddemus/pytest-mock.png
   :target: https://coveralls.io/r/nicoddemus/pytest-mock
 
-.. |python| image:: https://pypip.in/py_versions/pytest-mock/badge.svg
-    :target: https://pypi.python.org/pypi/pytest-mock/
-    :alt: Supported Python versions
+.. |python| image:: https://pypip.in/py_versions/pytest-mock/badge.png
+  :target: https://pypi.python.org/pypi/pytest-mock/
+  :alt: Supported Python versions
 
 
 Usage

@@ -2,7 +2,7 @@
 pytest-mock
 ===========
 
-This plugin installs a ``mock`` fixture which is a thin-wrapper around the patching API 
+This plugin installs a ``mocker`` fixture which is a thin-wrapper around the patching API
 provided by the excellent `mock <http://pypi.python.org/pypi/mock>`_ package,
 but with the benefit of not having to worry about undoing patches at the end
 of a test:
@@ -10,8 +10,8 @@ of a test:
 .. code-block:: python
 
  
-    def test_unix_fs(mock):
-        mock.patch('os.remove')
+    def test_unix_fs(mocker):
+        mocker.patch('os.remove')
         UnixFS.rm('file')
         os.remove.assert_called_once_with('file')
         
@@ -40,26 +40,37 @@ of a test:
 Usage
 =====
 
-The ``mock`` fixture has the same API as 
+The ``mocker`` fixture has the same API as
 `mock.patch <http://www.voidspace.org.uk/python/mock/patch.html#patch-decorators>`_, 
 supporting the same arguments:
 
 .. code-block:: python
 
-    def test_foo(mock):
+    def test_foo(mocker):
         # all valid calls
-        mock.patch('os.remove')
-        mock.patch.object(os, 'listdir', autospec=True)
-        mocked = mock.patch('os.path.isfile')
+        mocker.patch('os.remove')
+        mocker.patch.object(os, 'listdir', autospec=True)
+        mocked_isfile = mocker.patch('os.path.isfile')
     
 The supported methods are:
     
-* ``mock.patch``: see http://www.voidspace.org.uk/python/mock/patch.html#patch.
-* ``mock.patch.object``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-object.
-* ``mock.patch.multiple``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-multiple.
-* ``mock.patch.dict``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-dict.
-* ``mock.stopall()``: stops all active patches at this point.
+* ``mocker.patch``: see http://www.voidspace.org.uk/python/mock/patch.html#patch.
+* ``mocker.patch.object``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-object.
+* ``mocker.patch.multiple``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-multiple.
+* ``mocker.patch.dict``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-dict.
+* ``mocker.stopall()``: stops all active patches at this point.
 
+
+Note
+----
+
+Prior to version ``0.4.0``, the ``mocker`` fixture was named ``mock``.
+This was changed because naming the fixture ``mock`` conflicts with the
+actual ``mock`` module, which made using it awkward when access to both the
+module and the plugin were required within a test.
+
+The old fixture ``mock`` still works, but its use is discouraged and will be
+removed in version ``1.0``.
 
 Requirements
 ============

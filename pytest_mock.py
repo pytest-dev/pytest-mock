@@ -68,7 +68,7 @@ class MockFixture(object):
 
 
 @pytest.yield_fixture
-def mock():
+def mocker():
     """
     return an object that has the same interface to the `mock` module, but
     takes care of automatically undoing all patches after each test method.
@@ -76,3 +76,15 @@ def mock():
     result = MockFixture()
     yield result
     result.stopall()
+
+
+@pytest.yield_fixture
+def mock():
+    """
+    Same as "mocker", but kept only for backward compatibility.
+    """
+    import warnings
+    warnings.warn('"mock" fixture has been deprecated, use "mocker" instead',
+                  DeprecationWarning)
+    for m in mocker():
+        yield m

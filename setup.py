@@ -9,7 +9,7 @@ if sys.version_info < (3, 3):
 
 setup(
     name='pytest-mock',
-    version='0.3.0',
+    version='0.4.0',
     entry_points={
         'pytest11': ['pytest-mock = pytest_mock'],
     },

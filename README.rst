@@ -98,7 +98,7 @@ Why bother with a plugin?
 =========================
 
 There are a number of different ``patch`` usages in the standard ``mock`` API, 
-but IMHO they don't scale very well when you have a more than one or two 
+but IMHO they don't scale very well when you have more than one or two 
 patches to apply.
 
 It may lead to an excessive nesting of ``with`` statements, breaking the flow

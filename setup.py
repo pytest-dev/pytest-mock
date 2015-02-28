@@ -16,7 +16,7 @@ setup(
     py_modules=['pytest_mock'],
     platforms='any',
     install_requires=dependencies,
-    url='https://github.com/nicoddemus/pytest-mock/',
+    url='https://github.com/pytest-dev/pytest-mock/',
     license='LGPL',
     author='Bruno Oliveira',
     author_email='nicoddemus@gmail.com',

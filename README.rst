@@ -26,11 +26,11 @@ of a test:
 .. |downloads| image:: http://img.shields.io/pypi/dm/pytest-mock.png
   :target: https://pypi.python.org/pypi/pytest-mock
 
-.. |ci| image:: http://img.shields.io/travis/nicoddemus/pytest-mock.png
-  :target: https://travis-ci.org/nicoddemus/pytest-mock
+.. |ci| image:: http://img.shields.io/travis/pytest-dev/pytest-mock.png
+  :target: https://travis-ci.org/pytest-dev/pytest-mock
 
-.. |coverage| image:: http://img.shields.io/coveralls/nicoddemus/pytest-mock.png
-  :target: https://coveralls.io/r/nicoddemus/pytest-mock
+.. |coverage| image:: http://img.shields.io/coveralls/pytest-dev/pytest-mock.png
+  :target: https://coveralls.io/r/pytest-dev/pytest-mock
 
 .. |python| image:: https://pypip.in/py_versions/pytest-mock/badge.png
   :target: https://pypi.python.org/pypi/pytest-mock/
@@ -92,7 +92,7 @@ Install using `pip <http://pip-installer.org/>`_:
 Changelog
 =========
 
-Please consult `releases <https://github.com/nicoddemus/pytest-mock/releases>`_.
+Please consult `releases <https://github.com/pytest-dev/pytest-mock/releases>`_.
         
 Why bother with a plugin?
 =========================

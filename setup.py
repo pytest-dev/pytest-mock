@@ -11,7 +11,7 @@ setup(
     name='pytest-mock',
     version='0.4.0',
     entry_points={
-        'pytest11': ['pytest-mock = pytest_mock'],
+        'pytest11': ['pytest_mock = pytest_mock'],
     },
     py_modules=['pytest_mock'],
     platforms='any',

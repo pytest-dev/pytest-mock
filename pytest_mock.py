@@ -78,13 +78,12 @@ def mocker():
     result.stopall()
 
 
-@pytest.yield_fixture
-def mock():
+@pytest.fixture
+def mock(mocker):
     """
     Same as "mocker", but kept only for backward compatibility.
     """
     import warnings
     warnings.warn('"mock" fixture has been deprecated, use "mocker" instead',
                   DeprecationWarning)
-    for m in mocker():
-        yield m
+    return mocker

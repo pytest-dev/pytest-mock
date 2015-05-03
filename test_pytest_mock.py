@@ -5,6 +5,7 @@ import pytest
 
 pytest_plugins = 'pytester'
 
+
 class UnixFS(object):
     """
     Wrapper to os functions to simulate a Unix file system, used for testing
@@ -121,3 +122,17 @@ def test_deprecated_mock(mock, tmpdir):
     assert os.listdir(str(tmpdir)) == ['mocked']
     mock.stopall()
     assert os.listdir(str(tmpdir)) == []
+
+
+def test_mocker_has_magic_mock_class_as_attribute_for_instantiation():
+    from pytest_mock import mock_module, MockFixture
+
+    mocker = MockFixture()
+    assert isinstance(mocker.MagicMock(), mock_module.MagicMock)
+
+
+def test_mocker_has_mock_class_as_attribute_for_instantiation():
+    from pytest_mock import mock_module, MockFixture
+
+    mocker = MockFixture()
+    assert isinstance(mocker.Mock(), mock_module.Mock)

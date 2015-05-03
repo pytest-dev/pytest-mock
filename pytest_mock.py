@@ -15,6 +15,9 @@ class MockFixture(object):
     ensuring that they are uninstalled at the end of each test.
     """
 
+    Mock = mock_module.Mock
+    MagicMock = mock_module.MagicMock
+
     def __init__(self):
         self._patches = []  # list of mock._patch objects
         self.patch = self._Patcher(self._patches)

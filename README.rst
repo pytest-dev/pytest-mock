@@ -60,6 +60,14 @@ The supported methods are:
 * ``mocker.patch.dict``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-dict.
 * ``mocker.stopall()``: stops all active patches at this point.
 
+You can also access ``Mock`` and ``MagicMock`` directly using from ``mocker``
+fixture:
+
+.. code-block:: python
+
+    def test_feature(mocker):
+        ret = [mocker.Mock(return_value=True), mocker.Mock(return_value=True)]
+        mocker.patch('mylib.func', side_effect=ret)
 
 Note
 ----

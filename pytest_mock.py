@@ -31,6 +31,31 @@ class MockFixture(object):
             p.stop()
         self._patches[:] = []
 
+    def spy(self, obj, method_name):
+        """
+        Creates a spy of method. It will run method normally, but it is now possible to use `mock`
+        call features with it, like call count.
+
+        :param object obj:
+            An object.
+
+        :param unicode method_name:
+            A method in object.
+
+        :return: mock.MagicMock
+            Spy object.
+        """
+        return self.patch.object(obj, method_name, side_effect=getattr(obj, method_name))
+
+    def stub(self):
+        """
+        Creates a stub method. It accepts any arguments. Ideal to register to callbacks in tests.
+
+        :return: mock.MagicMock
+            Stub object.
+        """
+        return mock_module.MagicMock(spec=lambda *args, **kwargs: None)
+
     class _Patcher(object):
         """
         Object to provide the same interface as mock.patch, mock.patch.object,

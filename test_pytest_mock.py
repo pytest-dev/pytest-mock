@@ -136,3 +136,26 @@ def test_mocker_has_mock_class_as_attribute_for_instantiation():
 
     mocker = MockFixture()
     assert isinstance(mocker.Mock(), mock_module.Mock)
+
+
+def test_mocker_spy(mocker):
+    class Foo(object):
+
+        def bar(self, arg):
+            return arg * 2
+
+    foo = Foo()
+    spy = mocker.spy(foo, 'Bar')
+
+    assert foo.Bar(arg=10) == 20
+    spy.assert_called_once_with(arg=10)
+
+
+def test_mocker_stub(mocker):
+    def Foo(on_something):
+        on_something('foo', 'bar')
+
+    stub = mocker.stub()
+
+    Foo(stub)
+    stub.assert_called_once_with('foo', 'bar')

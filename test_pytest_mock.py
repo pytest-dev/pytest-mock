@@ -145,17 +145,17 @@ def test_mocker_spy(mocker):
             return arg * 2
 
     foo = Foo()
-    spy = mocker.spy(foo, 'Bar')
+    spy = mocker.spy(foo, 'bar')
 
-    assert foo.Bar(arg=10) == 20
+    assert foo.bar(arg=10) == 20
     spy.assert_called_once_with(arg=10)
 
 
 def test_mocker_stub(mocker):
-    def Foo(on_something):
+    def foo(on_something):
         on_something('foo', 'bar')
 
     stub = mocker.stub()
 
-    Foo(stub)
+    foo(stub)
     stub.assert_called_once_with('foo', 'bar')

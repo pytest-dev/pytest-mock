@@ -69,6 +69,46 @@ fixture:
         ret = [mocker.Mock(return_value=True), mocker.Mock(return_value=True)]
         mocker.patch('mylib.func', side_effect=ret)
 
+*New in version 0.5*
+
+Spy
+---
+
+*New in version 0.6*
+
+The spy acts exactly like the original method in all cases, except it allows use of `mock`
+features with it, like retrieving call count.
+
+.. code-block:: python
+
+    def test_spy(mocker):
+        class Foo(object):
+            def bar(self):
+                return 42
+
+        foo = Foo()
+        mocker.spy(foo, 'bar')
+        assert foo.bar() == 42
+        assert foo.bar.call_count == 1
+
+Stub
+----
+
+*New in version 0.6*
+
+The stub is a mock object that accepts any arguments and is useful to test callbacks, for instance.
+
+.. code-block:: python
+
+    def test_stub(mocker):
+        def foo(on_something):
+            on_something('foo', 'bar')
+
+        stub = mocker.stub()
+
+        foo(stub)
+        stub.assert_called_once_with('foo', 'bar')
+
 Note
 ----
 

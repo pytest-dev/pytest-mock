@@ -1,4 +1,3 @@
-from collections import namedtuple
 import os
 
 import pytest
@@ -149,17 +148,7 @@ def test_mocker_stub(mocker):
     stub.assert_called_once_with('foo', 'bar')
 
 
-def test_mocker_spy(mocker_spy_cases):
-    foo, expect_obj = mocker_spy_cases
-
-    assert foo.bar(arg=10) == 20
-    if expect_obj:
-        foo.bar.assert_called_once_with(foo, arg=10)
-    else:
-        foo.bar.assert_called_once_with(arg=10)
-
-
-def create_instance_method_spy(mocker):
+def test_instance_method_spy(mocker):
     class Foo(object):
 
         def bar(self, arg):
@@ -167,20 +156,23 @@ def create_instance_method_spy(mocker):
 
     foo = Foo()
     mocker.spy(foo, 'bar')
-    return foo, False
+    assert foo.bar(arg=10) == 20
+    foo.bar.assert_called_once_with(arg=10)
 
 
-def create_instance_method_by_class_spy(mocker):
+def test_instance_method_by_class_spy(mocker):
     class Foo(object):
 
         def bar(self, arg):
             return arg * 2
 
     mocker.spy(Foo, 'bar')
-    return Foo(), True
+    foo = Foo()
+    assert foo.bar(arg=10) == 20
+    foo.bar.assert_called_once_with(foo, arg=10)
 
 
-def create_class_method_spy(mocker):
+def test_class_method_spy(mocker):
     class Foo(object):
 
         @classmethod
@@ -188,11 +180,13 @@ def create_class_method_spy(mocker):
             return arg * 2
 
     mocker.spy(Foo, 'bar')
-    return Foo, False
+    assert Foo.bar(arg=10) == 20
+    Foo.bar.assert_called_once_with(arg=10)
 
 
-def create_class_method_with_metaclass_spy(mocker):
-    class MetaFoo(type): pass
+def test_class_method_with_metaclass_spy(mocker):
+    class MetaFoo(type):
+        pass
 
     class Foo(object):
 
@@ -203,10 +197,12 @@ def create_class_method_with_metaclass_spy(mocker):
             return arg * 2
 
     mocker.spy(Foo, 'bar')
+    assert Foo.bar(arg=10) == 20
+    Foo.bar.assert_called_once_with(arg=10)
     return Foo, False
 
 
-def create_static_method_spy(mocker):
+def test_static_method_spy(mocker):
     class Foo(object):
 
         @staticmethod
@@ -214,22 +210,5 @@ def create_static_method_spy(mocker):
             return arg * 2
 
     mocker.spy(Foo, 'bar')
-    return Foo, False
-
-
-mock_spy_case = namedtuple('mock_spy_case', ['do', 'name'])
-
-@pytest.fixture(
-    params=[
-        mock_spy_case(do=create_instance_method_spy, name='instance_method'),
-        mock_spy_case(do=create_instance_method_by_class_spy, name='instance_method_by_class'),
-        mock_spy_case(do=create_class_method_spy, name='classmethod'),
-        mock_spy_case(do=create_class_method_with_metaclass_spy, name='classmethod_with_metaclass'),
-        mock_spy_case(do=create_static_method_spy, name='staticmethod'),
-    ],
-    ids=lambda i: i.name,
-)
-def mocker_spy_cases(mocker, request):
-    case = request.param
-
-    return case.do(mocker)
+    assert Foo.bar(arg=10) == 20
+    Foo.bar.assert_called_once_with(arg=10)

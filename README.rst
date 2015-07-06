@@ -79,6 +79,9 @@ Spy
 The spy acts exactly like the original method in all cases, except it allows use of `mock`
 features with it, like retrieving call count.
 
+From version 0.7 onward it also works for class and static methods. Originally it was only safe to
+use with instance methods.
+
 .. code-block:: python
 
     def test_spy(mocker):

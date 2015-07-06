@@ -1,5 +1,6 @@
 import sys
 
+import inspect
 import pytest
 
 
@@ -36,23 +37,40 @@ class MockFixture(object):
         Creates a spy of method. It will run method normally, but it is now possible to use `mock`
         call features with it, like call count.
 
-        :param object obj:
-            An object.
-
-        :param unicode method_name:
-            A method in object.
-
-        :return: mock.MagicMock
-            Spy object.
+        :param object obj: An object.
+        :param unicode method_name: A method in object.
+        :rtype: mock.MagicMock
+        :return: Spy object.
         """
-        return self.patch.object(obj, method_name, side_effect=getattr(obj, method_name))
+        method = getattr(obj, method_name)
+
+        if not inspect.ismethod(method):  # staticmethod
+            can_autospec = False
+        elif method.__self__ is obj:  # classmethod
+            can_autospec = False
+        else:
+            can_autospec = True
+
+        if can_autospec:
+            kwargs = dict(autospec=True)
+        else:
+            # Can't use autospec because of https://bugs.python.org/issue23078
+            kwargs = dict(
+                new_callable=mock_module.MagicMock,
+                spec=True,
+            )
+
+        def func(*args, **kwargs):
+            return method(*args, **kwargs)
+
+        return self.patch.object(obj, method_name, side_effect=func, **kwargs)
 
     def stub(self):
         """
         Creates a stub method. It accepts any arguments. Ideal to register to callbacks in tests.
 
-        :return: mock.MagicMock
-            Stub object.
+        :rtype: mock.MagicMock
+        :return: Stub object.
         """
         return mock_module.MagicMock(spec=lambda *args, **kwargs: None)
 

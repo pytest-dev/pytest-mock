@@ -155,21 +155,29 @@ def test_instance_method_spy(mocker):
             return arg * 2
 
     foo = Foo()
-    mocker.spy(foo, 'bar')
+    other = Foo()
+    spy = mocker.spy(foo, 'bar')
     assert foo.bar(arg=10) == 20
+    assert other.bar(arg=10) == 20
     foo.bar.assert_called_once_with(arg=10)
+    spy.assert_called_once_with(arg=10)
 
 
 def test_instance_method_by_class_spy(mocker):
+    from pytest_mock import mock_module
+
     class Foo(object):
 
         def bar(self, arg):
             return arg * 2
 
-    mocker.spy(Foo, 'bar')
+    spy = mocker.spy(Foo, 'bar')
     foo = Foo()
+    other = Foo()
     assert foo.bar(arg=10) == 20
-    foo.bar.assert_called_once_with(foo, arg=10)
+    assert other.bar(arg=10) == 20
+    calls = [mock_module.call(foo, arg=10), mock_module.call(other, arg=10)]
+    assert spy.call_args_list == calls
 
 
 def test_class_method_spy(mocker):
@@ -179,9 +187,10 @@ def test_class_method_spy(mocker):
         def bar(cls, arg):
             return arg * 2
 
-    mocker.spy(Foo, 'bar')
+    spy = mocker.spy(Foo, 'bar')
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)
+    spy.assert_called_once_with(arg=10)
 
 
 def test_class_method_with_metaclass_spy(mocker):
@@ -196,10 +205,10 @@ def test_class_method_with_metaclass_spy(mocker):
         def bar(cls, arg):
             return arg * 2
 
-    mocker.spy(Foo, 'bar')
+    spy = mocker.spy(Foo, 'bar')
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)
-    return Foo, False
+    spy.assert_called_once_with(arg=10)
 
 
 def test_static_method_spy(mocker):
@@ -209,6 +218,7 @@ def test_static_method_spy(mocker):
         def bar(arg):
             return arg * 2
 
-    mocker.spy(Foo, 'bar')
+    spy = mocker.spy(Foo, 'bar')
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)
+    spy.assert_called_once_with(arg=10)

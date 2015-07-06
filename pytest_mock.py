@@ -52,7 +52,9 @@ class MockFixture(object):
             can_autospec = True
 
         if can_autospec:
-            kwargs = dict(autospec=True)
+            kwargs = dict(
+                autospec=True,
+            )
         else:
             # Can't use autospec because of https://bugs.python.org/issue23078
             kwargs = dict(
@@ -60,10 +62,8 @@ class MockFixture(object):
                 spec=True,
             )
 
-        def func(*args, **kwargs):
-            return method(*args, **kwargs)
-
-        return self.patch.object(obj, method_name, side_effect=func, **kwargs)
+        result = self.patch.object(obj, method_name, side_effect=method, **kwargs)
+        return result
 
     def stub(self):
         """
@@ -97,7 +97,6 @@ class MockFixture(object):
             """API to mock.patch.object"""
             return self._start_patch(mock_module.patch.object, *args, **kwargs)
 
-
         def multiple(self, *args, **kwargs):
             """API to mock.patch.multiple"""
             return self._start_patch(mock_module.patch.multiple, *args,
@@ -106,7 +105,6 @@ class MockFixture(object):
         def dict(self, *args, **kwargs):
             """API to mock.patch.dict"""
             return self._start_patch(mock_module.patch.dict, *args, **kwargs)
-
 
         def __call__(self, *args, **kwargs):
             """API to mock.patch"""

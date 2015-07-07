@@ -1,6 +1,6 @@
 import sys
-
 import inspect
+
 import pytest
 
 
@@ -32,42 +32,36 @@ class MockFixture(object):
             p.stop()
         self._patches[:] = []
 
-    def spy(self, obj, method_name):
+    def spy(self, obj, name):
         """
-        Creates a spy of method. It will run method normally, but it is now possible to use `mock`
-        call features with it, like call count.
+        Creates a spy of method. It will run method normally, but it is now
+        possible to use `mock` call features with it, like call count.
 
         :param object obj: An object.
-        :param unicode method_name: A method in object.
+        :param unicode name: A method in object.
         :rtype: mock.MagicMock
         :return: Spy object.
         """
-        method = getattr(obj, method_name)
+        method = getattr(obj, name)
 
-        if not inspect.ismethod(method):  # staticmethod
-            can_autospec = False
-        elif method.__self__ is obj:  # classmethod
-            can_autospec = False
-        else:
-            can_autospec = True
+        autospec = inspect.ismethod(method) or inspect.isfunction(method)
+        # Can't use autospec classmethod or staticmethod objects
+        # see: https://bugs.python.org/issue23078
+        if inspect.isclass(obj):
+            # bypass class descriptor:
+            # http://stackoverflow.com/questions/14187973/python3-check-if-method-is-static
+            value = obj.__getattribute__(obj, name)
+            if isinstance(value, (classmethod, staticmethod)):
+                autospec = False
 
-        if can_autospec:
-            kwargs = dict(
-                autospec=True,
-            )
-        else:
-            # Can't use autospec because of https://bugs.python.org/issue23078
-            kwargs = dict(
-                new_callable=mock_module.MagicMock,
-                spec=True,
-            )
-
-        result = self.patch.object(obj, method_name, side_effect=method, **kwargs)
+        result = self.patch.object(obj, name, side_effect=method,
+                                   autospec=autospec)
         return result
 
     def stub(self):
         """
-        Creates a stub method. It accepts any arguments. Ideal to register to callbacks in tests.
+        Creates a stub method. It accepts any arguments. Ideal to register to
+        callbacks in tests.
 
         :rtype: mock.MagicMock
         :return: Stub object.

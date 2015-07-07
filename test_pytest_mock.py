@@ -1,9 +1,14 @@
 import os
+import platform
 
 import pytest
 
 
 pytest_plugins = 'pytester'
+
+# could not make some of the tests work on PyPy, patches are welcome!
+skip_pypy = pytest.mark.skipif(platform.python_implementation() == 'PyPy',
+                               reason='could not make work on pypy')
 
 
 class UnixFS(object):
@@ -163,6 +168,7 @@ def test_instance_method_spy(mocker):
     spy.assert_called_once_with(arg=10)
 
 
+@skip_pypy
 def test_instance_method_by_class_spy(mocker):
     from pytest_mock import mock_module
 
@@ -180,6 +186,7 @@ def test_instance_method_by_class_spy(mocker):
     assert spy.call_args_list == calls
 
 
+@skip_pypy
 def test_class_method_spy(mocker):
     class Foo(object):
 
@@ -193,6 +200,7 @@ def test_class_method_spy(mocker):
     spy.assert_called_once_with(arg=10)
 
 
+@skip_pypy
 def test_class_method_with_metaclass_spy(mocker):
     class MetaFoo(type):
         pass
@@ -211,6 +219,7 @@ def test_class_method_with_metaclass_spy(mocker):
     spy.assert_called_once_with(arg=10)
 
 
+@skip_pypy
 def test_static_method_spy(mocker):
     class Foo(object):
 

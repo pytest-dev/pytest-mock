@@ -144,9 +144,9 @@ removed in version ``1.0``.
 Requirements
 ============
 
-* Python 2.6+, Python 3.2+
+* Python 2.6+, Python 3.3+
 * pytest
-* mock (for Python < 3.3)
+* mock (for Python 2)
 
 
 Install

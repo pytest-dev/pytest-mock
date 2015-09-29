@@ -30,7 +30,7 @@ of a test:
   :target: https://travis-ci.org/pytest-dev/pytest-mock
 
 .. |appveyor| image:: https://ci.appveyor.com/api/projects/status/pid1t7iuwhkm9eh6/branch/master?svg=true
-:target: https://ci.appveyor.com/project/pytestbot/pytest-mock
+  :target: https://ci.appveyor.com/project/pytestbot/pytest-mock
 
 .. |coverage| image:: http://img.shields.io/coveralls/pytest-dev/pytest-mock.png
   :target: https://coveralls.io/r/pytest-dev/pytest-mock

@@ -1,0 +1,7 @@
+install:
+  - C:\Python34\python -m pip install tox
+
+build: false  # Not a C# project
+
+test_script:
+  - C:\Python34\scripts\tox -e py27,py34,py35

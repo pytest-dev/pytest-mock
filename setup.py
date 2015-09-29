@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='pytest-mock',
-    version='0.7.0',
+    version='0.8.1',
     entry_points={
         'pytest11': ['pytest_mock = pytest_mock'],
     },

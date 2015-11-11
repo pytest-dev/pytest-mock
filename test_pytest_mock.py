@@ -143,6 +143,21 @@ def test_mocker_has_mock_class_as_attribute_for_instantiation():
     assert isinstance(mocker.Mock(), mock_module.Mock)
 
 
+def test_mocker_resetall(mocker):
+    listdir = mocker.patch('os.listdir')
+    open = mocker.patch('os.open')
+
+    listdir("/tmp")
+    open("/tmp/foo.txt")
+    listdir.assert_called_once_with("/tmp")
+    open.assert_called_once_with("/tmp/foo.txt")
+
+    mocker.resetall()
+
+    assert not listdir.called
+    assert not open.called
+
+
 def test_mocker_stub(mocker):
     def foo(on_something):
         on_something('foo', 'bar')

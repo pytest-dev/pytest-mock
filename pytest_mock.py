@@ -24,6 +24,13 @@ class MockFixture(object):
         self._patches = []  # list of mock._patch objects
         self.patch = self._Patcher(self._patches)
 
+    def resetall(self):
+        """
+        Call reset_mock() on all patchers started by this fixture.
+        """
+        for p in self._patches:
+            p.get_original()[0].reset_mock()
+
     def stopall(self):
         """
         Stop all patchers started by this fixture. Can be safely called multiple

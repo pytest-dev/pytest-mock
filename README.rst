@@ -160,7 +160,9 @@ Install using `pip <http://pip-installer.org/>`_:
 Changelog
 =========
 
-Please consult `releases <https://github.com/pytest-dev/pytest-mock/releases>`_.
+Please consult the `changelog page`_.
+
+.. _changelog page: https://github.com/pytest-dev/pytest-mock/blob/master/CHANGELOG.rst
         
 Why bother with a plugin?
 =========================

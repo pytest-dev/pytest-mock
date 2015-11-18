@@ -57,7 +57,8 @@ The supported methods are:
 * ``mocker.patch.object``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-object.
 * ``mocker.patch.multiple``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-multiple.
 * ``mocker.patch.dict``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-dict.
-* ``mocker.stopall()``: stops all active patches at this point.
+* ``mocker.stopall()``: stops all active patches up to this point.
+* ``mocker.resetall()``: calls ``reset_mock()`` in all mocked objects up to this point. *New in version 0.9*
 
 Note that, although mocker's API is intentionally the same as ``mock.patch``'s, its uses as context managers and function decorators are **not** supported. The purpose of this plugin is to make the use of context managers and function decorators for mocking unnecessary. Indeed, trying to use the functionality in ``mocker`` in this manner can lead to non-intuitive errors:
 

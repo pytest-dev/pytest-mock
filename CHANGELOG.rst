@@ -1,3 +1,9 @@
+0.9.0
+-----
+
+* New ``mocker.resetall`` function, which calls ``reset_mock()`` in all mocked
+  objects up to that point. Thanks to `@mathrick`_ for the PR!
+
 0.8.1
 -----
 
@@ -80,6 +86,7 @@ First release.
 
 .. _#2: https://github.com/pytest-dev/pytest-qt/issues/2
 
+.. _@mathrick: https://github.com/mathrick
 .. _@tigarmo: https://github.com/tigarmo
 .. _@rouge8: https://github.com/rouge8
 .. _@fogo: https://github.com/fogo

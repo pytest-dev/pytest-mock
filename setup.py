@@ -1,9 +1,15 @@
+import re
+
 from setuptools import setup
 
+with open('pytest_mock.py') as f:
+    m = re.search("version = '(.*)'", f.read())
+    assert m is not None
+    version = m.group(1)
 
 setup(
     name='pytest-mock',
-    version='0.8.1',
+    version=version,
     entry_points={
         'pytest11': ['pytest_mock = pytest_mock'],
     },

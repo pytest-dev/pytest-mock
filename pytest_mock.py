@@ -22,14 +22,15 @@ class MockFixture(object):
 
     def __init__(self):
         self._patches = []  # list of mock._patch objects
-        self.patch = self._Patcher(self._patches)
+        self._mocks = []  # list of MagicMock objects
+        self.patch = self._Patcher(self._patches, self._mocks)
 
     def resetall(self):
         """
         Call reset_mock() on all patchers started by this fixture.
         """
-        for p in self._patches:
-            p.get_original()[0].reset_mock()
+        for m in self._mocks:
+            m.reset_mock()
 
     def stopall(self):
         """
@@ -39,6 +40,7 @@ class MockFixture(object):
         for p in reversed(self._patches):
             p.stop()
         self._patches[:] = []
+        self._mocks[:] = []
 
     def spy(self, obj, name):
         """
@@ -82,8 +84,9 @@ class MockFixture(object):
         etc. We need this indirection to keep the same API of the mock package.
         """
 
-        def __init__(self, patches):
+        def __init__(self, patches, mocks):
             self._patches = patches
+            self._mocks = mocks
 
         def _start_patch(self, mock_func, *args, **kwargs):
             """Patches something by calling the given function from the mock
@@ -93,6 +96,7 @@ class MockFixture(object):
             p = mock_func(*args, **kwargs)
             mocked = p.start()
             self._patches.append(p)
+            self._mocks.append(mocked)
             return mocked
 
         def object(self, *args, **kwargs):

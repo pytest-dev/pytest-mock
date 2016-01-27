@@ -1,6 +1,5 @@
 import inspect
 import sys
-from distutils.util import strtobool
 
 import pytest
 
@@ -10,6 +9,7 @@ else:
     import mock as mock_module
 
 version = '0.10.1'
+
 
 class MockFixture(object):
     """
@@ -233,7 +233,10 @@ def pytest_addoption(parser):
 def parse_ini_boolean(value):
     if value in (True, False):
         return value
-    return bool(strtobool(value))
+    try:
+        return {'true': True, 'false': False}[value.lower()]
+    except KeyError:
+        raise ValueError('unknown string for bool: %r' % value)
 
 
 def pytest_configure(config):

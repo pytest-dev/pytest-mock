@@ -1,6 +1,9 @@
 import os
 import platform
+import sys
+from contextlib import contextmanager
 
+import py.code
 import pytest
 
 
@@ -246,3 +249,91 @@ def test_static_method_spy(mocker):
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)
     spy.assert_called_once_with(arg=10)
+
+
+@contextmanager
+def assert_traceback():
+    """
+    Assert that this file is at the top of the filtered traceback
+    """
+    try:
+        yield
+    except AssertionError:
+        traceback = py.code.ExceptionInfo().traceback
+        crashentry = traceback.getcrashentry()
+        assert crashentry.path == __file__
+    else:
+        raise AssertionError("DID NOT RAISE")
+
+
+@pytest.mark.skipif(sys.version_info[:2] == (3, 4),
+                    reason="assert_not_called not available in python 3.4")
+def test_assert_not_called_wrapper(mocker):
+    stub = mocker.stub()
+    stub.assert_not_called()
+    stub()
+    with assert_traceback():
+        stub.assert_not_called()
+
+
+def test_assert_called_with_wrapper(mocker):
+    stub = mocker.stub()
+    stub("foo")
+    stub.assert_called_with("foo")
+    with assert_traceback():
+        stub.assert_called_with("bar")
+
+
+def test_assert_called_once_with_wrapper(mocker):
+    stub = mocker.stub()
+    stub("foo")
+    stub.assert_called_once_with("foo")
+    stub("foo")
+    with assert_traceback():
+        stub.assert_called_once_with("foo")
+
+
+def test_assert_any_call_wrapper(mocker):
+    stub = mocker.stub()
+    stub("foo")
+    stub("foo")
+    stub.assert_any_call("foo")
+    with assert_traceback():
+        stub.assert_any_call("bar")
+
+
+def test_assert_has_calls(mocker):
+    from pytest_mock import mock_module
+    stub = mocker.stub()
+    stub("foo")
+    stub.assert_has_calls([mock_module.call("foo")])
+    with assert_traceback():
+        stub.assert_has_calls([mock_module.call("bar")])
+
+
+def test_monkeypatch_ini(mocker, testdir):
+    # Make sure the following function actually tests something
+    stub = mocker.stub()
+    assert stub.assert_called_with.__module__ != stub.__module__
+
+    testdir.makepyfile("""
+        import py.code
+        def test_foo(mocker):
+            stub = mocker.stub()
+            assert stub.assert_called_with.__module__ == stub.__module__
+    """)
+    testdir.makeini("""
+        [pytest]
+        mock_traceback_monkeypatch = false
+    """)
+
+    result = testdir.runpytest_subprocess()
+    assert result.ret == 0
+
+
+def test_parse_ini_boolean(testdir):
+    import pytest_mock
+    assert pytest_mock.parse_ini_boolean('True') is True
+    assert pytest_mock.parse_ini_boolean('false') is False
+    with pytest.raises(ValueError):
+        pytest_mock.parse_ini_boolean('foo')

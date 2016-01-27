@@ -143,6 +143,14 @@ module and the plugin were required within a test.
 The old fixture ``mock`` still works, but its use is discouraged and will be
 removed in version ``1.0``.
 
+Improved reporting of mock call assertion errors
+------------------------------------------------
+
+This plugin monkeypatches the mock library to improve pytest output for failures
+of mock call assertions like ``Mock.assert_called_with()``. This can be disabled
+by setting ``mock_traceback_monkeypatch = false`` in the ini.
+
+
 Requirements
 ============
 

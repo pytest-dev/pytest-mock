@@ -2,6 +2,7 @@ import inspect
 import sys
 
 import pytest
+from distutils.util import strtobool
 
 if sys.version_info >= (3, 3): # pragma: no cover
     import unittest.mock as mock_module
@@ -137,3 +138,98 @@ def mock(mocker):
     warnings.warn('"mock" fixture has been deprecated, use "mocker" instead',
                   DeprecationWarning)
     return mocker
+
+
+_mock_module_patches = []
+_mock_module_originals = {}
+
+
+def assert_wrapper(method, *args, **kwargs):
+    __tracebackhide__ = True
+    try:
+        method(*args, **kwargs)
+    except AssertionError as e:
+        raise AssertionError(*e.args)
+
+
+def wrap_assert_not_called(*args, **kwargs):
+    __tracebackhide__ = True
+    assert_wrapper(_mock_module_originals["assert_not_called"],
+                   *args, **kwargs)
+
+
+def wrap_assert_called_with(*args, **kwargs):
+    __tracebackhide__ = True
+    assert_wrapper(_mock_module_originals["assert_called_with"],
+                   *args, **kwargs)
+
+
+def wrap_assert_called_once_with(*args, **kwargs):
+    __tracebackhide__ = True
+    assert_wrapper(_mock_module_originals["assert_called_once_with"],
+                   *args, **kwargs)
+
+
+def wrap_assert_has_calls(*args, **kwargs):
+    __tracebackhide__ = True
+    assert_wrapper(_mock_module_originals["assert_has_calls"],
+                   *args, **kwargs)
+
+
+def wrap_assert_any_call(*args, **kwargs):
+    __tracebackhide__ = True
+    assert_wrapper(_mock_module_originals["assert_any_call"],
+                   *args, **kwargs)
+
+
+def wrap_assert_methods(config):
+    """
+    Wrap assert methods of mock module so we can hide their traceback
+    """
+    # Make sure we only do this once
+    if _mock_module_originals:
+        return
+
+    wrappers = {
+        'assert_not_called': wrap_assert_not_called,
+        'assert_called_with': wrap_assert_called_with,
+        'assert_called_once_with': wrap_assert_called_once_with,
+        'assert_has_calls': wrap_assert_has_calls,
+        'assert_any_call': wrap_assert_any_call,
+    }
+    for method, wrapper in wrappers.items():
+        try:
+            original = getattr(mock_module.NonCallableMock, method)
+        except AttributeError:
+            continue
+        _mock_module_originals[method] = original
+        patcher = mock_module.patch.object(
+            mock_module.NonCallableMock, method, wrapper)
+        patcher.start()
+        _mock_module_patches.append(patcher)
+    config.add_cleanup(unwrap_assert_methods)
+
+
+def unwrap_assert_methods():
+    for patcher in _mock_module_patches:
+        patcher.stop()
+    _mock_module_patches[:] = []
+    _mock_module_originals.clear()
+
+
+def pytest_addoption(parser):
+    parser.addini('mock_traceback_monkeypatch',
+                  'Monkeypatch the mock library to improve reporting of the '
+                  'assert_called_... methods',
+                  default=True)
+
+
+def parse_ini_boolean(value):
+    if value in (True, False):
+        return value
+    return bool(strtobool(value))
+
+
+def pytest_configure(config):
+    if parse_ini_boolean(config.getini('mock_traceback_monkeypatch')):
+        wrap_assert_methods(config)

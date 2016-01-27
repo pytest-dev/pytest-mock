@@ -1,3 +1,14 @@
+0.10.dev
+--------
+
+* ``pytest-mock`` now monkeypatches the ``mock`` library to improve pytest output
+  for failures of mock call assertions like ``Mock.assert_called_with()``.
+  Thanks to `@Chronial`_ for idea and PR (`#26`_, `#27`_)!
+
+.. _@Chronial: https://github.com/Chronial
+.. _#26: https://github.com/pytest-dev/pytest-qt/issues/26
+.. _#27: https://github.com/pytest-dev/pytest-qt/issues/27
+
 0.9.0
 -----
 

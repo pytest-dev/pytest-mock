@@ -18,7 +18,7 @@ of a test:
 
 .. Using PNG badges because PyPI doesn't support SVG
 
-|version| |downloads| |ci| |appveyor| |coverage|
+|python| |version| |downloads| |ci| |appveyor| |coverage|
 
 .. |version| image:: http://img.shields.io/pypi/v/pytest-mock.png
   :target: https://pypi.python.org/pypi/pytest-mock
@@ -34,7 +34,9 @@ of a test:
 
 .. |coverage| image:: http://img.shields.io/coveralls/pytest-dev/pytest-mock.png
   :target: https://coveralls.io/r/pytest-dev/pytest-mock
-
+  
+.. |python| image:: https://img.shields.io/pypi/pyversions/pytest-mock.svg
+  :target: https://pypi.python.org/pypi/pytest-mock/
 
 Usage
 =====
@@ -130,6 +132,23 @@ The stub is a mock object that accepts any arguments and is useful to test callb
         foo(stub)
         stub.assert_called_once_with('foo', 'bar')
 
+
+Improved reporting of mock call assertion errors
+------------------------------------------------
+
+*New in version 0.10*
+
+This plugin monkeypatches the mock library to improve pytest output for failures
+of mock call assertions like ``Mock.assert_called_with()``. This is probably
+safe, but if you encounter any problems this feature can be disabled in
+your ``pytest.ini`` file:
+
+.. code-block:: ini
+
+    [pytest]
+    mock_traceback_monkeypatch = false
+
+
 Note
 ----
 
@@ -140,6 +159,7 @@ module and the plugin were required within a test.
 
 The old fixture ``mock`` still works, but its use is discouraged and will be
 removed in version ``1.0``.
+
 
 Requirements
 ============

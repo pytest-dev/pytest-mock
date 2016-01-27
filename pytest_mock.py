@@ -9,7 +9,7 @@ if sys.version_info >= (3, 3): # pragma: no cover
 else:
     import mock as mock_module
 
-version = '0.10.0.dev'
+version = '0.10.0'
 
 class MockFixture(object):
     """

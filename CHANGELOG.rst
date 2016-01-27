@@ -1,5 +1,5 @@
-0.10.dev
---------
+0.10
+----
 
 * ``pytest-mock`` now monkeypatches the ``mock`` library to improve pytest output
   for failures of mock call assertions like ``Mock.assert_called_with()``.

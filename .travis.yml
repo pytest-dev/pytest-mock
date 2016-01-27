@@ -1,17 +1,12 @@
 language: python
 python:
-  - 2.6
-  - 2.7
-  - 3.4
   - 3.5
-  - pypy
 
 install:
-  - pip install coveralls --use-wheel
+  - pip install tox coveralls
 
 script:
-  - python setup.py develop
-  - coverage run --source=pytest_mock.py runtests.py
+  - tox
 
 after_success:
   - coveralls

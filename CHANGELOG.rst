@@ -1,3 +1,12 @@
+0.10.1
+------
+
+* Fix regression when using ``pytest-mock`` with ``pytest-2.7.X``.
+  Thanks `@akscram`_ for the report (`#28`_).
+
+.. _@akscram: https://github.com/Chronial
+.. _#28: https://github.com/pytest-dev/pytest-mock/issues/28
+
 0.10
 ----
 
@@ -6,8 +15,8 @@
   Thanks to `@Chronial`_ for idea and PR (`#26`_, `#27`_)!
 
 .. _@Chronial: https://github.com/Chronial
-.. _#26: https://github.com/pytest-dev/pytest-qt/issues/26
-.. _#27: https://github.com/pytest-dev/pytest-qt/issues/27
+.. _#26: https://github.com/pytest-dev/pytest-mock/issues/26
+.. _#27: https://github.com/pytest-dev/pytest-mock/issues/27
 
 0.9.0
 -----

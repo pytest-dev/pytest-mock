@@ -1,15 +1,15 @@
 import inspect
 import sys
+from distutils.util import strtobool
 
 import pytest
-from distutils.util import strtobool
 
 if sys.version_info >= (3, 3): # pragma: no cover
     import unittest.mock as mock_module
 else:
     import mock as mock_module
 
-version = '0.10.0'
+version = '0.10.1'
 
 class MockFixture(object):
     """
@@ -207,7 +207,13 @@ def wrap_assert_methods(config):
             mock_module.NonCallableMock, method, wrapper)
         patcher.start()
         _mock_module_patches.append(patcher)
-    config.add_cleanup(unwrap_assert_methods)
+
+    if hasattr(config, 'add_cleanup'):
+        add_cleanup = config.add_cleanup
+    else:
+        # pytest 2.7 compatibility
+        add_cleanup = config._cleanup.append
+    add_cleanup(unwrap_assert_methods)
 
 
 def unwrap_assert_methods():

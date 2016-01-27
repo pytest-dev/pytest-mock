@@ -16,7 +16,7 @@ setup(
     py_modules=['pytest_mock'],
     platforms='any',
     install_requires=[
-        'pytest>=2.4',
+        'pytest>=2.7',
     ],
     extras_require={
         ':python_version=="2.6" or python_version=="2.7"': ['mock'],

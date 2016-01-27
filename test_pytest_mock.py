@@ -326,8 +326,11 @@ def test_monkeypatch_ini(mocker, testdir):
         [pytest]
         mock_traceback_monkeypatch = false
     """)
-
-    result = testdir.runpytest_subprocess()
+    if hasattr(testdir, 'runpytest_subprocess'):
+        result = testdir.runpytest_subprocess()
+    else:
+        # pytest 2.7.X
+        result = testdir.runpytest()
     assert result.ret == 0
 
 

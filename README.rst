@@ -62,7 +62,16 @@ The supported methods are:
 * ``mocker.stopall()``: stops all active patches up to this point.
 * ``mocker.resetall()``: calls ``reset_mock()`` in all mocked objects up to this point. *New in version 0.9*
 
-Note that, although mocker's API is intentionally the same as ``mock.patch``'s, its uses as context managers and function decorators are **not** supported. The purpose of this plugin is to make the use of context managers and function decorators for mocking unnecessary. Indeed, trying to use the functionality in ``mocker`` in this manner can lead to non-intuitive errors:
+Some objects from the ``mock`` module are accessible directly from ``mocker`` so
+you don't have to import it:
+
+* `Mock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock>`_; *New in version 0.5*
+* `MagicMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.MagicMock>`_; *New in version 0.5*
+* `PropertyMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.PropertyMock>`_; *New in version 0.11*
+
+**Note**
+
+Although mocker's API is intentionally the same as ``mock.patch``'s, its uses as context managers and function decorators are **not** supported. The purpose of this plugin is to make the use of context managers and function decorators for mocking unnecessary. Indeed, trying to use the functionality in ``mocker`` in this manner can lead to non-intuitive errors:
 
 .. code-block:: python
 
@@ -80,16 +89,6 @@ Note that, although mocker's API is intentionally the same as ``mock.patch``'s, 
     E   AttributeError: __exit__
 
 
-You can also access ``Mock`` and ``MagicMock`` directly using from ``mocker``
-fixture:
-
-.. code-block:: python
-
-    def test_feature(mocker):
-        ret = [mocker.Mock(return_value=True), mocker.Mock(return_value=True)]
-        mocker.patch('mylib.func', side_effect=ret)
-
-*New in version 0.5*
 
 Spy
 ---

@@ -19,6 +19,7 @@ class MockFixture(object):
 
     Mock = mock_module.Mock
     MagicMock = mock_module.MagicMock
+    PropertyMock = mock_module.PropertyMock
     ANY = mock_module.ANY
 
     def __init__(self):

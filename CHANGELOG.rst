@@ -1,3 +1,13 @@
+0.11.0
+------
+
+* `PropertyMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.PropertyMock>`_
+  is now accessible from ``mocker``.
+  Thanks `@satyrius`_ for the PR (`#32`_).
+
+.. _@satyrius: https://github.com/satyrius
+.. _#32: https://github.com/pytest-dev/pytest-mock/issues/32
+
 0.10.1
 ------
 

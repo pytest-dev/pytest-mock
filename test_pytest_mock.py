@@ -4,8 +4,8 @@ import sys
 from contextlib import contextmanager
 
 import py.code
-import pytest
 
+import pytest
 
 pytest_plugins = 'pytester'
 
@@ -347,3 +347,18 @@ def test_parse_ini_boolean(testdir):
     assert pytest_mock.parse_ini_boolean('false') is False
     with pytest.raises(ValueError):
         pytest_mock.parse_ini_boolean('foo')
+
+
+def test_patched_method_parameter_name(mocker):
+    """Test that our internal code uses uncommon names when wrapping other
+    "mock" methods to avoid conflicts with user code (#31).
+    """
+
+    class Request:
+        @classmethod
+        def request(cls, method, args):
+            pass
+
+    m = mocker.patch.object(Request, 'request')
+    Request.request(method='get', args={'type': 'application/json'})
+    m.assert_called_once_with(method='get', args={'type': 'application/json'})

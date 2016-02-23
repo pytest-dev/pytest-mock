@@ -5,7 +5,13 @@
   is now accessible from ``mocker``.
   Thanks `@satyrius`_ for the PR (`#32`_).
 
+* Fix regression using one of the ``assert_*`` methods in patched
+  functions which receive a parameter named ``method``.
+  Thanks `@sagarchalise`_ for the report (`#31`_).
+
+.. _@sagarchalise: https://github.com/sagarchalise
 .. _@satyrius: https://github.com/satyrius
+.. _#31: https://github.com/pytest-dev/pytest-mock/issues/31
 .. _#32: https://github.com/pytest-dev/pytest-mock/issues/32
 
 0.10.1

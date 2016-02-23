@@ -65,7 +65,7 @@ Thanks to `@fogo`_, mocker.spy can now prey upon staticmethods and classmethods.
 -----
 
 * Two new auxiliary methods, ``spy`` and ``stub``. See ``README`` for usage.
-(Thanks `@fogo`_ for complete PR!)
+  (Thanks `@fogo`_ for complete PR!)
 
 
 0.5.0

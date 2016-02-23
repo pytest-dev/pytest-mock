@@ -3,7 +3,7 @@ pytest-mock
 ===========
 
 This plugin installs a ``mocker`` fixture which is a thin-wrapper around the patching API
-provided by the excellent `mock <http://pypi.python.org/pypi/mock>`_ package,
+provided by the excellent `mock package <http://pypi.python.org/pypi/mock>`_,
 but with the benefit of not having to worry about undoing patches at the end
 of a test:
 

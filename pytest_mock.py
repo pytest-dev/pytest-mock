@@ -145,10 +145,10 @@ _mock_module_patches = []
 _mock_module_originals = {}
 
 
-def assert_wrapper(method, *args, **kwargs):
+def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
     __tracebackhide__ = True
     try:
-        method(*args, **kwargs)
+        __wrapped_mock_method__(*args, **kwargs)
     except AssertionError as e:
         raise AssertionError(*e.args)
 

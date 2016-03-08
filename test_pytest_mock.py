@@ -330,6 +330,25 @@ def assert_traceback():
         raise AssertionError("DID NOT RAISE")
 
 
+@contextmanager
+def assert_argument_introspection(left, right):
+    """
+    Assert detailed argument introspection is used
+    """
+    try:
+        yield
+    except AssertionError as e:
+        # this may be a bit too assuming, but seems nicer then hard-coding
+        import _pytest.assertion.util as util
+        # NOTE: we assert with either verbose or not, depending on how our own
+        #       test was run by examining sys.argv
+        verbose = any(a.startswith('-v') for a in sys.argv)
+        expected = '\n  '.join(util._compare_eq_iterable(left, right, verbose))
+        assert expected in e.msg
+    else:
+        raise AssertionError("DID NOT RAISE")
+
+
 @pytest.mark.skipif(sys.version_info[0] == 3 and sys.version_info[1] in (3, 4),
                     reason="assert_not_called not available in python 3.3 and 3.4")
 def test_assert_not_called_wrapper(mocker):
@@ -355,6 +374,36 @@ def test_assert_called_once_with_wrapper(mocker):
     stub("foo")
     with assert_traceback():
         stub.assert_called_once_with("foo")
+
+
+def test_assert_called_args_with_introspection(mocker):
+    stub = mocker.stub()
+
+    complex_args = ('a', 1, set(['test']))
+    wrong_args = ('b', 2, set(['jest']))
+
+    stub(*complex_args)
+    stub.assert_called_with(*complex_args)
+    stub.assert_called_once_with(*complex_args)
+
+    with assert_argument_introspection(complex_args, wrong_args):
+        stub.assert_called_with(*wrong_args)
+        stub.assert_called_once_with(*wrong_args)
+
+
+def test_assert_called_kwargs_with_introspection(mocker):
+    stub = mocker.stub()
+
+    complex_kwargs = dict(foo={'bar': 1, 'baz': 'spam'})
+    wrong_kwargs = dict(foo={'goo': 1, 'baz': 'bran'})
+
+    stub(**complex_kwargs)
+    stub.assert_called_with(**complex_kwargs)
+    stub.assert_called_once_with(**complex_kwargs)
+
+    with assert_argument_introspection(complex_kwargs, wrong_kwargs):
+        stub.assert_called_with(**wrong_kwargs)
+        stub.assert_called_once_with(**wrong_kwargs)
 
 
 def test_assert_any_call_wrapper(mocker):

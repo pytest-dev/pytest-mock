@@ -154,6 +154,11 @@ def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
     try:
         __wrapped_mock_method__(*args, **kwargs)
     except AssertionError as e:
+        __mock_self = args[0]
+        if __mock_self.call_args is not None:
+            actual_args, actual_kwargs = __mock_self.call_args
+            assert actual_args == args[1:]
+            assert actual_kwargs == kwargs
         raise AssertionError(*e.args)
 
 
@@ -189,7 +194,8 @@ def wrap_assert_any_call(*args, **kwargs):
 
 def wrap_assert_methods(config):
     """
-    Wrap assert methods of mock module so we can hide their traceback
+    Wrap assert methods of mock module so we can hide their traceback and
+    add introspection information to specified argument asserts.
     """
     # Make sure we only do this once
     if _mock_module_originals:

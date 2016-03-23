@@ -29,7 +29,8 @@ setup(
     long_description=open('README.rst').read(),
     keywords="pytest mock",
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
+        'Framework :: Pytest',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
         'Operating System :: OS Independent',

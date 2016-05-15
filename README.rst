@@ -119,6 +119,7 @@ Stub
 *New in version 0.6*
 
 The stub is a mock object that accepts any arguments and is useful to test callbacks, for instance.
+May be passed a name to be used by the constructed stub object in its repr (useful for debugging).
 
 .. code-block:: python
 
@@ -126,7 +127,7 @@ The stub is a mock object that accepts any arguments and is useful to test callb
         def foo(on_something):
             on_something('foo', 'bar')
 
-        stub = mocker.stub()
+        stub = mocker.stub(name='on_something_stub')
 
         foo(stub)
         stub.assert_called_once_with('foo', 'bar')

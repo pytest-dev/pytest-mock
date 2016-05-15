@@ -70,15 +70,16 @@ class MockFixture(object):
                                    autospec=autospec)
         return result
 
-    def stub(self):
+    def stub(self, name=None):
         """
         Creates a stub method. It accepts any arguments. Ideal to register to
         callbacks in tests.
 
+        :param name: the constructed stub's name as used in repr
         :rtype: mock.MagicMock
         :return: Stub object.
         """
-        return mock_module.MagicMock(spec=lambda *args, **kwargs: None)
+        return mock_module.MagicMock(spec=lambda *args, **kwargs: None, name=name)
 
     class _Patcher(object):
         """

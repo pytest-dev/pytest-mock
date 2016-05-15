@@ -9,12 +9,12 @@ of a test:
 
 .. code-block:: python
 
- 
+
     def test_unix_fs(mocker):
         mocker.patch('os.remove')
         UnixFS.rm('file')
         os.remove.assert_called_once_with('file')
-        
+
 
 .. Using PNG badges because PyPI doesn't support SVG
 
@@ -22,7 +22,7 @@ of a test:
 
 .. |version| image:: http://img.shields.io/pypi/v/pytest-mock.png
   :target: https://pypi.python.org/pypi/pytest-mock
-  
+
 .. |downloads| image:: http://img.shields.io/pypi/dm/pytest-mock.png
   :target: https://pypi.python.org/pypi/pytest-mock
 
@@ -34,7 +34,7 @@ of a test:
 
 .. |coverage| image:: http://img.shields.io/coveralls/pytest-dev/pytest-mock.png
   :target: https://coveralls.io/r/pytest-dev/pytest-mock
-  
+
 .. |python| image:: https://img.shields.io/pypi/pyversions/pytest-mock.svg
   :target: https://pypi.python.org/pypi/pytest-mock/
 
@@ -42,7 +42,7 @@ Usage
 =====
 
 The ``mocker`` fixture has the same API as
-`mock.patch <http://www.voidspace.org.uk/python/mock/patch.html#patch-decorators>`_, 
+`mock.patch <http://www.voidspace.org.uk/python/mock/patch.html#patch-decorators>`_,
 supporting the same arguments:
 
 .. code-block:: python
@@ -52,9 +52,9 @@ supporting the same arguments:
         mocker.patch('os.remove')
         mocker.patch.object(os, 'listdir', autospec=True)
         mocked_isfile = mocker.patch('os.path.isfile')
-    
+
 The supported methods are:
-    
+
 * ``mocker.patch``: see http://www.voidspace.org.uk/python/mock/patch.html#patch.
 * ``mocker.patch.object``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-object.
 * ``mocker.patch.multiple``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-multiple.
@@ -174,7 +174,7 @@ Install
 Install using `pip <http://pip-installer.org/>`_:
 
 .. code-block:: console
-    
+
     $ pip install pytest-mock
 
 Changelog
@@ -183,12 +183,12 @@ Changelog
 Please consult the `changelog page`_.
 
 .. _changelog page: https://github.com/pytest-dev/pytest-mock/blob/master/CHANGELOG.rst
-        
+
 Why bother with a plugin?
 =========================
 
-There are a number of different ``patch`` usages in the standard ``mock`` API, 
-but IMHO they don't scale very well when you have more than one or two 
+There are a number of different ``patch`` usages in the standard ``mock`` API,
+but IMHO they don't scale very well when you have more than one or two
 patches to apply.
 
 It may lead to an excessive nesting of ``with`` statements, breaking the flow
@@ -197,21 +197,21 @@ of the test:
 .. code-block:: python
 
     import mock
-    
+
     def test_unix_fs():
         with mock.patch('os.remove'):
             UnixFS.rm('file')
             os.remove.assert_called_once_with('file')
-            
+
             with mock.patch('os.listdir'):
                 assert UnixFS.ls('dir') == expected
                 # ...
-                
+
         with mock.patch('shutil.copy'):
             UnixFS.cp('src', 'dst')
             # ...
-            
-        
+
+
 One can use ``patch`` as a decorator to improve the flow of the test:
 
 .. code-block:: python
@@ -222,17 +222,17 @@ One can use ``patch`` as a decorator to improve the flow of the test:
     def test_unix_fs(mocked_copy, mocked_listdir, mocked_remove):
         UnixFS.rm('file')
         os.remove.assert_called_once_with('file')
-        
+
         assert UnixFS.ls('dir') == expected
         # ...
-                
+
         UnixFS.cp('src', 'dst')
         # ...
-        
-But this poses a few disadvantages:        
 
-- test functions must receive the mock objects as parameter, even if you don't plan to 
-  access them directly; also, order depends on the order of the decorated ``patch`` 
+But this poses a few disadvantages:
+
+- test functions must receive the mock objects as parameter, even if you don't plan to
+  access them directly; also, order depends on the order of the decorated ``patch``
   functions;
 - receiving the mocks as parameters doesn't mix nicely with pytest's approach of
   naming fixtures as parameters, or ``pytest.mark.parametrize``;

@@ -1,3 +1,16 @@
+0.11.1
+------
+
+* ``mocker.stub()`` now allows passing in the name for the constructed `Mock
+  <https://docs.python.org/3/library/unittest.mock.html#the-mock-class>`_
+  object instead of having to set it using the internal ``_mock_name`` attribute
+  directly. This is useful for debugging as the name is used in the mock's
+  ``repr`` string as well as related assertion failure messages.
+  Thanks `@jurko-gospodnetic`_ for the PR (`#40`_).
+
+.. _@jurko-gospodnetic: https://github.com/jurko-gospodnetic
+.. _#40: https://github.com/pytest-dev/pytest-mock/issues/40
+
 0.11.0
 ------
 

@@ -19,7 +19,7 @@ setup(
         'pytest>=2.7',
     ],
     extras_require={
-        ':python_version=="2.6" or python_version=="2.7"': ['mock'],
+        ':python_version=="2.6" or python_version=="2.7" or python_version=="3.2"': ['mock'],
     },
     url='https://github.com/pytest-dev/pytest-mock/',
     license='LGPL',

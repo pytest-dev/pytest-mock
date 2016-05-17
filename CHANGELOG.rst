@@ -9,10 +9,14 @@
   functions which receive a parameter named ``method``.
   Thanks `@sagarchalise`_ for the report (`#31`_).
 
+* Fix AttributeError with ``mocker.spy`` when spying on inherited methods
+  (`#42`_).
+
 .. _@sagarchalise: https://github.com/sagarchalise
 .. _@satyrius: https://github.com/satyrius
 .. _#31: https://github.com/pytest-dev/pytest-mock/issues/31
 .. _#32: https://github.com/pytest-dev/pytest-mock/issues/32
+.. _#42: https://github.com/pytest-dev/pytest-mock/issues/42
 
 0.10.1
 ------

@@ -212,12 +212,51 @@ def test_instance_method_by_class_spy(mocker):
 
 
 @skip_pypy
+def test_instance_method_by_subclass_spy(mocker):
+    from pytest_mock import mock_module
+
+    class Base(object):
+
+        def bar(self, arg):
+            return arg * 2
+
+    class Foo(Base):
+        pass
+
+    spy = mocker.spy(Foo, 'bar')
+    foo = Foo()
+    other = Foo()
+    assert foo.bar(arg=10) == 20
+    assert other.bar(arg=10) == 20
+    calls = [mock_module.call(foo, arg=10), mock_module.call(other, arg=10)]
+    assert spy.call_args_list == calls
+
+
+@skip_pypy
 def test_class_method_spy(mocker):
     class Foo(object):
 
         @classmethod
         def bar(cls, arg):
             return arg * 2
+
+    spy = mocker.spy(Foo, 'bar')
+    assert Foo.bar(arg=10) == 20
+    Foo.bar.assert_called_once_with(arg=10)
+    spy.assert_called_once_with(arg=10)
+
+
+@skip_pypy
+@pytest.mark.xfail(sys.version_info[0] == 2, reason='does not work on Python 2')
+def test_class_method_subclass_spy(mocker):
+    class Base(object):
+
+        @classmethod
+        def bar(self, arg):
+            return arg * 2
+
+    class Foo(Base):
+        pass
 
     spy = mocker.spy(Foo, 'bar')
     assert Foo.bar(arg=10) == 20
@@ -251,6 +290,24 @@ def test_static_method_spy(mocker):
         @staticmethod
         def bar(arg):
             return arg * 2
+
+    spy = mocker.spy(Foo, 'bar')
+    assert Foo.bar(arg=10) == 20
+    Foo.bar.assert_called_once_with(arg=10)
+    spy.assert_called_once_with(arg=10)
+
+
+@skip_pypy
+@pytest.mark.xfail(sys.version_info[0] == 2, reason='does not work on Python 2')
+def test_static_method_subclass_spy(mocker):
+    class Base(object):
+
+        @staticmethod
+        def bar(arg):
+            return arg * 2
+
+    class Foo(Base):
+        pass
 
     spy = mocker.spy(Foo, 'bar')
     assert Foo.bar(arg=10) == 20

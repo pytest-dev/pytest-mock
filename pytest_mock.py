@@ -60,11 +60,15 @@ class MockFixture(object):
         # Can't use autospec classmethod or staticmethod objects
         # see: https://bugs.python.org/issue23078
         if inspect.isclass(obj):
-            # bypass class descriptor:
+            # Bypass class descriptor:
             # http://stackoverflow.com/questions/14187973/python3-check-if-method-is-static
-            value = obj.__getattribute__(obj, name)
-            if isinstance(value, (classmethod, staticmethod)):
-                autospec = False
+            try:
+                value = obj.__getattribute__(obj, name)
+            except AttributeError:
+                pass
+            else:
+                if isinstance(value, (classmethod, staticmethod)):
+                    autospec = False
 
         result = self.patch.object(obj, name, side_effect=method,
                                    autospec=autospec)

@@ -273,8 +273,8 @@ def assert_traceback():
         raise AssertionError("DID NOT RAISE")
 
 
-@pytest.mark.skipif(sys.version_info[:2] == (3, 4),
-                    reason="assert_not_called not available in python 3.4")
+@pytest.mark.skipif(sys.version_info[0] == 3 and sys.version_info[1] in (3, 4),
+                    reason="assert_not_called not available in python 3.3 and 3.4")
 def test_assert_not_called_wrapper(mocker):
     stub = mocker.stub()
     stub.assert_not_called()

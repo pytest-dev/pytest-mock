@@ -3,7 +3,7 @@ pytest-mock
 ===========
 
 This plugin installs a ``mocker`` fixture which is a thin-wrapper around the patching API
-provided by the excellent `mock package <http://pypi.python.org/pypi/mock>`_,
+provided by the `mock package <http://pypi.python.org/pypi/mock>`_,
 but with the benefit of not having to worry about undoing patches at the end
 of a test:
 
@@ -60,46 +60,22 @@ The supported methods are:
 * ``mocker.patch.multiple``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-multiple.
 * ``mocker.patch.dict``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-dict.
 * ``mocker.stopall()``: stops all active patches up to this point.
-* ``mocker.resetall()``: calls ``reset_mock()`` in all mocked objects up to this point. *New in version 0.9*
+* ``mocker.resetall()``: calls ``reset_mock()`` in all mocked objects up to this point. 
 
 Some objects from the ``mock`` module are accessible directly from ``mocker`` so
 you don't have to import it:
 
-* `Mock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock>`_; *New in version 0.5*
-* `MagicMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.MagicMock>`_; *New in version 0.5*
-* `PropertyMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.PropertyMock>`_; *New in version 0.11*
-
-**Note**
-
-Although mocker's API is intentionally the same as ``mock.patch``'s, its uses as context managers and function decorators are **not** supported. The purpose of this plugin is to make the use of context managers and function decorators for mocking unnecessary. Indeed, trying to use the functionality in ``mocker`` in this manner can lead to non-intuitive errors:
-
-.. code-block:: python
-
-    def test_context_manager(mocker):
-        a = A()
-        with mocker.patch.object(a, 'doIt', return_value=True, autospec=True):
-            assert a.doIt() == True
-
-.. code-block:: console
-
-    ================================== FAILURES ===================================
-    ____________________________ test_context_manager _____________________________
-    in test_context_manager
-        with mocker.patch.object(a, 'doIt', return_value=True, autospec=True):
-    E   AttributeError: __exit__
-
+* `Mock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock>`_;
+* `MagicMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.MagicMock>`_;
+* `PropertyMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.PropertyMock>`_;
 
 
 Spy
 ---
 
-*New in version 0.6*
-
 The spy acts exactly like the original method in all cases, except it allows use of `mock`
-features with it, like retrieving call count.
+features with it, like retrieving call count. It also works for class and static methods.
 
-From version 0.7 onward it also works for class and static methods. Originally it was only safe to
-use with instance methods.
 
 .. code-block:: python
 
@@ -116,7 +92,6 @@ use with instance methods.
 Stub
 ----
 
-*New in version 0.6*
 
 The stub is a mock object that accepts any arguments and is useful to test callbacks, for instance.
 
@@ -135,7 +110,6 @@ The stub is a mock object that accepts any arguments and is useful to test callb
 Improved reporting of mock call assertion errors
 ------------------------------------------------
 
-*New in version 0.10*
 
 This plugin monkeypatches the mock library to improve pytest output for failures
 of mock call assertions like ``Mock.assert_called_with()``. This is probably
@@ -146,18 +120,6 @@ your ``pytest.ini`` file:
 
     [pytest]
     mock_traceback_monkeypatch = false
-
-
-Note
-----
-
-Prior to version ``0.4.0``, the ``mocker`` fixture was named ``mock``.
-This was changed because naming the fixture ``mock`` conflicts with the
-actual ``mock`` module, which made using it awkward when access to both the
-module and the plugin were required within a test.
-
-The old fixture ``mock`` still works, but its use is discouraged and will be
-removed in version ``1.0``.
 
 
 Requirements
@@ -237,3 +199,23 @@ But this poses a few disadvantages:
 - receiving the mocks as parameters doesn't mix nicely with pytest's approach of
   naming fixtures as parameters, or ``pytest.mark.parametrize``;
 - you can't easily undo the mocking during the test execution;
+
+
+**Note**
+
+Although mocker's API is intentionally the same as ``mock.patch``'s, its uses as context managers and function decorators are **not** supported. The purpose of this plugin is to make the use of context managers and function decorators for mocking unnecessary. Indeed, trying to use the functionality in ``mocker`` in this manner can lead to non-intuitive errors:
+
+.. code-block:: python
+
+    def test_context_manager(mocker):
+        a = A()
+        with mocker.patch.object(a, 'doIt', return_value=True, autospec=True):
+            assert a.doIt() == True
+
+.. code-block:: console
+
+    ================================== FAILURES ===================================
+    ____________________________ test_context_manager _____________________________
+    in test_context_manager
+        with mocker.patch.object(a, 'doIt', return_value=True, autospec=True):
+    E   AttributeError: __exit__

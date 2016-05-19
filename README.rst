@@ -65,9 +65,9 @@ The supported methods are:
 Some objects from the ``mock`` module are accessible directly from ``mocker`` so
 you don't have to import it:
 
-* `Mock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock>`_;
-* `MagicMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.MagicMock>`_;
-* `PropertyMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.PropertyMock>`_;
+* `Mock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock>`_
+* `MagicMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.MagicMock>`_
+* `PropertyMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.PropertyMock>`_
 
 
 Spy
@@ -125,7 +125,7 @@ your ``pytest.ini`` file:
 Requirements
 ============
 
-* Python 2.6+, Python 3.4+
+* Python 2.6+, Python 3.3+
 * pytest
 * mock (for Python 2)
 

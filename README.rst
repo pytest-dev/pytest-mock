@@ -121,6 +121,16 @@ your ``pytest.ini`` file:
     [pytest]
     mock_traceback_monkeypatch = false
 
+The plugin also adds introspection information on differing call arguments when
+calling the helper methods. This features catches `AssertionError` raised in
+the method, and uses py.test's own `advanced assertions`_ to return a better
+diff.
+
+This is useful when asserting mock calls with many/nested arguments and trying
+to quickly see the difference.
+
+.. _advanced assertions: https://pytest.org/latest/assert.html
+
 
 Requirements
 ============

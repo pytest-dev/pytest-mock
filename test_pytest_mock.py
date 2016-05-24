@@ -168,14 +168,35 @@ def test_mocker_resetall(mocker):
     assert not open.called
 
 
-def test_mocker_stub(mocker):
-    def foo(on_something):
-        on_something('foo', 'bar')
+class TestMockerStub:
+    def test_call(self, mocker):
+        stub = mocker.stub()
+        stub('foo', 'bar')
+        stub.assert_called_once_with('foo', 'bar')
 
-    stub = mocker.stub()
+    def test_repr_with_no_name(self, mocker):
+        stub = mocker.stub()
+        assert not 'name' in repr(stub)
 
-    foo(stub)
-    stub.assert_called_once_with('foo', 'bar')
+    def test_repr_with_name(self, mocker):
+        test_name = 'funny walk'
+        stub = mocker.stub(name=test_name)
+        assert "name={0!r}".format(test_name) in repr(stub)
+
+    def __test_failure_message(self, mocker, **kwargs):
+        expected_name = kwargs.get('name') or 'mock'
+        expected_message = 'Expected call: {0}()\nNot called'.format(expected_name)
+        stub = mocker.stub(**kwargs)
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_called_with()
+        assert exc_info.value.msg == expected_message
+
+    def test_failure_message_with_no_name(self, mocker):
+        self.__test_failure_message(mocker)
+
+    @pytest.mark.parametrize('name', (None, '', 'f', 'The Castle of aaarrrrggh'))
+    def test_failure_message_with_name(self, mocker, name):
+        self.__test_failure_message(mocker, name=name)
 
 
 def test_instance_method_spy(mocker):

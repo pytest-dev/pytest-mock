@@ -14,10 +14,16 @@
   ``repr`` string as well as related assertion failure messages.
   Thanks `@jurko-gospodnetic`_ for the PR (`#40`_).
 
+* Monkey patching is automatically disabled with the ``--tb=native`` option. The underlying
+  mechanism used to suppress traceback entries from ``mock`` module does not work with that option
+  anyway plus it generates confusing messages on Python 3.5 due to exception chaining (`#44`_).
+  Thanks `@blueyed`_ for the report.
+
 .. _@jurko-gospodnetic: https://github.com/jurko-gospodnetic
 .. _@asfaltboy: https://github.com/asfaltboy
-.. _#40: https://github.com/pytest-dev/pytest-mock/issues/40
 .. _#36: https://github.com/pytest-dev/pytest-mock/issues/36
+.. _#40: https://github.com/pytest-dev/pytest-mock/issues/40
+.. _#44: https://github.com/pytest-dev/pytest-mock/issues/44
 
 1.0
 ---

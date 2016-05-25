@@ -252,5 +252,6 @@ def parse_ini_boolean(value):
 
 
 def pytest_configure(config):
-    if parse_ini_boolean(config.getini('mock_traceback_monkeypatch')):
+    tb = config.getoption('--tb')
+    if parse_ini_boolean(config.getini('mock_traceback_monkeypatch')) and tb != 'native':
         wrap_assert_methods(config)

@@ -370,7 +370,7 @@ def assert_argument_introspection(left, right):
         raise AssertionError("DID NOT RAISE")
 
 
-@pytest.mark.skipif(sys.version_info[0] == 3 and sys.version_info[1] in (3, 4),
+@pytest.mark.skipif(sys.version_info[:2] in [(3, 3), (3, 4)],
                     reason="assert_not_called not available in python 3.3 and 3.4")
 def test_assert_not_called_wrapper(mocker):
     stub = mocker.stub()
@@ -489,3 +489,21 @@ def test_patched_method_parameter_name(mocker):
     m = mocker.patch.object(Request, 'request')
     Request.request(method='get', args={'type': 'application/json'})
     m.assert_called_once_with(method='get', args={'type': 'application/json'})
+
+
+def test_monkeypatch_native(testdir):
+    testdir.makepyfile("""
+        def test_foo(mocker):
+            stub = mocker.stub()
+            stub(1, greet='hello')
+            stub.assert_called_once_with(1, greet='hey')
+    """)
+    if hasattr(testdir, 'runpytest_subprocess'):
+        result = testdir.runpytest_subprocess('--tb=native')
+    else:
+        # pytest 2.7.X
+        result = testdir.runpytest('--tb=native')
+    assert result.ret == 1
+    assert 'Traceback (most recent call last)' in result.stdout.str()
+    assert 'During handling of the above exception' not in result.stdout.str()
+    assert 'Differing items:' not in result.stdout.str()

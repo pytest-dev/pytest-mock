@@ -243,3 +243,11 @@ Although mocker's API is intentionally the same as ``mock.patch``'s, its uses as
     in test_context_manager
         with mocker.patch.object(a, 'doIt', return_value=True, autospec=True):
     E   AttributeError: __exit__
+
+
+License
+=======
+
+Distributed under the terms of the `MIT`_ license.
+
+.. _MIT: https://github.com/pytest-dev/pytest-mock/blob/master/LICENSE

@@ -1,6 +1,12 @@
 1.1
 ---
 
+* Now the plugin also adds introspection information on differing call arguments when
+  calling helper methods such as ``assert_called_once_with``. The extra introspection
+  information is similar to pytest's and can be disabled with the ``mock_traceback_monkeypatch``
+  option.
+  Thanks `@asfaltboy`_ for the PR (`#36`_).
+
 * ``mocker.stub()`` now allows passing in the name for the constructed `Mock
   <https://docs.python.org/3/library/unittest.mock.html#the-mock-class>`_
   object instead of having to set it using the internal ``_mock_name`` attribute
@@ -9,7 +15,9 @@
   Thanks `@jurko-gospodnetic`_ for the PR (`#40`_).
 
 .. _@jurko-gospodnetic: https://github.com/jurko-gospodnetic
+.. _@asfaltboy: https://github.com/asfaltboy
 .. _#40: https://github.com/pytest-dev/pytest-mock/issues/40
+.. _#36: https://github.com/pytest-dev/pytest-mock/issues/36
 
 1.0
 ---

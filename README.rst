@@ -113,22 +113,35 @@ Improved reporting of mock call assertion errors
 
 
 This plugin monkeypatches the mock library to improve pytest output for failures
-of mock call assertions like ``Mock.assert_called_with()``. This is probably
-safe, but if you encounter any problems this feature can be disabled in
+of mock call assertions like ``Mock.assert_called_with()`` by hiding internal traceback
+entries from the ``mock`` module.
+
+It also adds introspection information on differing call arguments when
+calling the helper methods. This features catches `AssertionError` raised in
+the method, and uses py.test's own `advanced assertions`_ to return a better
+diff::
+
+
+            m = mocker.patch.object(DS, 'create_char')
+            DS().create_char('Raistlin', class_='mag', gift=12)
+    >       m.assert_called_once_with('Raistlin', class_='mage', gift=12)
+    E       assert {'class_': 'mag', 'gift': 12} == {'class_': 'mage', 'gift': 12}
+    E         Omitting 1 identical items, use -v to show
+    E         Differing items:
+    E         {'class_': 'mag'} != {'class_': 'mage'}
+    E         Use -v to get the full diff
+
+
+This is useful when asserting mock calls with many/nested arguments and trying
+to quickly see the difference.
+
+This feature is probably safe, but if you encounter any problems it can be disabled in
 your ``pytest.ini`` file:
 
 .. code-block:: ini
 
     [pytest]
     mock_traceback_monkeypatch = false
-
-The plugin also adds introspection information on differing call arguments when
-calling the helper methods. This features catches `AssertionError` raised in
-the method, and uses py.test's own `advanced assertions`_ to return a better
-diff.
-
-This is useful when asserting mock calls with many/nested arguments and trying
-to quickly see the difference.
 
 .. _advanced assertions: https://pytest.org/latest/assert.html
 

@@ -16,11 +16,16 @@
   ``repr`` string as well as related assertion failure messages.
   Thanks `@jurko-gospodnetic`_ for the PR (`#40`_).
 
+* ``mock.call`` is now aliased as ``mocker.call`` for convenience.
+  Thanks `@jhermann`_ for the PR (`#49`_).
+
 .. _@jurko-gospodnetic: https://github.com/jurko-gospodnetic
 .. _@asfaltboy: https://github.com/asfaltboy
+.. _@jhermann: https://github.com/jhermann
 .. _#45: https://github.com/pytest-dev/pytest-mock/issues/45
 .. _#40: https://github.com/pytest-dev/pytest-mock/issues/40
 .. _#36: https://github.com/pytest-dev/pytest-mock/issues/36
+.. _#49: https://github.com/pytest-dev/pytest-mock/issues/49
 .. _MIT: https://github.com/pytest-dev/pytest-mock/blob/master/LICENSE
 
 1.0

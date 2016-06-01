@@ -62,12 +62,13 @@ The supported methods are:
 * ``mocker.stopall()``: stops all active patches up to this point.
 * ``mocker.resetall()``: calls ``reset_mock()`` in all mocked objects up to this point. 
 
-Some objects from the ``mock`` module are accessible directly from ``mocker`` so
-you don't have to import it:
+Some objects from the ``mock`` module are accessible directly from ``mocker`` for convenience:
 
 * `Mock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock>`_
 * `MagicMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.MagicMock>`_
 * `PropertyMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.PropertyMock>`_
+* `ANY <https://docs.python.org/3/library/unittest.mock.html#any>`_
+* `call <https://docs.python.org/3/library/unittest.mock.html#call>`_ *(Version 1.1)*
 
 
 Spy
@@ -247,3 +248,11 @@ Although mocker's API is intentionally the same as ``mock.patch``'s, its uses as
     in test_context_manager
         with mocker.patch.object(a, 'doIt', return_value=True, autospec=True):
     E   AttributeError: __exit__
+
+
+License
+=======
+
+Distributed under the terms of the `MIT`_ license.
+
+.. _MIT: https://github.com/pytest-dev/pytest-mock/blob/master/LICENSE

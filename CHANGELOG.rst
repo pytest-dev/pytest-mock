@@ -1,6 +1,8 @@
 1.1
 ---
 
+* From this version onward, ``pytest-mock`` is licensed under the `MIT`_ license (`#45`_).
+
 * Now the plugin also adds introspection information on differing call arguments when
   calling helper methods such as ``assert_called_once_with``. The extra introspection
   information is similar to pytest's and can be disabled with the ``mock_traceback_monkeypatch``
@@ -20,11 +22,19 @@
   anyway plus it generates confusing messages on Python 3.5 due to exception chaining (`#44`_).
   Thanks `@blueyed`_ for the report.
 
+* ``mock.call`` is now aliased as ``mocker.call`` for convenience.
+  Thanks `@jhermann`_ for the PR (`#49`_).
+
 .. _@jurko-gospodnetic: https://github.com/jurko-gospodnetic
 .. _@asfaltboy: https://github.com/asfaltboy
+.. _@jhermann: https://github.com/jhermann
+.. _#45: https://github.com/pytest-dev/pytest-mock/issues/45
 .. _#36: https://github.com/pytest-dev/pytest-mock/issues/36
 .. _#40: https://github.com/pytest-dev/pytest-mock/issues/40
 .. _#44: https://github.com/pytest-dev/pytest-mock/issues/44
+.. _#49: https://github.com/pytest-dev/pytest-mock/issues/49
+.. _MIT: https://github.com/pytest-dev/pytest-mock/blob/master/LICENSE
+
 
 1.0
 ---

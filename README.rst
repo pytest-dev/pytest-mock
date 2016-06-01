@@ -62,8 +62,7 @@ The supported methods are:
 * ``mocker.stopall()``: stops all active patches up to this point.
 * ``mocker.resetall()``: calls ``reset_mock()`` in all mocked objects up to this point. 
 
-Some objects from the ``mock`` module are accessible directly from ``mocker`` so
-you don't have to import it:
+Some objects from the ``mock`` module are accessible directly from ``mocker`` for convenience:
 
 * `Mock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock>`_
 * `MagicMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.MagicMock>`_

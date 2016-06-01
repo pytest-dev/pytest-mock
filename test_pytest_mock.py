@@ -492,6 +492,8 @@ def test_patched_method_parameter_name(mocker):
 
 
 def test_monkeypatch_native(testdir):
+    """Automatically disable monkeypatching when --tb=native.
+    """
     testdir.makepyfile("""
         def test_foo(mocker):
             stub = mocker.stub()
@@ -504,6 +506,8 @@ def test_monkeypatch_native(testdir):
         # pytest 2.7.X
         result = testdir.runpytest('--tb=native')
     assert result.ret == 1
-    assert 'Traceback (most recent call last)' in result.stdout.str()
     assert 'During handling of the above exception' not in result.stdout.str()
     assert 'Differing items:' not in result.stdout.str()
+    traceback_lines = [x for x in result.stdout.str().splitlines()
+                       if 'Traceback (most recent call last)' in x]
+    assert len(traceback_lines) == 1  # make sure there are no duplicated tracebacks (#44)

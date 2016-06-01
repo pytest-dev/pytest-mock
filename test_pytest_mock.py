@@ -489,3 +489,16 @@ def test_patched_method_parameter_name(mocker):
     m = mocker.patch.object(Request, 'request')
     Request.request(method='get', args={'type': 'application/json'})
     m.assert_called_once_with(method='get', args={'type': 'application/json'})
+
+
+def deep_thought(*someargs):
+    """Just a mocking target."""
+
+
+def test_assert_has_calls_with_mocker_call(mocker):
+    mocked = mocker.patch(__name__ + '.deep_thought', return_value=42)
+    mocked(mocked("question", "about the universe & stuff"))
+    mocked.assert_has_calls([
+        mocker.call("question", "about the universe & stuff"),
+        mocker.call(42),
+    ])

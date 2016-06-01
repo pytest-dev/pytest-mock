@@ -22,7 +22,7 @@ setup(
         ':python_version=="2.6" or python_version=="2.7"': ['mock'],
     },
     url='https://github.com/pytest-dev/pytest-mock/',
-    license='LGPL',
+    license='MIT',
     author='Bruno Oliveira',
     author_email='nicoddemus@gmail.com',
     description='Thin-wrapper around the mock package for easier use with py.test',

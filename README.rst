@@ -68,7 +68,8 @@ you don't have to import it:
 * `Mock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock>`_
 * `MagicMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.MagicMock>`_
 * `PropertyMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.PropertyMock>`_
-* `call <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.call>`_ *(Version 1.1)*
+* `ANY <https://docs.python.org/3/library/unittest.mock.html#any>`_
+* `call <https://docs.python.org/3/library/unittest.mock.html#call>`_ *(Version 1.1)*
 
 
 Spy

@@ -132,25 +132,12 @@ def test_deprecated_mock(mock, tmpdir):
     assert os.listdir(str(tmpdir)) == []
 
 
-def test_mocker_has_magic_mock_class_as_attribute_for_instantiation():
+@pytest.mark.parametrize('name', ['MagicMock', 'PropertyMock', 'Mock', 'call', 'ANY'])
+def test_mocker_aliases(name):
     from pytest_mock import mock_module, MockFixture
 
     mocker = MockFixture()
-    assert isinstance(mocker.MagicMock(), mock_module.MagicMock)
-
-
-def test_mocker_has_property_mock_class_as_attribute_for_instantiation():
-    from pytest_mock import mock_module, MockFixture
-
-    mocker = MockFixture()
-    assert isinstance(mocker.PropertyMock(), mock_module.PropertyMock)
-
-
-def test_mocker_has_mock_class_as_attribute_for_instantiation():
-    from pytest_mock import mock_module, MockFixture
-
-    mocker = MockFixture()
-    assert isinstance(mocker.Mock(), mock_module.Mock)
+    assert getattr(mocker, name) is getattr(mock_module, name)
 
 
 def test_mocker_resetall(mocker):
@@ -489,16 +476,3 @@ def test_patched_method_parameter_name(mocker):
     m = mocker.patch.object(Request, 'request')
     Request.request(method='get', args={'type': 'application/json'})
     m.assert_called_once_with(method='get', args={'type': 'application/json'})
-
-
-def deep_thought(*someargs):
-    """Just a mocking target."""
-
-
-def test_assert_has_calls_with_mocker_call(mocker):
-    mocked = mocker.patch(__name__ + '.deep_thought', return_value=42)
-    mocked(mocked("question", "about the universe & stuff"))
-    mocked.assert_has_calls([
-        mocker.call("question", "about the universe & stuff"),
-        mocker.call(42),
-    ])

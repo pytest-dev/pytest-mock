@@ -1,3 +1,14 @@
+1.2.dev
+-------
+
+* Try to import ``mock`` first instead of ``unittest.mock``. This gives the user flexibility
+  to install a newer ``mock`` version from PyPI instead of using the one available in the
+  Python distribution.
+  Thanks `@wcooley`_ for the PR (`#54`_).
+
+.. _@wcooley: https://github.com/wcooley
+.. _#54: https://github.com/pytest-dev/pytest-mock/issues/54  
+
 1.1
 ---
 

@@ -3,10 +3,10 @@ import sys
 
 import pytest
 
-if sys.version_info >= (3, 3): # pragma: no cover
-    import unittest.mock as mock_module
-else:
+try:
     import mock as mock_module
+except ImportError:
+    import unittest.mock as mock_module
 
 version = '1.1'
 

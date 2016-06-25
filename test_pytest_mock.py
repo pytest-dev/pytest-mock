@@ -455,7 +455,7 @@ def test_monkeypatch_ini(mocker, testdir):
     assert result.ret == 0
 
 
-def test_parse_ini_boolean(testdir):
+def test_parse_ini_boolean():
     import pytest_mock
     assert pytest_mock.parse_ini_boolean('True') is True
     assert pytest_mock.parse_ini_boolean('false') is False

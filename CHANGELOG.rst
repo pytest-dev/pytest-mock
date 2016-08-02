@@ -5,6 +5,7 @@
   to install a newer ``mock`` version from PyPI instead of using the one available in the
   Python distribution.
   Thanks `@wcooley`_ for the PR (`#54`_).
+* ``mock.sentinel`` is now aliased as ``mocker.sentinel`` for convenience.
 
 .. _@wcooley: https://github.com/wcooley
 .. _#54: https://github.com/pytest-dev/pytest-mock/issues/54  

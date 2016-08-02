@@ -69,6 +69,7 @@ Some objects from the ``mock`` module are accessible directly from ``mocker`` fo
 * `PropertyMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.PropertyMock>`_
 * `ANY <https://docs.python.org/3/library/unittest.mock.html#any>`_
 * `call <https://docs.python.org/3/library/unittest.mock.html#call>`_ *(Version 1.1)*
+* `sentinel <https://docs.python.org/3/library/unittest.mock.html#sentinel>`_ *(Version 1.2)*
 
 
 Spy

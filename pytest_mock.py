@@ -21,6 +21,7 @@ class MockFixture(object):
     PropertyMock = mock_module.PropertyMock
     call = mock_module.call
     ANY = mock_module.ANY
+    sentinel = mock_module.sentinel
 
     def __init__(self):
         self._patches = []  # list of mock._patch objects

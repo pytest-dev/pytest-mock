@@ -7,7 +7,7 @@ try:
 except ImportError:
     import unittest.mock as mock_module
 
-version = '1.1'
+version = '1.2'
 
 
 class MockFixture(object):

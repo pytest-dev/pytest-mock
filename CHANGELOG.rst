@@ -1,14 +1,18 @@
-1.2.dev
--------
+1.2
+---
 
 * Try to import ``mock`` first instead of ``unittest.mock``. This gives the user flexibility
   to install a newer ``mock`` version from PyPI instead of using the one available in the
   Python distribution.
   Thanks `@wcooley`_ for the PR (`#54`_).
+
 * ``mock.sentinel`` is now aliased as ``mocker.sentinel`` for convenience.
+  Thanks `@kjwilcox`_ for the PR (`#56`_).
 
 .. _@wcooley: https://github.com/wcooley
-.. _#54: https://github.com/pytest-dev/pytest-mock/issues/54  
+.. _@kjwilcox: https://github.com/kjwilcox
+.. _#54: https://github.com/pytest-dev/pytest-mock/issues/54
+.. _#56: https://github.com/pytest-dev/pytest-mock/pull/56
 
 1.1
 ---

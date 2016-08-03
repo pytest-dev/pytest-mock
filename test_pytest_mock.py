@@ -339,7 +339,7 @@ def assert_traceback():
 
 
 @contextmanager
-def assert_argument_introspection(left, right):
+def assert_argument_introspection(arg_left, arg_right, kwarg_left, kwarg_right):
     """
     Assert detailed argument introspection is used
     """
@@ -351,7 +351,8 @@ def assert_argument_introspection(left, right):
         # NOTE: we assert with either verbose or not, depending on how our own
         #       test was run by examining sys.argv
         verbose = any(a.startswith('-v') for a in sys.argv)
-        expected = '\n  '.join(util._compare_eq_iterable(left, right, verbose))
+        expected = '\n  '.join(util._compare_eq_iterable(
+            (arg_left, kwarg_left), (arg_right, kwarg_right), verbose))
         assert expected in e.msg
     else:
         raise AssertionError("DID NOT RAISE")
@@ -394,7 +395,7 @@ def test_assert_called_args_with_introspection(mocker):
     stub.assert_called_with(*complex_args)
     stub.assert_called_once_with(*complex_args)
 
-    with assert_argument_introspection(complex_args, wrong_args):
+    with assert_argument_introspection(wrong_args, complex_args, {}, {}):
         stub.assert_called_with(*wrong_args)
         stub.assert_called_once_with(*wrong_args)
 
@@ -409,7 +410,7 @@ def test_assert_called_kwargs_with_introspection(mocker):
     stub.assert_called_with(**complex_kwargs)
     stub.assert_called_once_with(**complex_kwargs)
 
-    with assert_argument_introspection(complex_kwargs, wrong_kwargs):
+    with assert_argument_introspection((), (), wrong_kwargs, complex_kwargs):
         stub.assert_called_with(**wrong_kwargs)
         stub.assert_called_once_with(**wrong_kwargs)
 
@@ -500,12 +501,12 @@ def test_monkeypatch_native(testdir):
     assert len(traceback_lines) == 1  # make sure there are no duplicated tracebacks (#44)
 
 
-def test_assertion_error_is_not_descriptive(mocker):
-    """Demonstrate that assert_wrapper does really bad things to assertion messages"""
+def test_assertion_error_is_descriptive(mocker):
+    """Verify assert_wrapper starts with original call comparison error msg"""
     import mock
     from pytest_mock import _mock_module_originals
     mocker_mock = mocker.patch('os.remove')
-    mock_mock = mock.Mock()
+    mock_mock = mock.patch('os.remove').start()  # use same func name
     assert_called_with = _mock_module_originals['assert_called_with']
 
     mocker_mock(a=1, b=2)
@@ -521,4 +522,4 @@ def test_assertion_error_is_not_descriptive(mocker):
     except AssertionError as e:
         mock_error_message = e.msg
 
-    assert mock_error_message == mocker_error_message
+    assert mocker_error_message.startswith(mock_error_message)

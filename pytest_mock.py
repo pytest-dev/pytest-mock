@@ -159,8 +159,12 @@ def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
         __mock_self = args[0]
         if __mock_self.call_args is not None:
             actual_args, actual_kwargs = __mock_self.call_args
-            assert actual_args == args[1:]
-            assert actual_kwargs == kwargs
+            try:
+                assert (args[1:], kwargs) == (actual_args, actual_kwargs)
+            except AssertionError as detailed_comparison:
+                e.args = (e.msg + "\n\n... pytest introspection follows:\n" +
+                          detailed_comparison.msg, )
+                print(e.args)
         raise AssertionError(*e.args)
 
 

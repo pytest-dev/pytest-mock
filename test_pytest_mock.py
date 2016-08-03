@@ -77,8 +77,7 @@ def mock_using_patch_multiple(mocker):
 
 
 @pytest.mark.parametrize('mock_fs', [mock_using_patch_object, mock_using_patch,
-                                     mock_using_patch_multiple],
-)
+                                     mock_using_patch_multiple], )
 def test_mock_patches(mock_fs, mocker, check_unix_fs_mocked):
     """
     Installs mocks into `os` functions and performs a standard testing of
@@ -163,7 +162,7 @@ class TestMockerStub:
 
     def test_repr_with_no_name(self, mocker):
         stub = mocker.stub()
-        assert not 'name' in repr(stub)
+        assert 'name' not in repr(stub)
 
     def test_repr_with_name(self, mocker):
         test_name = 'funny walk'
@@ -503,8 +502,12 @@ def test_monkeypatch_native(testdir):
 
 def test_assertion_error_is_descriptive(mocker):
     """Verify assert_wrapper starts with original call comparison error msg"""
-    import mock
+    try:
+        import mock
+    except ImportError:
+        from unittest import mock
     from pytest_mock import _mock_module_originals
+
     mocker_mock = mocker.patch('os.remove')
     mock_mock = mock.patch('os.remove').start()  # use same func name
     assert_called_with = _mock_module_originals['assert_called_with']

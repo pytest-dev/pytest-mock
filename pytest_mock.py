@@ -151,21 +151,29 @@ _mock_module_patches = []
 _mock_module_originals = {}
 
 
+DETAILED_ASSERTION = """{original}
+
+... pytest introspection follows:
+{detailed}
+"""
+
+
 def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
     __tracebackhide__ = True
     try:
         __wrapped_mock_method__(*args, **kwargs)
     except AssertionError as e:
+        print(args, kwargs)
         __mock_self = args[0]
         if __mock_self.call_args is not None:
             actual_args, actual_kwargs = __mock_self.call_args
             try:
                 assert (args[1:], kwargs) == (actual_args, actual_kwargs)
-            except AssertionError as detailed_comparison:
-                e.args = (e.msg + "\n\n... pytest introspection follows:\n" +
-                          detailed_comparison.msg, )
-                print(e.args)
-        raise AssertionError(*e.args)
+            except AssertionError as pytest_diff:
+                msg = DETAILED_ASSERTION.format(original=e.msg,
+                                                detailed=pytest_diff.msg)
+                raise AssertionError(msg)  # raise a new detailed exception
+        raise
 
 
 def wrap_assert_not_called(*args, **kwargs):

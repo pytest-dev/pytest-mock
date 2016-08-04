@@ -502,14 +502,10 @@ def test_monkeypatch_native(testdir):
 
 def test_assertion_error_is_descriptive(mocker):
     """Verify assert_wrapper starts with original call comparison error msg"""
-    try:
-        import mock
-    except ImportError:
-        from unittest import mock
-    from pytest_mock import _mock_module_originals
+    from pytest_mock import mock_module, _mock_module_originals
 
     mocker_mock = mocker.patch('os.remove')
-    mock_mock = mock.patch('os.remove').start()  # use same func name
+    mock_mock = mock_module.patch('os.remove').start()  # use same func name
     assert_called_with = _mock_module_originals['assert_called_with']
 
     mocker_mock(a=1, b=2)
@@ -533,7 +529,17 @@ def test_assertion_error_is_descriptive(mocker):
     assert mocker_called_once_with.startswith(mock_error_message)
     mocker_mock(a='foo', b='bar')
     assert mocker_called_with.startswith(mock_error_message)
-    assert "assert call((1, 2), {}) ==" in mocker_called_with
+
+    verbose = any(a.startswith('-v') for a in sys.argv)
+    if verbose:
+        assert "positional arguments differ" in mocker_called_with
+        assert "(1, 2) == ()" in mocker_called_with
+        assert "keyword arguments differ" in mocker_called_with
+        assert "{} == {'a': 1, 'b': 2}" in mocker_called_with
+    else:
+        print(mocker_called_with)
+        assert 'assert call(1, 2) == call(' in mocker_called_with
+        assert 'Use -v to get the full diff' in mocker_called_with
 
     # argument assertion for any call (with multiline call list)
     assert_any_call = _mock_module_originals['assert_any_call']
@@ -548,4 +554,4 @@ def test_assertion_error_is_descriptive(mocker):
         mock_error_message = e.msg
 
     assert mocker_any_call.startswith(mock_error_message)
-    assert "assert call((1, 2), {}) in [" in mocker_any_call
+    assert "assert call(1, 2) in [call(" in mocker_any_call

@@ -158,7 +158,7 @@ DETAILED_ASSERTION = """{original!s}
 ... pytest introspection follows:
 {detailed!s}
 """
-FULL_ANY_CALLS_DIFF = "assert {call} not in {calls_list}"
+FULL_ANY_CALLS_DIFF = "assert {call} in {calls_list}"
 
 
 def pytest_assertrepr_compare(config, op, left, right):
@@ -166,8 +166,24 @@ def pytest_assertrepr_compare(config, op, left, right):
     if not patch_enabled:
         return
 
-    if isinstance(left, mock_module._Call) and isinstance(right, mock_module._CallList) and op == "in":
-        u = py.builtin._totext
+    if hasattr(mock_module, 'mock'):
+        call_class = mock_module.mock._Call
+        call_list_class = mock_module.mock._CallList
+    else:
+        call_class = mock_module._Call
+        call_list_class = mock_module._CallList
+
+    verbose = config.getoption('verbose')
+    u = py.builtin._totext
+
+    def safe_unpack_args(call):
+        try:
+            args, kwargs = call
+        except ValueError:
+            name, args, kwargs = call
+        return args, kwargs
+
+    def get_summary():
         width = 80 - 15 - len(op) - 2  # 15 chars indentation, 1 space around op
         left_repr = py.io.saferepr(left, maxsize=int(width / 2))
         right_repr = py.io.saferepr(right, maxsize=width - len(left_repr))
@@ -177,11 +193,29 @@ def pytest_assertrepr_compare(config, op, left, right):
                 return u(s, 'utf-8', 'replace')
             except TypeError:
                 return s
+        return u('%s %s %s') % (ecu(left_repr), op, ecu(right_repr))
 
-        summary = u('%s %s %s') % (ecu(left_repr), op, ecu(right_repr))
-        verbose = config.getoption('verbose')
-        if not verbose:
-            return [summary, u('Use -v to get the full diff')]
+    summary = get_summary()
+    if not verbose:
+        return [summary, u('Use -v to get the full diff')]
+
+    from _pytest.assertion.util import assertrepr_compare
+    if isinstance(left, call_class) and isinstance(right, call_class) and op == '==':
+        largs, lkwargs = safe_unpack_args(left)
+        rargs, rkwargs = safe_unpack_args(right)
+        explanation = ['Full diff:']
+
+        arg_expl = assertrepr_compare(config, op, largs, rargs)
+        if arg_expl:
+            explanation += ['positional arguments differ;'] + arg_expl
+        kwarg_expl = assertrepr_compare(config, op, lkwargs, rkwargs)
+        if kwarg_expl:
+            explanation += ['keyword arguments differ;'] + kwarg_expl
+
+        return [summary] + explanation
+
+    if (isinstance(left, tuple) and
+            isinstance(right, call_list_class) and op == "in"):
         return [
             summary, u('Full diff:'),
             FULL_ANY_CALLS_DIFF.format(call=left, calls_list=pformat(right))
@@ -194,16 +228,16 @@ def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
         __wrapped_mock_method__(*args, **kwargs)
     except AssertionError as e:
         __mock_self = args[0]  # the mock instance
-        asserted_args = (args[1:], kwargs)
+        assert_call = mock_module.call(*args[1:], **kwargs)
         if __mock_self.call_args is not None:
             try:
                 if __wrapped_mock_method__.__name__ == 'assert_any_call':
-                    assert mock_module.call(asserted_args) in __mock_self.call_args_list
+                    assert assert_call in __mock_self.call_args_list
                 else:
                     # compare tuples for deep pytest iterable diff
-                    assert asserted_args == tuple(__mock_self.call_args)
+                    assert assert_call == __mock_self.call_args
             except AssertionError as diff:
-                # raise a new detailed exception, while un-escaping line breaks
+                # raise a new detailed exception, appending to existing
                 msg = DETAILED_ASSERTION.format(original=e, detailed=diff)
                 raise AssertionError(msg.encode().decode('unicode_escape'))
         raise e

@@ -515,14 +515,37 @@ def test_assertion_error_is_descriptive(mocker):
     mocker_mock(a=1, b=2)
     mock_mock(a=1, b=2)
 
+    # arguments assertion for last call
     try:
         mocker_mock.assert_called_once_with(1, 2)
     except AssertionError as e:
-        mocker_error_message = e.msg
+        mocker_called_once_with = e.msg
+    try:
+        mocker_mock.assert_called_with(1, 2)
+    except AssertionError as e:
+        mocker_called_with = e.msg
 
     try:
         assert_called_with(mock_mock, 1, 2)
     except AssertionError as e:
         mock_error_message = e.msg
 
-    assert mocker_error_message.startswith(mock_error_message)
+    assert mocker_called_once_with.startswith(mock_error_message)
+    mocker_mock(a='foo', b='bar')
+    assert mocker_called_with.startswith(mock_error_message)
+    assert "assert call((1, 2), {}) ==" in mocker_called_with
+
+    # argument assertion for any call (with multiline call list)
+    assert_any_call = _mock_module_originals['assert_any_call']
+    try:
+        mocker_mock.assert_any_call(1, 2)
+    except AssertionError as e:
+        mocker_any_call = e.msg
+
+    try:
+        assert_any_call(mock_mock, 1, 2)
+    except AssertionError as e:
+        mock_error_message = e.msg
+
+    assert mocker_any_call.startswith(mock_error_message)
+    assert "assert call((1, 2), {}) in [" in mocker_any_call

@@ -1,6 +1,8 @@
+from pprint import pformat
 import inspect
 
 import pytest
+import py
 
 try:
     import mock as mock_module
@@ -151,11 +153,39 @@ _mock_module_patches = []
 _mock_module_originals = {}
 
 
-DETAILED_ASSERTION = """{original}
+DETAILED_ASSERTION = """{original!s}
 
 ... pytest introspection follows:
-{detailed}
+{detailed!s}
 """
+FULL_ANY_CALLS_DIFF = "assert {call} not in {calls_list}"
+
+
+def pytest_assertrepr_compare(config, op, left, right):
+    patch_enabled = config.getini('mock_traceback_monkeypatch')
+    if not patch_enabled:
+        return
+
+    if isinstance(left, mock_module._Call) and isinstance(right, mock_module._CallList) and op == "in":
+        u = py.builtin._totext
+        width = 80 - 15 - len(op) - 2  # 15 chars indentation, 1 space around op
+        left_repr = py.io.saferepr(left, maxsize=int(width / 2))
+        right_repr = py.io.saferepr(right, maxsize=width - len(left_repr))
+
+        def ecu(s):
+            try:
+                return u(s, 'utf-8', 'replace')
+            except TypeError:
+                return s
+
+        summary = u('%s %s %s') % (ecu(left_repr), op, ecu(right_repr))
+        verbose = config.getoption('verbose')
+        if not verbose:
+            return [summary, u('Use -v to get the full diff')]
+        return [
+            summary, u('Full diff:'),
+            FULL_ANY_CALLS_DIFF.format(call=left, calls_list=pformat(right))
+        ]
 
 
 def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
@@ -163,17 +193,20 @@ def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
     try:
         __wrapped_mock_method__(*args, **kwargs)
     except AssertionError as e:
-        print(args, kwargs)
-        __mock_self = args[0]
+        __mock_self = args[0]  # the mock instance
+        asserted_args = (args[1:], kwargs)
         if __mock_self.call_args is not None:
-            actual_args, actual_kwargs = __mock_self.call_args
             try:
-                assert (args[1:], kwargs) == (actual_args, actual_kwargs)
-            except AssertionError as pytest_diff:
-                msg = DETAILED_ASSERTION.format(original=e.msg,
-                                                detailed=pytest_diff.msg)
-                raise AssertionError(msg)  # raise a new detailed exception
-        raise
+                if __wrapped_mock_method__.__name__ == 'assert_any_call':
+                    assert mock_module.call(asserted_args) in __mock_self.call_args_list
+                else:
+                    # compare tuples for deep pytest iterable diff
+                    assert asserted_args == tuple(__mock_self.call_args)
+            except AssertionError as diff:
+                # raise a new detailed exception, while un-escaping line breaks
+                msg = DETAILED_ASSERTION.format(original=e, detailed=diff)
+                raise AssertionError(msg.encode().decode('unicode_escape'))
+        raise e
 
 
 def wrap_assert_not_called(*args, **kwargs):

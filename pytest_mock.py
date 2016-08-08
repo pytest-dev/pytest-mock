@@ -229,7 +229,7 @@ def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
     except AssertionError as e:
         __mock_self = args[0]  # the mock instance
         assert_call = mock_module.call(*args[1:], **kwargs)
-        if __mock_self.call_args is not None:
+        if __mock_self.call_args is not None and not hasattr(e, '_msg_updated'):
             try:
                 if __wrapped_mock_method__.__name__ == 'assert_any_call':
                     assert assert_call in __mock_self.call_args_list
@@ -239,7 +239,9 @@ def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
             except AssertionError as diff:
                 # raise a new detailed exception, appending to existing
                 msg = DETAILED_ASSERTION.format(original=e, detailed=diff)
-                raise AssertionError(msg.encode().decode('unicode_escape'))
+                err = AssertionError(msg.encode().decode('unicode_escape'))
+                err._msg_updated = True
+                raise err
         raise e
 
 

@@ -158,7 +158,7 @@ DETAILED_ASSERTION = """{original!s}
 ... pytest introspection follows:
 {detailed!s}
 """
-FULL_ANY_CALLS_DIFF = "assert {call} in {calls_list}"
+FULL_ANY_CALLS_DIFF = "{call} in {calls_list}"
 
 
 def pytest_assertrepr_compare(config, op, left, right):
@@ -173,9 +173,6 @@ def pytest_assertrepr_compare(config, op, left, right):
         call_class = mock_module._Call
         call_list_class = mock_module._CallList
 
-    verbose = config.getoption('verbose')
-    u = py.builtin._totext
-
     def safe_unpack_args(call):
         try:
             args, kwargs = call
@@ -183,43 +180,25 @@ def pytest_assertrepr_compare(config, op, left, right):
             name, args, kwargs = call
         return args, kwargs
 
-    def get_summary():
-        width = 80 - 15 - len(op) - 2  # 15 chars indentation, 1 space around op
-        left_repr = py.io.saferepr(left, maxsize=int(width / 2))
-        right_repr = py.io.saferepr(right, maxsize=width - len(left_repr))
-
-        def ecu(s):
-            try:
-                return u(s, 'utf-8', 'replace')
-            except TypeError:
-                return s
-        return u('%s %s %s') % (ecu(left_repr), op, ecu(right_repr))
-
-    summary = get_summary()
-    if not verbose:
-        return [summary, u('Use -v to get the full diff')]
-
-    from _pytest.assertion.util import assertrepr_compare
     if isinstance(left, call_class) and isinstance(right, call_class) and op == '==':
         largs, lkwargs = safe_unpack_args(left)
         rargs, rkwargs = safe_unpack_args(right)
-        explanation = ['Full diff:']
 
-        arg_expl = assertrepr_compare(config, op, largs, rargs)
-        if arg_expl:
-            explanation += ['positional arguments differ;'] + arg_expl
-        kwarg_expl = assertrepr_compare(config, op, lkwargs, rkwargs)
-        if kwarg_expl:
-            explanation += ['keyword arguments differ;'] + kwarg_expl
+        msg = []
+        try:
+            assert largs == rargs
+        except AssertionError as e:
+            msg.extend(['args introspection:', str(e)])
 
-        return [summary] + explanation
+        try:
+            assert lkwargs == rkwargs
+        except AssertionError as e:
+            msg.extend(['kwargs introspection:', str(e)])
+        return msg
 
     if (isinstance(left, tuple) and
             isinstance(right, call_list_class) and op == "in"):
-        return [
-            summary, u('Full diff:'),
-            FULL_ANY_CALLS_DIFF.format(call=left, calls_list=pformat(right))
-        ]
+        return [FULL_ANY_CALLS_DIFF.format(call=left, calls_list=pformat(right))]
 
 
 def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):

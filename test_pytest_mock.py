@@ -538,7 +538,8 @@ def test_assertion_error_is_descriptive(mocker):
         assert "{} == {'a': 1, 'b': 2}" in mocker_called_with
     else:
         print(mocker_called_with)
-        assert 'assert call(1, 2) == call(' in mocker_called_with
+        assert 'Expected call: remove(1, 2)' in mocker_called_with
+        assert "assert {} == {'a': 1, 'b': 2}" in mocker_called_with
         assert 'Use -v to get the full diff' in mocker_called_with
 
     # argument assertion for any call (with multiline call list)

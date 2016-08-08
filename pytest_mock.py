@@ -2,7 +2,6 @@ from pprint import pformat
 import inspect
 
 import pytest
-import py
 
 try:
     import mock as mock_module
@@ -221,7 +220,7 @@ def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
                 err = AssertionError(msg.encode().decode('unicode_escape'))
                 err._msg_updated = True
                 raise err
-        raise e
+        raise AssertionError(*e.args)
 
 
 def wrap_assert_not_called(*args, **kwargs):

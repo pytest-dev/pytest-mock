@@ -1,12 +1,15 @@
+# coding=utf-8
 import os
 import platform
 import sys
 from contextlib import contextmanager
 
+import py
 import py.code
 
 import pytest
 
+u = py.builtin._totext
 pytest_plugins = 'pytester'
 
 # could not make some of the tests work on PyPy, patches are welcome!
@@ -77,8 +80,7 @@ def mock_using_patch_multiple(mocker):
 
 
 @pytest.mark.parametrize('mock_fs', [mock_using_patch_object, mock_using_patch,
-                                     mock_using_patch_multiple],
-)
+                                     mock_using_patch_multiple], )
 def test_mock_patches(mock_fs, mocker, check_unix_fs_mocked):
     """
     Installs mocks into `os` functions and performs a standard testing of
@@ -163,7 +165,7 @@ class TestMockerStub:
 
     def test_repr_with_no_name(self, mocker):
         stub = mocker.stub()
-        assert not 'name' in repr(stub)
+        assert 'name' not in repr(stub)
 
     def test_repr_with_name(self, mocker):
         test_name = 'funny walk'
@@ -339,7 +341,7 @@ def assert_traceback():
 
 
 @contextmanager
-def assert_argument_introspection(left, right):
+def assert_argument_introspection(args, kwargs):
     """
     Assert detailed argument introspection is used
     """
@@ -351,7 +353,14 @@ def assert_argument_introspection(left, right):
         # NOTE: we assert with either verbose or not, depending on how our own
         #       test was run by examining sys.argv
         verbose = any(a.startswith('-v') for a in sys.argv)
-        expected = '\n  '.join(util._compare_eq_iterable(left, right, verbose))
+        if args:
+            expected = '\n  '.join(util._compare_eq_iterable(
+                args[0], args[1], verbose))
+        elif kwargs:
+            expected = '\n  '.join(util._compare_eq_iterable(
+                kwargs[0], kwargs[1], verbose))
+        else:
+            raise AssertionError('Must be given args or kwargs')
         assert expected in e.msg
     else:
         raise AssertionError("DID NOT RAISE")
@@ -394,7 +403,7 @@ def test_assert_called_args_with_introspection(mocker):
     stub.assert_called_with(*complex_args)
     stub.assert_called_once_with(*complex_args)
 
-    with assert_argument_introspection(complex_args, wrong_args):
+    with assert_argument_introspection(args=(wrong_args, complex_args), kwargs=None):
         stub.assert_called_with(*wrong_args)
         stub.assert_called_once_with(*wrong_args)
 
@@ -409,7 +418,7 @@ def test_assert_called_kwargs_with_introspection(mocker):
     stub.assert_called_with(**complex_kwargs)
     stub.assert_called_once_with(**complex_kwargs)
 
-    with assert_argument_introspection(complex_kwargs, wrong_kwargs):
+    with assert_argument_introspection(args=None, kwargs=(wrong_kwargs, complex_kwargs)):
         stub.assert_called_with(**wrong_kwargs)
         stub.assert_called_once_with(**wrong_kwargs)
 
@@ -498,3 +507,95 @@ def test_monkeypatch_native(testdir):
     traceback_lines = [x for x in result.stdout.str().splitlines()
                        if 'Traceback (most recent call last)' in x]
     assert len(traceback_lines) == 1  # make sure there are no duplicated tracebacks (#44)
+
+
+def test_assertion_error_is_descriptive(mocker):
+    """Verify assert_wrapper starts with original call comparison error msg"""
+    from pytest_mock import mock_module, _mock_module_originals
+
+    mocker_mock = mocker.patch('os.remove')
+    mock_mock = mock_module.patch('os.remove').start()  # use same func name
+    assert_called_with = _mock_module_originals['assert_called_with']
+
+    mocker_mock(a=1, b=2)
+    mock_mock(a=1, b=2)
+
+    # arguments assertion for last call
+    try:
+        mocker_mock.assert_called_once_with(1, 2)
+    except AssertionError as e:
+        mocker_called_once_with = e.msg
+    try:
+        mocker_mock.assert_called_with(1, 2)
+    except AssertionError as e:
+        mocker_called_with = e.msg
+
+    try:
+        assert_called_with(mock_mock, 1, 2)
+    except AssertionError as e:
+        mock_error_message = e.msg
+
+    assert mocker_called_once_with.startswith(mock_error_message)
+    mocker_mock(a='foo', b='bar')
+    assert mocker_called_with.startswith(mock_error_message)
+
+    verbose = any(a.startswith('-v') for a in sys.argv)
+    if verbose:
+        assert "(1, 2) == ()" in mocker_called_with
+        assert "{} == {'a': 1, 'b': 2}" in mocker_called_with
+        assert "Detailed information truncated" not in mocker_called_with
+    else:
+        print(mocker_called_with)
+        assert 'Expected call: remove(1, 2)' in mocker_called_with
+        assert "assert {} == {'a': 1, 'b': 2}" in mocker_called_with
+        assert 'Use -v to get the full diff' in mocker_called_with
+
+    # argument assertion for any call (with multiline call list)
+    assert_any_call = _mock_module_originals['assert_any_call']
+    try:
+        mocker_mock.assert_any_call(1, 2)
+    except AssertionError as e:
+        mocker_any_call = e.msg
+
+    try:
+        assert_any_call(mock_mock, 1, 2)
+    except AssertionError as e:
+        mock_error_message = e.msg
+
+    assert mocker_any_call.startswith(mock_error_message)
+    assert "assert call(1, 2) in [call(" in mocker_any_call
+
+
+def test_assertion_wrap_unicode(mocker):
+    """Verify assert_wrapper properly handles unicode call parts"""
+    mocker_mock = mocker.patch('os.remove')
+    mocker_mock(u('א', 'utf-8'), b=u('ב', 'utf-8'))
+
+    # arguments assertion for last call
+    try:
+        mocker_mock.assert_called_with(u('ג', 'utf-8'), b=u('ד', 'utf-8'))
+    except AssertionError as e:
+        called_with_msg = e.msg
+
+    verbose = any(a.startswith('-v') for a in sys.argv)
+    if verbose:
+        assert u("('ג',) == ('א',)", 'utf-8') in called_with_msg
+        assert u("assert {'b': 'ד'} == {'b': 'ב'}", 'utf-8') in called_with_msg
+        assert u("Use -v to get the full diff", 'utf-8') not in called_with_msg
+    else:
+        assert (
+            (u("Expected call: remove(u'\\u05d2', b=u'\\u05d3')", 'utf-8') in called_with_msg) or
+            (u("Expected call: remove('\u05d2', b='\u05d3')", 'utf-8') in called_with_msg)
+        )
+        assert u("assert {'b': 'ד'} == {'b': 'ב'}", 'utf-8') in called_with_msg
+        assert u('Use -v to get the full diff', 'utf-8') in called_with_msg
+
+    try:
+        mocker_mock.assert_any_call(1, 2)
+    except AssertionError as e:
+        any_call_msg = e.msg
+
+    assert (
+        u("assert call(1, 2) in [call(u'\\u05d0'", 'utf-8') in any_call_msg or
+        u("assert call(1, 2) in [call('\u05d0'", 'utf-8') in any_call_msg
+    )

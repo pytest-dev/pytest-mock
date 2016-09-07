@@ -1,11 +1,15 @@
+from pprint import pformat
 import inspect
 
+import py
 import pytest
 
 try:
     import mock as mock_module
 except ImportError:
     import unittest.mock as mock_module
+
+u = py.builtin._totext
 
 version = '1.2'
 
@@ -151,16 +155,74 @@ _mock_module_patches = []
 _mock_module_originals = {}
 
 
+DETAILED_ASSERTION = u("""{original!s}
+
+... pytest introspection follows:
+{detailed!s}
+""")
+FULL_ANY_CALLS_DIFF = u("{call} in {calls_list}")
+
+
+def pytest_assertrepr_compare(config, op, left, right):
+    patch_enabled = config.getini('mock_traceback_monkeypatch')
+    if not patch_enabled:
+        return
+
+    if hasattr(mock_module, 'mock'):
+        call_class = mock_module.mock._Call
+        call_list_class = mock_module.mock._CallList
+    else:
+        call_class = mock_module._Call
+        call_list_class = mock_module._CallList
+
+    def safe_unpack_args(call):
+        try:
+            args, kwargs = call
+        except ValueError:
+            name, args, kwargs = call
+        return args, kwargs
+
+    if isinstance(left, call_class) and isinstance(right, call_class) and op == '==':
+        largs, lkwargs = safe_unpack_args(left)
+        rargs, rkwargs = safe_unpack_args(right)
+
+        msg = []
+        try:
+            assert largs == rargs
+        except AssertionError as e:
+            msg.extend(['args introspection:', u(e)])
+
+        try:
+            assert lkwargs == rkwargs
+        except AssertionError as e:
+            msg.extend(['kwargs introspection:', u(e)])
+        return msg
+
+    if (isinstance(left, tuple) and
+            isinstance(right, call_list_class) and op == "in"):
+        return [FULL_ANY_CALLS_DIFF.format(call=left, calls_list=pformat(right))]
+
+
 def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
     __tracebackhide__ = True
     try:
         __wrapped_mock_method__(*args, **kwargs)
     except AssertionError as e:
-        __mock_self = args[0]
-        if __mock_self.call_args is not None:
-            actual_args, actual_kwargs = __mock_self.call_args
-            assert actual_args == args[1:]
-            assert actual_kwargs == kwargs
+        __mock_self = args[0]  # the mock instance
+        assert_call = mock_module.call(*args[1:], **kwargs)
+        if __mock_self.call_args is not None and not hasattr(e, '_msg_updated'):
+            try:
+                if __wrapped_mock_method__.__name__ == 'assert_any_call':
+                    assert assert_call in __mock_self.call_args_list
+                else:
+                    # compare tuples for deep pytest iterable diff
+                    assert assert_call == __mock_self.call_args
+            except AssertionError as diff:
+                # raise a new detailed exception, appending to existing
+                msg = DETAILED_ASSERTION.format(original=u(e), detailed=u(diff))
+                err = AssertionError(msg.replace('\\n', '\n').encode('unicode_escape').decode('unicode_escape'))
+                err._msg_updated = True
+                raise err
         raise AssertionError(*e.args)
 
 

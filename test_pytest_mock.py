@@ -1,12 +1,15 @@
+# coding=utf-8
 import os
 import platform
 import sys
 from contextlib import contextmanager
 
+import py
 import py.code
 
 import pytest
 
+u = py.builtin._totext
 pytest_plugins = 'pytester'
 
 # could not make some of the tests work on PyPy, patches are welcome!
@@ -561,3 +564,38 @@ def test_assertion_error_is_descriptive(mocker):
 
     assert mocker_any_call.startswith(mock_error_message)
     assert "assert call(1, 2) in [call(" in mocker_any_call
+
+
+def test_assertion_wrap_unicode(mocker):
+    """Verify assert_wrapper properly handles unicode call parts"""
+    mocker_mock = mocker.patch('os.remove')
+    mocker_mock(u('א', 'utf-8'), b=u('ב', 'utf-8'))
+
+    # arguments assertion for last call
+    try:
+        mocker_mock.assert_called_with(u('ג', 'utf-8'), b=u('ד', 'utf-8'))
+    except AssertionError as e:
+        called_with_msg = e.msg
+
+    verbose = any(a.startswith('-v') for a in sys.argv)
+    if verbose:
+        assert u("('ג',) == ('א',)", 'utf-8') in called_with_msg
+        assert u("assert {'b': 'ד'} == {'b': 'ב'}", 'utf-8') in called_with_msg
+        assert u("Use -v to get the full diff", 'utf-8') not in called_with_msg
+    else:
+        assert (
+            (u("Expected call: remove(u'\\u05d2', b=u'\\u05d3')", 'utf-8') in called_with_msg) or
+            (u("Expected call: remove('\u05d2', b='\u05d3')", 'utf-8') in called_with_msg)
+        )
+        assert u("assert {'b': 'ד'} == {'b': 'ב'}", 'utf-8') in called_with_msg
+        assert u('Use -v to get the full diff', 'utf-8') in called_with_msg
+
+    try:
+        mocker_mock.assert_any_call(1, 2)
+    except AssertionError as e:
+        any_call_msg = e.msg
+
+    assert (
+        u("assert call(1, 2) in [call(u'\\u05d0'", 'utf-8') in any_call_msg or
+        u("assert call(1, 2) in [call('\u05d0'", 'utf-8') in any_call_msg
+    )

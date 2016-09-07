@@ -1,12 +1,15 @@
 from pprint import pformat
 import inspect
 
+import py
 import pytest
 
 try:
     import mock as mock_module
 except ImportError:
     import unittest.mock as mock_module
+
+u = py.builtin._totext
 
 version = '1.2'
 
@@ -152,12 +155,12 @@ _mock_module_patches = []
 _mock_module_originals = {}
 
 
-DETAILED_ASSERTION = """{original!s}
+DETAILED_ASSERTION = u("""{original!s}
 
 ... pytest introspection follows:
 {detailed!s}
-"""
-FULL_ANY_CALLS_DIFF = "{call} in {calls_list}"
+""")
+FULL_ANY_CALLS_DIFF = u("{call} in {calls_list}")
 
 
 def pytest_assertrepr_compare(config, op, left, right):
@@ -187,12 +190,12 @@ def pytest_assertrepr_compare(config, op, left, right):
         try:
             assert largs == rargs
         except AssertionError as e:
-            msg.extend(['args introspection:', str(e)])
+            msg.extend(['args introspection:', u(e)])
 
         try:
             assert lkwargs == rkwargs
         except AssertionError as e:
-            msg.extend(['kwargs introspection:', str(e)])
+            msg.extend(['kwargs introspection:', u(e)])
         return msg
 
     if (isinstance(left, tuple) and
@@ -216,8 +219,8 @@ def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
                     assert assert_call == __mock_self.call_args
             except AssertionError as diff:
                 # raise a new detailed exception, appending to existing
-                msg = DETAILED_ASSERTION.format(original=e, detailed=diff)
-                err = AssertionError(msg.encode().decode('unicode_escape'))
+                msg = DETAILED_ASSERTION.format(original=u(e), detailed=u(diff))
+                err = AssertionError(msg.replace('\\n', '\n').encode('unicode_escape').decode('unicode_escape'))
                 err._msg_updated = True
                 raise err
         raise AssertionError(*e.args)

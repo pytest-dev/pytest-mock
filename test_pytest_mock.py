@@ -338,7 +338,7 @@ def assert_traceback():
 
 
 @contextmanager
-def assert_argument_introspection(arg_left, arg_right, kwarg_left, kwarg_right):
+def assert_argument_introspection(args, kwargs):
     """
     Assert detailed argument introspection is used
     """
@@ -350,8 +350,14 @@ def assert_argument_introspection(arg_left, arg_right, kwarg_left, kwarg_right):
         # NOTE: we assert with either verbose or not, depending on how our own
         #       test was run by examining sys.argv
         verbose = any(a.startswith('-v') for a in sys.argv)
-        expected = '\n  '.join(util._compare_eq_iterable(
-            (arg_left, kwarg_left), (arg_right, kwarg_right), verbose))
+        if args:
+            expected = '\n  '.join(util._compare_eq_iterable(
+                args[0], args[1], verbose))
+        elif kwargs:
+            expected = '\n  '.join(util._compare_eq_iterable(
+                kwargs[0], kwargs[1], verbose))
+        else:
+            raise AssertionError('Must be given args or kwargs')
         assert expected in e.msg
     else:
         raise AssertionError("DID NOT RAISE")
@@ -394,7 +400,7 @@ def test_assert_called_args_with_introspection(mocker):
     stub.assert_called_with(*complex_args)
     stub.assert_called_once_with(*complex_args)
 
-    with assert_argument_introspection(wrong_args, complex_args, {}, {}):
+    with assert_argument_introspection(args=(wrong_args, complex_args), kwargs=None):
         stub.assert_called_with(*wrong_args)
         stub.assert_called_once_with(*wrong_args)
 
@@ -409,7 +415,7 @@ def test_assert_called_kwargs_with_introspection(mocker):
     stub.assert_called_with(**complex_kwargs)
     stub.assert_called_once_with(**complex_kwargs)
 
-    with assert_argument_introspection((), (), wrong_kwargs, complex_kwargs):
+    with assert_argument_introspection(args=None, kwargs=(wrong_kwargs, complex_kwargs)):
         stub.assert_called_with(**wrong_kwargs)
         stub.assert_called_once_with(**wrong_kwargs)
 
@@ -532,10 +538,9 @@ def test_assertion_error_is_descriptive(mocker):
 
     verbose = any(a.startswith('-v') for a in sys.argv)
     if verbose:
-        assert "positional arguments differ" in mocker_called_with
         assert "(1, 2) == ()" in mocker_called_with
-        assert "keyword arguments differ" in mocker_called_with
         assert "{} == {'a': 1, 'b': 2}" in mocker_called_with
+        assert "Detailed information truncated" not in mocker_called_with
     else:
         print(mocker_called_with)
         assert 'Expected call: remove(1, 2)' in mocker_called_with

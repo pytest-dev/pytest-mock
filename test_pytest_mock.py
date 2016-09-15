@@ -176,7 +176,7 @@ class TestMockerStub:
         stub = mocker.stub(**kwargs)
         with pytest.raises(AssertionError) as exc_info:
             stub.assert_called_with()
-        assert exc_info.value.msg == expected_message
+        assert str(exc_info.value) == expected_message
 
     def test_failure_message_with_no_name(self, mocker):
         self.__test_failure_message(mocker)
@@ -352,7 +352,7 @@ def assert_argument_introspection(left, right):
         #       test was run by examining sys.argv
         verbose = any(a.startswith('-v') for a in sys.argv)
         expected = '\n  '.join(util._compare_eq_iterable(left, right, verbose))
-        assert expected in e.msg
+        assert expected in str(e)
     else:
         raise AssertionError("DID NOT RAISE")
 

@@ -1,3 +1,11 @@
+1.3
+---
+
+* Add support for Python 3.6. Thanks `@hackebrot`_ for the report (`#59`_).
+
+.. _@hackebrot: https://github.com/hackebrot
+.. _#59: https://github.com/pytest-dev/pytest-mock/issues/59
+
 1.2
 ---
 

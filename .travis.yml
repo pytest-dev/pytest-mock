@@ -1,12 +1,14 @@
 language: python
 python:
-  - 3.5
+  - "3.5"
+  - "nightly"
 
 install:
   - pip install tox coveralls
 
 script:
-  - tox
+  - if [[ $TRAVIS_PYTHON_VERSION != nightly ]]; then tox; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == nightly ]]; then tox -e py36-pytest28,py36-pytest29,py36-pytest30; fi
 
 after_success:
   - coveralls

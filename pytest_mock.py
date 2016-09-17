@@ -10,7 +10,7 @@ except ImportError:
 version = '1.2'
 
 
-class MockFixture(object):
+class MockFixture:
     """
     Fixture that provides the same interface to functions in the mock module,
     ensuring that they are uninstalled at the end of each test.
@@ -21,12 +21,15 @@ class MockFixture(object):
     PropertyMock = mock_module.PropertyMock
     call = mock_module.call
     ANY = mock_module.ANY
-    sentinel = mock_module.sentinel
+
 
     def __init__(self):
         self._patches = []  # list of mock._patch objects
         self._mocks = []  # list of MagicMock objects
         self.patch = self._Patcher(self._patches, self._mocks)
+        # temporary fix: this should be at class level, but is blowing
+        # up in Python 3.6
+        self.sentinel = mock_module.sentinel
 
     def resetall(self):
         """
@@ -213,7 +216,7 @@ def wrap_assert_methods(config):
     for method, wrapper in wrappers.items():
         try:
             original = getattr(mock_module.NonCallableMock, method)
-        except AttributeError:
+        except AttributeError:  # pragma: no cover
             continue
         _mock_module_originals[method] = original
         patcher = mock_module.patch.object(

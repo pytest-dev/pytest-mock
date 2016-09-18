@@ -498,3 +498,27 @@ def test_monkeypatch_native(testdir):
     traceback_lines = [x for x in result.stdout.str().splitlines()
                        if 'Traceback (most recent call last)' in x]
     assert len(traceback_lines) == 1  # make sure there are no duplicated tracebacks (#44)
+
+
+def test_assertion_error_is_not_descriptive(mocker):
+    """Demonstrate that assert_wrapper does really bad things to assertion messages"""
+    import mock
+    from pytest_mock import _mock_module_originals
+    mocker_mock = mocker.patch('os.remove')
+    mock_mock = mock.Mock()
+    assert_called_with = _mock_module_originals['assert_called_with']
+
+    mocker_mock(a=1, b=2)
+    mock_mock(a=1, b=2)
+
+    try:
+        mocker_mock.assert_called_once_with(1, 2)
+    except AssertionError as e:
+        mocker_error_message = e.msg
+
+    try:
+        assert_called_with(mock_mock, 1, 2)
+    except AssertionError as e:
+        mock_error_message = e.msg
+
+    assert mock_error_message == mocker_error_message

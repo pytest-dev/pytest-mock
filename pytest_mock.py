@@ -10,7 +10,7 @@ except ImportError:
 version = '1.2'
 
 
-class MockFixture:
+class MockFixture(object):
     """
     Fixture that provides the same interface to functions in the mock module,
     ensuring that they are uninstalled at the end of each test.

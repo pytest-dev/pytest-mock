@@ -60,7 +60,7 @@ The supported methods are:
 * ``mocker.patch.multiple``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-multiple.
 * ``mocker.patch.dict``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-dict.
 * ``mocker.stopall()``: stops all active patches up to this point.
-* ``mocker.resetall()``: calls ``reset_mock()`` in all mocked objects up to this point. 
+* ``mocker.resetall()``: calls ``reset_mock()`` in all mocked objects up to this point.
 
 Some objects from the ``mock`` module are accessible directly from ``mocker`` for convenience:
 
@@ -70,6 +70,7 @@ Some objects from the ``mock`` module are accessible directly from ``mocker`` fo
 * `ANY <https://docs.python.org/3/library/unittest.mock.html#any>`_
 * `call <https://docs.python.org/3/library/unittest.mock.html#call>`_ *(Version 1.1)*
 * `sentinel <https://docs.python.org/3/library/unittest.mock.html#sentinel>`_ *(Version 1.2)*
+* `mock_open <https://docs.python.org/3/library/unittest.mock.html#mock-open>`_
 
 
 Spy

@@ -7,7 +7,8 @@ try:
 except ImportError:
     import unittest.mock as mock_module
 
-version = '1.2'
+from _pytest_mock_version import version
+__version__ = version
 
 
 class MockFixture(object):

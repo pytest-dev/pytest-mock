@@ -1,14 +1,14 @@
 language: python
 python:
   - "3.5"
-  - "nightly"
+  - "3.6-dev"
 
 install:
   - pip install tox coveralls
 
 script:
-  - if [[ $TRAVIS_PYTHON_VERSION != nightly ]]; then tox; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == nightly ]]; then tox -e py36-pytest28,py36-pytest29,py36-pytest30; fi
+  - if [[ $TRAVIS_PYTHON_VERSION != 3.6-dev ]]; then tox; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == 3.6-dev ]]; then tox -e py36-pytest28,py36-pytest29,py36-pytest30; fi
 
 after_success:
   - coveralls
@@ -22,3 +22,4 @@ deploy:
     tags: true
     distributions: sdist bdist_wheel
     repo: pytest-dev/pytest-mock
+    condition: $TRAVIS_PYTHON_VERSION = 3.5

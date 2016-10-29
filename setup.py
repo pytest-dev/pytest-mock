@@ -2,18 +2,13 @@ import re
 
 from setuptools import setup
 
-with open('pytest_mock.py') as f:
-    m = re.search("version = '(.*)'", f.read())
-    assert m is not None
-    version = m.group(1)
 
 setup(
     name='pytest-mock',
-    version=version,
     entry_points={
         'pytest11': ['pytest_mock = pytest_mock'],
     },
-    py_modules=['pytest_mock'],
+    py_modules=['pytest_mock', '_pytest_mock_version'],
     platforms='any',
     install_requires=[
         'pytest>=2.7',
@@ -21,6 +16,8 @@ setup(
     extras_require={
         ':python_version=="2.6" or python_version=="2.7"': ['mock'],
     },
+    use_scm_version={'write_to': '_pytest_mock_version.py'},
+    setup_requires=['setuptools_scm'],
     url='https://github.com/pytest-dev/pytest-mock/',
     license='MIT',
     author='Bruno Oliveira',

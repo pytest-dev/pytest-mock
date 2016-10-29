@@ -20,7 +20,7 @@ sdist/
 var/
 *.egg-info/
 .installed.cfg
-*.egg
+*.egg*
 
 # Installer logs
 pip-log.txt
@@ -54,3 +54,5 @@ docs/_build/
 
 # Virtual Envs
 .env*
+
+_pytest_mock_version.py

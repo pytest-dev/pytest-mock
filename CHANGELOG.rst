@@ -3,8 +3,13 @@
 
 * Add support for Python 3.6. Thanks `@hackebrot`_ for the report (`#59`_).
 
+* ``mock.mock_open`` is now aliased as ``mocker.mock_open`` for convenience.
+  Thanks `@pokidovea`_ for the PR (`#66`_).
+
 .. _@hackebrot: https://github.com/hackebrot
+.. _@pokidovea: https://github.com/pokidovea
 .. _#59: https://github.com/pytest-dev/pytest-mock/issues/59
+.. _#66: https://github.com/pytest-dev/pytest-mock/pull/66
 
 1.2
 ---

@@ -132,7 +132,7 @@ def test_deprecated_mock(mock, tmpdir):
     assert os.listdir(str(tmpdir)) == []
 
 
-@pytest.mark.parametrize('name', ['MagicMock', 'PropertyMock', 'Mock', 'call', 'ANY', 'sentinel'])
+@pytest.mark.parametrize('name', ['MagicMock', 'PropertyMock', 'Mock', 'call', 'ANY', 'sentinel', 'mock_open'])
 def test_mocker_aliases(name):
     from pytest_mock import mock_module, MockFixture
 

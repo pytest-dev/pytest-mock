@@ -21,7 +21,8 @@ class MockFixture(object):
     PropertyMock = mock_module.PropertyMock
     call = mock_module.call
     ANY = mock_module.ANY
-
+    sentinel = mock_module.sentinel
+    mock_open = mock_module.mock_open
 
     def __init__(self):
         self._patches = []  # list of mock._patch objects
@@ -30,6 +31,7 @@ class MockFixture(object):
         # temporary fix: this should be at class level, but is blowing
         # up in Python 3.6
         self.sentinel = mock_module.sentinel
+        self.mock_open = mock_module.mock_open
 
     def resetall(self):
         """

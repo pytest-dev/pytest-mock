@@ -443,11 +443,7 @@ def test_monkeypatch_ini(mocker, testdir):
         [pytest]
         mock_traceback_monkeypatch = false
     """)
-    if hasattr(testdir, 'runpytest_subprocess'):
-        result = testdir.runpytest_subprocess()
-    else:
-        # pytest 2.7.X
-        result = testdir.runpytest()
+    result = runpytest_subprocess(testdir)
     assert result.ret == 0
 
 
@@ -483,11 +479,7 @@ def test_monkeypatch_native(testdir):
             stub(1, greet='hello')
             stub.assert_called_once_with(1, greet='hey')
     """)
-    if hasattr(testdir, 'runpytest_subprocess'):
-        result = testdir.runpytest_subprocess('--tb=native')
-    else:
-        # pytest 2.7.X
-        result = testdir.runpytest('--tb=native')
+    result = runpytest_subprocess(testdir, '--tb=native')
     assert result.ret == 1
     assert 'During handling of the above exception' not in result.stdout.str()
     assert 'Differing items:' not in result.stdout.str()
@@ -508,13 +500,17 @@ def test_standalone_mock(testdir):
         [pytest]
         mock_use_standalone_module = true
     """)
-    if hasattr(testdir, 'runpytest_subprocess'):
-        result = testdir.runpytest_subprocess()
-    else:
-        # pytest 2.7.X
-        result = testdir.runpytest()
+    result = runpytest_subprocess(testdir)
     assert result.ret == 3
     result.stderr.fnmatch_lines([
         "*No module named 'mock'*",
     ])
 
+
+def runpytest_subprocess(testdir, *args):
+    """Testdir.runpytest_subprocess only available in pytest-2.8+"""
+    if hasattr(testdir, 'runpytest_subprocess'):
+        return testdir.runpytest_subprocess(*args)
+    else:
+        # pytest 2.7.X
+        return testdir.runpytest(*args)

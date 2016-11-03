@@ -68,6 +68,7 @@ Some objects from the ``mock`` module are accessible directly from ``mocker`` fo
 * `MagicMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.MagicMock>`_
 * `PropertyMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.PropertyMock>`_
 * `ANY <https://docs.python.org/3/library/unittest.mock.html#any>`_
+* `DEFAULT <https://docs.python.org/3/library/unittest.mock.html#default>`_ *(Version 1.4)*
 * `call <https://docs.python.org/3/library/unittest.mock.html#call>`_ *(Version 1.1)*
 * `sentinel <https://docs.python.org/3/library/unittest.mock.html#sentinel>`_ *(Version 1.2)*
 * `mock_open <https://docs.python.org/3/library/unittest.mock.html#mock-open>`_
@@ -151,6 +152,24 @@ mechanism used to suppress traceback entries from ``mock`` module does not work 
 anyway plus it generates confusing messages on Python 3.5 due to exception chaining
 
 .. _advanced assertions: https://pytest.org/latest/assert.html
+
+
+Use standalone "mock" package
+-----------------------------
+
+*New in version 1.4.0.*
+
+Python 3 users might want to use a newest version of the ``mock`` package as published on PyPI
+than the one that comes with the Python distribution.
+
+.. code-block:: ini
+
+    [pytest]
+    mock_use_standalone_module = true
+
+This will force the plugin to import ``mock`` instead of the ``unittest.mock`` module bundled with
+Python 3.3+. Note that this option is only used in Python 3+, as Python 2 users only have the option
+to use the ``mock`` package from PyPI anyway.
 
 
 Requirements

@@ -69,10 +69,8 @@ def mock_using_patch(mocker):
 
 
 def mock_using_patch_multiple(mocker):
-    from pytest_mock import mock_module
-
-    r = mocker.patch.multiple('os', remove=mock_module.DEFAULT,
-                              listdir=mock_module.DEFAULT)
+    r = mocker.patch.multiple('os', remove=mocker.DEFAULT,
+                              listdir=mocker.DEFAULT)
     return r['remove'], r['listdir']
 
 
@@ -133,10 +131,12 @@ def test_deprecated_mock(mock, tmpdir):
 
 
 @pytest.mark.parametrize('name', ['MagicMock', 'PropertyMock', 'Mock', 'call', 'ANY', 'sentinel', 'mock_open'])
-def test_mocker_aliases(name):
-    from pytest_mock import mock_module, MockFixture
+def test_mocker_aliases(name, pytestconfig):
+    from pytest_mock import _get_mock_module, MockFixture
 
-    mocker = MockFixture()
+    mock_module = _get_mock_module(pytestconfig)
+
+    mocker = MockFixture(pytestconfig)
     assert getattr(mocker, name) is getattr(mock_module, name)
 
 
@@ -203,8 +203,6 @@ def test_instance_method_spy(mocker):
 
 @skip_pypy
 def test_instance_method_by_class_spy(mocker):
-    from pytest_mock import mock_module
-
     class Foo(object):
 
         def bar(self, arg):
@@ -215,13 +213,12 @@ def test_instance_method_by_class_spy(mocker):
     other = Foo()
     assert foo.bar(arg=10) == 20
     assert other.bar(arg=10) == 20
-    calls = [mock_module.call(foo, arg=10), mock_module.call(other, arg=10)]
+    calls = [mocker.call(foo, arg=10), mocker.call(other, arg=10)]
     assert spy.call_args_list == calls
 
 
 @skip_pypy
 def test_instance_method_by_subclass_spy(mocker):
-    from pytest_mock import mock_module
 
     class Base(object):
 
@@ -236,7 +233,7 @@ def test_instance_method_by_subclass_spy(mocker):
     other = Foo()
     assert foo.bar(arg=10) == 20
     assert other.bar(arg=10) == 20
-    calls = [mock_module.call(foo, arg=10), mock_module.call(other, arg=10)]
+    calls = [mocker.call(foo, arg=10), mocker.call(other, arg=10)]
     assert spy.call_args_list == calls
 
 
@@ -424,12 +421,11 @@ def test_assert_any_call_wrapper(mocker):
 
 
 def test_assert_has_calls(mocker):
-    from pytest_mock import mock_module
     stub = mocker.stub()
     stub("foo")
-    stub.assert_has_calls([mock_module.call("foo")])
+    stub.assert_has_calls([mocker.call("foo")])
     with assert_traceback():
-        stub.assert_has_calls([mock_module.call("bar")])
+        stub.assert_has_calls([mocker.call("bar")])
 
 
 def test_monkeypatch_ini(mocker, testdir):
@@ -447,11 +443,7 @@ def test_monkeypatch_ini(mocker, testdir):
         [pytest]
         mock_traceback_monkeypatch = false
     """)
-    if hasattr(testdir, 'runpytest_subprocess'):
-        result = testdir.runpytest_subprocess()
-    else:
-        # pytest 2.7.X
-        result = testdir.runpytest()
+    result = runpytest_subprocess(testdir)
     assert result.ret == 0
 
 
@@ -487,14 +479,38 @@ def test_monkeypatch_native(testdir):
             stub(1, greet='hello')
             stub.assert_called_once_with(1, greet='hey')
     """)
-    if hasattr(testdir, 'runpytest_subprocess'):
-        result = testdir.runpytest_subprocess('--tb=native')
-    else:
-        # pytest 2.7.X
-        result = testdir.runpytest('--tb=native')
+    result = runpytest_subprocess(testdir, '--tb=native')
     assert result.ret == 1
     assert 'During handling of the above exception' not in result.stdout.str()
     assert 'Differing items:' not in result.stdout.str()
     traceback_lines = [x for x in result.stdout.str().splitlines()
                        if 'Traceback (most recent call last)' in x]
     assert len(traceback_lines) == 1  # make sure there are no duplicated tracebacks (#44)
+
+
+@pytest.mark.skipif(sys.version_info[0] < 3, reason='Py3 only')
+def test_standalone_mock(testdir):
+    """Check that the "mock_use_standalone" is being used.
+    """
+    testdir.makepyfile("""
+        def test_foo(mocker):
+            pass
+    """)
+    testdir.makeini("""
+        [pytest]
+        mock_use_standalone_module = true
+    """)
+    result = runpytest_subprocess(testdir)
+    assert result.ret == 3
+    result.stderr.fnmatch_lines([
+        "*No module named 'mock'*",
+    ])
+
+
+def runpytest_subprocess(testdir, *args):
+    """Testdir.runpytest_subprocess only available in pytest-2.8+"""
+    if hasattr(testdir, 'runpytest_subprocess'):
+        return testdir.runpytest_subprocess(*args)
+    else:
+        # pytest 2.7.X
+        return testdir.runpytest(*args)

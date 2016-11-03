@@ -1,14 +1,28 @@
 import inspect
+import sys
 
 import pytest
 
-try:
-    import mock as mock_module
-except ImportError:
-    import unittest.mock as mock_module
-
 from _pytest_mock_version import version
 __version__ = version
+
+
+def _get_mock_module(config):
+    """
+    Import and return the actual "mock" module. By default this is "mock" for Python 2 and
+    "unittest.mock" for Python 3, but the user can force to always use "mock" on Python 3 using
+    the mock_use_standalone_module ini option.
+    """
+    if not hasattr(_get_mock_module, '_module'):
+        use_standalone_module = parse_ini_boolean(config.getini('mock_use_standalone_module'))
+        if sys.version_info[0] == 2 or use_standalone_module:
+            import mock
+            _get_mock_module._module = mock
+        else:
+            import unittest.mock
+            _get_mock_module._module = unittest.mock
+
+    return _get_mock_module._module
 
 
 class MockFixture(object):
@@ -17,20 +31,20 @@ class MockFixture(object):
     ensuring that they are uninstalled at the end of each test.
     """
 
-    Mock = mock_module.Mock
-    MagicMock = mock_module.MagicMock
-    PropertyMock = mock_module.PropertyMock
-    call = mock_module.call
-    ANY = mock_module.ANY
-    sentinel = mock_module.sentinel
-    mock_open = mock_module.mock_open
-
-    def __init__(self):
+    def __init__(self, config):
         self._patches = []  # list of mock._patch objects
         self._mocks = []  # list of MagicMock objects
-        self.patch = self._Patcher(self._patches, self._mocks)
-        # temporary fix: this should be at class level, but is blowing
-        # up in Python 3.6
+        self._mock_module = mock_module = _get_mock_module(config)
+        self.patch = self._Patcher(self._patches, self._mocks, mock_module)
+        # aliases for convenience
+        self.Mock = mock_module.Mock
+        self.MagicMock = mock_module.MagicMock
+        self.PropertyMock = mock_module.PropertyMock
+        self.call = mock_module.call
+        self.ANY = mock_module.ANY
+        self.DEFAULT = mock_module.DEFAULT
+        self.sentinel = mock_module.sentinel
+        self.mock_open = mock_module.mock_open
         self.sentinel = mock_module.sentinel
         self.mock_open = mock_module.mock_open
 
@@ -90,7 +104,7 @@ class MockFixture(object):
         :rtype: mock.MagicMock
         :return: Stub object.
         """
-        return mock_module.MagicMock(spec=lambda *args, **kwargs: None, name=name)
+        return self._mock_module.MagicMock(spec=lambda *args, **kwargs: None, name=name)
 
     class _Patcher(object):
         """
@@ -98,9 +112,10 @@ class MockFixture(object):
         etc. We need this indirection to keep the same API of the mock package.
         """
 
-        def __init__(self, patches, mocks):
+        def __init__(self, patches, mocks, mock_module):
             self._patches = patches
             self._mocks = mocks
+            self._mock_module = mock_module
 
         def _start_patch(self, mock_func, *args, **kwargs):
             """Patches something by calling the given function from the mock
@@ -115,29 +130,29 @@ class MockFixture(object):
 
         def object(self, *args, **kwargs):
             """API to mock.patch.object"""
-            return self._start_patch(mock_module.patch.object, *args, **kwargs)
+            return self._start_patch(self._mock_module.patch.object, *args, **kwargs)
 
         def multiple(self, *args, **kwargs):
             """API to mock.patch.multiple"""
-            return self._start_patch(mock_module.patch.multiple, *args,
+            return self._start_patch(self._mock_module.patch.multiple, *args,
                                      **kwargs)
 
         def dict(self, *args, **kwargs):
             """API to mock.patch.dict"""
-            return self._start_patch(mock_module.patch.dict, *args, **kwargs)
+            return self._start_patch(self._mock_module.patch.dict, *args, **kwargs)
 
         def __call__(self, *args, **kwargs):
             """API to mock.patch"""
-            return self._start_patch(mock_module.patch, *args, **kwargs)
+            return self._start_patch(self._mock_module.patch, *args, **kwargs)
 
 
 @pytest.yield_fixture
-def mocker():
+def mocker(pytestconfig):
     """
     return an object that has the same interface to the `mock` module, but
     takes care of automatically undoing all patches after each test method.
     """
-    result = MockFixture()
+    result = MockFixture(pytestconfig)
     yield result
     result.stopall()
 
@@ -209,6 +224,8 @@ def wrap_assert_methods(config):
     if _mock_module_originals:
         return
 
+    mock_module = _get_mock_module(config)
+
     wrappers = {
         'assert_not_called': wrap_assert_not_called,
         'assert_called_with': wrap_assert_called_with,
@@ -247,6 +264,10 @@ def pytest_addoption(parser):
                   'Monkeypatch the mock library to improve reporting of the '
                   'assert_called_... methods',
                   default=True)
+    parser.addini('mock_use_standalone_module',
+                  'Use standalone "mock" (from PyPI) instead of builtin "unittest.mock" '
+                  'on Python 3',
+                  default=False)
 
 
 def parse_ini_boolean(value):

@@ -18,13 +18,13 @@ of a test:
 
 .. Using PNG badges because PyPI doesn't support SVG
 
-|python| |version| |downloads| |ci| |appveyor| |coverage|
+|python| |version| |anaconda| |ci| |appveyor| |coverage|
 
 .. |version| image:: http://img.shields.io/pypi/v/pytest-mock.png
   :target: https://pypi.python.org/pypi/pytest-mock
 
-.. |downloads| image:: http://img.shields.io/pypi/dm/pytest-mock.png
-  :target: https://pypi.python.org/pypi/pytest-mock
+.. |anaconda| image:: https://anaconda.org/conda-forge/pytest-mock/badges/version.svg
+    :target: https://anaconda.org/conda-forge/pytest-mock
 
 .. |ci| image:: http://img.shields.io/travis/pytest-dev/pytest-mock.png
   :target: https://travis-ci.org/pytest-dev/pytest-mock

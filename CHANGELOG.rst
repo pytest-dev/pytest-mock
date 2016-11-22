@@ -1,9 +1,18 @@
+1.5.0
+-----
+
+* New ``mocker.mock_module`` variable points to the underlying mock module being used
+  (``unittest.mock`` or ``mock``).
+  Thanks `@blueyed`_ for the request (`#71`_).
+
+.. _#71: https://github.com/pytest-dev/pytest-mock/pull/71
+
 1.4.0
 -----
 
 * New configuration variable, ``mock_use_standalone_module`` (defaults to ``False``). This forces
   the plugin to import ``mock`` instead of ``unittest.mock`` on Python 3. This is useful to import
-  and use a newer version than the one available in the Python distribution.
+  a newer version than the one available in the Python distribution.
 
 * Previously the plugin would first try to import ``mock`` and fallback to ``unittest.mock``
   in case of an ``ImportError``, but this behavior has been removed because it could hide

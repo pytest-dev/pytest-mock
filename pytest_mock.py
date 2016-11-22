@@ -2,8 +2,8 @@ import inspect
 import sys
 
 import pytest
-
 from _pytest_mock_version import version
+
 __version__ = version
 
 
@@ -34,7 +34,7 @@ class MockFixture(object):
     def __init__(self, config):
         self._patches = []  # list of mock._patch objects
         self._mocks = []  # list of MagicMock objects
-        self._mock_module = mock_module = _get_mock_module(config)
+        self.mock_module = mock_module = _get_mock_module(config)
         self.patch = self._Patcher(self._patches, self._mocks, mock_module)
         # aliases for convenience
         self.Mock = mock_module.Mock
@@ -104,7 +104,7 @@ class MockFixture(object):
         :rtype: mock.MagicMock
         :return: Stub object.
         """
-        return self._mock_module.MagicMock(spec=lambda *args, **kwargs: None, name=name)
+        return self.mock_module.MagicMock(spec=lambda *args, **kwargs: None, name=name)
 
     class _Patcher(object):
         """
@@ -115,7 +115,7 @@ class MockFixture(object):
         def __init__(self, patches, mocks, mock_module):
             self._patches = patches
             self._mocks = mocks
-            self._mock_module = mock_module
+            self.mock_module = mock_module
 
         def _start_patch(self, mock_func, *args, **kwargs):
             """Patches something by calling the given function from the mock
@@ -130,20 +130,20 @@ class MockFixture(object):
 
         def object(self, *args, **kwargs):
             """API to mock.patch.object"""
-            return self._start_patch(self._mock_module.patch.object, *args, **kwargs)
+            return self._start_patch(self.mock_module.patch.object, *args, **kwargs)
 
         def multiple(self, *args, **kwargs):
             """API to mock.patch.multiple"""
-            return self._start_patch(self._mock_module.patch.multiple, *args,
+            return self._start_patch(self.mock_module.patch.multiple, *args,
                                      **kwargs)
 
         def dict(self, *args, **kwargs):
             """API to mock.patch.dict"""
-            return self._start_patch(self._mock_module.patch.dict, *args, **kwargs)
+            return self._start_patch(self.mock_module.patch.dict, *args, **kwargs)
 
         def __call__(self, *args, **kwargs):
             """API to mock.patch"""
-            return self._start_patch(self._mock_module.patch, *args, **kwargs)
+            return self._start_patch(self.mock_module.patch, *args, **kwargs)
 
 
 @pytest.yield_fixture

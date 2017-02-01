@@ -1,14 +1,12 @@
 language: python
 python:
-  - "3.5"
-  - "3.6-dev"
+  - "3.6"
 
 install:
   - pip install tox coveralls
 
 script:
-  - if [[ $TRAVIS_PYTHON_VERSION != 3.6-dev ]]; then tox; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == 3.6-dev ]]; then tox -e py36-pytest28,py36-pytest29,py36-pytest30; fi
+  - tox
 
 after_success:
   - coveralls

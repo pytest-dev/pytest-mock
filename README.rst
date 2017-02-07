@@ -20,19 +20,19 @@ of a test:
 
 |python| |version| |anaconda| |ci| |appveyor| |coverage|
 
-.. |version| image:: http://img.shields.io/pypi/v/pytest-mock.png
+.. |version| image:: http://img.shields.io/pypi/v/pytest-mock.svg
   :target: https://pypi.python.org/pypi/pytest-mock
 
 .. |anaconda| image:: https://anaconda.org/conda-forge/pytest-mock/badges/version.svg
     :target: https://anaconda.org/conda-forge/pytest-mock
 
-.. |ci| image:: http://img.shields.io/travis/pytest-dev/pytest-mock.png
+.. |ci| image:: http://img.shields.io/travis/pytest-dev/pytest-mock.svg
   :target: https://travis-ci.org/pytest-dev/pytest-mock
 
 .. |appveyor| image:: https://ci.appveyor.com/api/projects/status/pid1t7iuwhkm9eh6/branch/master?svg=true
   :target: https://ci.appveyor.com/project/pytestbot/pytest-mock
 
-.. |coverage| image:: http://img.shields.io/coveralls/pytest-dev/pytest-mock.png
+.. |coverage| image:: http://img.shields.io/coveralls/pytest-dev/pytest-mock.svg
   :target: https://coveralls.io/r/pytest-dev/pytest-mock
 
 .. |python| image:: https://img.shields.io/pypi/pyversions/pytest-mock.svg

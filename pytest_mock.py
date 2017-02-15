@@ -45,8 +45,6 @@ class MockFixture(object):
         self.DEFAULT = mock_module.DEFAULT
         self.sentinel = mock_module.sentinel
         self.mock_open = mock_module.mock_open
-        self.sentinel = mock_module.sentinel
-        self.mock_open = mock_module.mock_open
 
     def resetall(self):
         """

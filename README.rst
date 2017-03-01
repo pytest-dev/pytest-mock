@@ -151,7 +151,7 @@ Note that this feature is automatically disabled with the ``--tb=native`` option
 mechanism used to suppress traceback entries from ``mock`` module does not work with that option
 anyway plus it generates confusing messages on Python 3.5 due to exception chaining
 
-.. _advanced assertions: https://pytest.org/latest/assert.html
+.. _advanced assertions: http://pytest.org/latest/assert.html
 
 
 Use standalone "mock" package

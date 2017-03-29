@@ -172,6 +172,7 @@ _mock_module_originals = {}
 
 def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
     __tracebackhide__ = True
+    err = None
     try:
         __wrapped_mock_method__(*args, **kwargs)
     except AssertionError as e:
@@ -180,7 +181,9 @@ def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
             actual_args, actual_kwargs = __mock_self.call_args
             assert actual_args == args[1:]
             assert actual_kwargs == kwargs
-        raise AssertionError(*e.args)
+        err = e
+    if err is not None:
+        raise AssertionError(*err.args)
 
 
 def wrap_assert_not_called(*args, **kwargs):

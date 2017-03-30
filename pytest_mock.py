@@ -2,6 +2,7 @@ import inspect
 import sys
 
 import pytest
+
 from _pytest_mock_version import version
 
 __version__ = version
@@ -172,18 +173,29 @@ _mock_module_originals = {}
 
 def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
     __tracebackhide__ = True
-    err = None
     try:
         __wrapped_mock_method__(*args, **kwargs)
+        return
     except AssertionError as e:
-        __mock_self = args[0]
-        if __mock_self.call_args is not None:
-            actual_args, actual_kwargs = __mock_self.call_args
-            assert actual_args == args[1:]
-            assert actual_kwargs == kwargs
-        err = e
-    if err is not None:
-        raise AssertionError(*err.args)
+        if getattr(e, '_mock_introspection_applied', 0):
+            msg = str(e)
+        else:
+            __mock_self = args[0]
+            msg = str(e)
+            if __mock_self.call_args is not None:
+                actual_args, actual_kwargs = __mock_self.call_args
+                msg += '\n\npytest introspection follows:\n'
+                try:
+                    assert actual_args == args[1:]
+                except AssertionError as e:
+                    msg += '\nArgs:\n' + str(e)
+                try:
+                    assert actual_kwargs == kwargs
+                except AssertionError as e:
+                    msg += '\nKwargs:\n' + str(e)
+    e = AssertionError(msg)
+    e._mock_introspection_applied = True
+    raise e
 
 
 def wrap_assert_not_called(*args, **kwargs):

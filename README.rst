@@ -126,14 +126,30 @@ the method, and uses py.test's own `advanced assertions`_ to return a better
 diff::
 
 
-            m = mocker.patch.object(DS, 'create_char')
-            DS().create_char('Raistlin', class_='mag', gift=12)
-    >       m.assert_called_once_with('Raistlin', class_='mage', gift=12)
-    E       assert {'class_': 'mag', 'gift': 12} == {'class_': 'mage', 'gift': 12}
-    E         Omitting 1 identical items, use -v to show
-    E         Differing items:
-    E         {'class_': 'mag'} != {'class_': 'mage'}
+    mocker = <pytest_mock.MockFixture object at 0x0381E2D0>
+
+        def test(mocker):
+            m = mocker.Mock()
+            m('fo')
+    >       m.assert_called_once_with('', bar=4)
+    E       AssertionError: Expected call: mock('', bar=4)
+    E       Actual call: mock('fo')
+    E
+    E       pytest introspection follows:
+    E
+    E       Args:
+    E       assert ('fo',) == ('',)
+    E         At index 0 diff: 'fo' != ''
     E         Use -v to get the full diff
+    E       Kwargs:
+    E       assert {} == {'bar': 4}
+    E         Right contains more items:
+    E         {'bar': 4}
+    E         Use -v to get the full diff
+
+
+test_foo.py:6: AssertionError
+========================== 1 failed in 0.03 seconds ===========================
 
 
 This is useful when asserting mock calls with many/nested arguments and trying

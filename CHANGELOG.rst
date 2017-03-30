@@ -1,3 +1,15 @@
+1.6.0
+-----
+
+* The original assertions raised by the various ``Mock.assert_*`` methods
+  now appear in the failure message, in addition to the message obtained from
+  pytest introspection.
+  Thanks `@quodlibetor`_ for the initial patch (`#79`_).
+
+.. _@quodlibetor: https://github.com/quodlibetor
+
+.. _#79: https://github.com/pytest-dev/pytest-mock/pull/79
+
 1.5.0
 -----
 

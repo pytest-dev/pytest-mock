@@ -4,7 +4,6 @@ import sys
 from contextlib import contextmanager
 
 import py.code
-
 import pytest
 
 pytest_plugins = 'pytester'
@@ -514,3 +513,29 @@ def runpytest_subprocess(testdir, *args):
     else:
         # pytest 2.7.X
         return testdir.runpytest(*args)
+
+
+def test_detailed_introspection(testdir):
+    """Check that the "mock_use_standalone" is being used.
+    """
+    testdir.makepyfile("""
+        def test(mocker):
+            m = mocker.Mock()
+            m('fo')
+            m.assert_called_once_with('', bar=4)
+    """)
+    result = testdir.runpytest('-s')
+    result.stdout.fnmatch_lines([
+        "*AssertionError: Expected call: mock('', bar=4)*",
+        "*Actual call: mock('fo')*",
+        "*pytest introspection follows:*",
+        '*Args:',
+        "*assert ('fo',) == ('',)",
+        "*At index 0 diff: 'fo' != ''*",
+        "*Use -v to get the full diff*",
+        "*Kwargs:*",
+        "*assert {} == {'bar': 4}*",
+        "*Right contains more items:*",
+        "*{'bar': 4}*",
+        "*Use -v to get the full diff*",
+    ])

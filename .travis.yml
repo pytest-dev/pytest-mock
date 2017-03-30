@@ -1,6 +1,40 @@
 language: python
 python:
-  - "3.6"
+  - "3.5"
+
+env:
+  - TOXENV=py26-pytest27
+  - TOXENV=py26-pytest28
+  - TOXENV=py26-pytest29
+  - TOXENV=py26-pytest30
+  - TOXENV=py27-pytest27
+  - TOXENV=py27-pytest28
+  - TOXENV=py27-pytest29
+  - TOXENV=py27-pytest30
+  - TOXENV=py33-pytest27
+  - TOXENV=py33-pytest28
+  - TOXENV=py33-pytest29
+  - TOXENV=py33-pytest30
+  - TOXENV=py34-pytest27
+  - TOXENV=py34-pytest28
+  - TOXENV=py34-pytest29
+  - TOXENV=py34-pytest30
+  - TOXENV=py35-pytest27
+  - TOXENV=py35-pytest28
+  - TOXENV=py35-pytest29
+  - TOXENV=py35-pytest30
+  - TOXENV=linting  
+
+matrix:
+  include:
+    - env: TOXENV=py36-pytest27
+      python: '3.6'    
+    - env: TOXENV=py36-pytest28
+      python: '3.6'    
+    - env: TOXENV=py36-pytest29
+      python: '3.6'    
+    - env: TOXENV=py36-pytest30
+      python: '3.6'    
 
 install:
   - pip install tox coveralls
@@ -14,6 +48,7 @@ after_success:
 deploy:
   provider: pypi
   user: nicoddemus
+  skip_upload_docs: true
   password:
     secure: bB4adUZVIkt31cmNklskyIDNehujKToGnStnlunp7P8CBF6CGeNqkYU17emAPvfZbTb/ClUpiO9r6AD1ej32Uyr+I8qUyhuYtHG3JGp+WRR/tw+ytAZIJ9i+PMjBv1RAdyLENJ/Tx0LKHKsABr8dQIieLFqKZJuT77f/5ZkvI/U=
   on:

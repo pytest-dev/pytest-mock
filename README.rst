@@ -274,9 +274,13 @@ But this poses a few disadvantages:
 - you can't easily undo the mocking during the test execution;
 
 
-**Note**
+**Note about usage as context manager**
 
-Although mocker's API is intentionally the same as ``mock.patch``'s, its uses as context managers and function decorators are **not** supported. The purpose of this plugin is to make the use of context managers and function decorators for mocking unnecessary. Indeed, trying to use the functionality in ``mocker`` in this manner can lead to non-intuitive errors:
+Although mocker's API is intentionally the same as ``mock.patch``'s, its use
+as context manager and function decorator is **not** supported through the
+fixture. The purpose of this plugin is to make the use of context managers and
+function decorators for mocking unnecessary. Indeed, trying to use the
+functionality in ``mocker`` in this manner can lead to non-intuitive errors:
 
 .. code-block:: python
 
@@ -292,6 +296,23 @@ Although mocker's API is intentionally the same as ``mock.patch``'s, its uses as
     in test_context_manager
         with mocker.patch.object(a, 'doIt', return_value=True, autospec=True):
     E   AttributeError: __exit__
+
+You can however use ``mocker.mock_module`` to access the underlying ``mock``
+module, e.g. to return a context manager in a fixture that mocks something
+temporarily:
+
+.. code-block:: python
+
+    @pytest.fixture
+    def fixture_cm(mocker):
+        @contextlib.contextmanager
+        def my_cm():
+            def mocked():
+                pass
+
+            with mocker.mock_module.patch.object(SomeClass, 'method', mocked):
+                yield
+        return my_cm
 
 
 License

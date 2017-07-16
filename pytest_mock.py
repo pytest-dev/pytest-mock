@@ -124,7 +124,8 @@ class MockFixture(object):
             p = mock_func(*args, **kwargs)
             mocked = p.start()
             self._patches.append(p)
-            self._mocks.append(mocked)
+            if hasattr(mocked, 'reset_mock'):
+                self._mocks.append(mocked)
             return mocked
 
         def object(self, *args, **kwargs):

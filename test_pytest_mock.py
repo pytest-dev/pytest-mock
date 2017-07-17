@@ -86,6 +86,8 @@ def test_mock_patches(mock_fs, mocker, check_unix_fs_mocked):
     mock_fs(mocker)
     mocked_rm, mocked_ls = mock_fs(mocker)
     check_unix_fs_mocked(mocked_rm, mocked_ls)
+    mocker.resetall()
+    mocker.stopall()
 
 
 def test_mock_patch_dict(mocker):
@@ -98,6 +100,18 @@ def test_mock_patch_dict(mocker):
     assert x == {'new': 10}
     mocker.stopall()
     assert x == {'original': 1}
+
+
+def test_mock_patch_dict_resetall(mocker):
+    """
+    We can call resetall after patching a dict.
+    :param mock:
+    """
+    x = {'original': 1}
+    mocker.patch.dict(x, values=[('new', 10)], clear=True)
+    assert x == {'new': 10}
+    mocker.resetall()
+    assert x == {'new': 10}
 
 
 def test_deprecated_mock(mock, tmpdir):

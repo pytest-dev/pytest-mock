@@ -1,3 +1,14 @@
+1.6.1
+-----
+
+* Fix ``mocker.resetall()`` by ignoring mocker objects which don't have a
+  ``resetall`` method, like for example ``patch.dict``.
+  Thanks `@jdavisp3`_ for the PR (`#88`_).
+
+.. _@jdavisp3: https://github.com/jdavisp3
+
+.. _#88: https://github.com/pytest-dev/pytest-mock/pull/88
+
 1.6.0
 -----
 

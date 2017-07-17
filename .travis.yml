@@ -26,7 +26,7 @@ deploy:
   user: nicoddemus
   skip_upload_docs: true
   password:
-    secure: Fql0uLFWz+D6p36BUm+2WB5tjUiuCkOFpU68Dnycn5cIRqZQuBzfNNZPVGHgIUGNZ5rC+rJC+edEvJoF2AB9cQ7kz86SzZuQHdEOwsnR4KQw2tkD5fw2BqH4bQ56SQ+UHAsyQAuDkjShHTrwSTJrzShIE5Poma5BqmqC4mRSgbI=
+    secure: OEWrbk09CZRrwFE6sBpRqQHu45zRu1S0Ly1ZeprkFCKxMd9tZOnrYM5qxCDQXxFHIvuyajuJ+qWTOgxUvurQMNsD6DbvJKTJ0R8upH1b1Q95KK8xiJFedhqBEUga5GrInK59oo0Sgblse2jtH5NnHXRUClSdT+iHdLY5sljCTRg=
   on:
     tags: true
     distributions: sdist bdist_wheel

@@ -26,9 +26,9 @@ deploy:
   user: nicoddemus
   skip_upload_docs: true
   password:
-    secure: bB4adUZVIkt31cmNklskyIDNehujKToGnStnlunp7P8CBF6CGeNqkYU17emAPvfZbTb/ClUpiO9r6AD1ej32Uyr+I8qUyhuYtHG3JGp+WRR/tw+ytAZIJ9i+PMjBv1RAdyLENJ/Tx0LKHKsABr8dQIieLFqKZJuT77f/5ZkvI/U=
+    secure: Fql0uLFWz+D6p36BUm+2WB5tjUiuCkOFpU68Dnycn5cIRqZQuBzfNNZPVGHgIUGNZ5rC+rJC+edEvJoF2AB9cQ7kz86SzZuQHdEOwsnR4KQw2tkD5fw2BqH4bQ56SQ+UHAsyQAuDkjShHTrwSTJrzShIE5Poma5BqmqC4mRSgbI=
   on:
     tags: true
     distributions: sdist bdist_wheel
     repo: pytest-dev/pytest-mock
-    condition: $TRAVIS_PYTHON_VERSION = 3.5
+    condition: $TRAVIS_PYTHON_VERSION = 3.6

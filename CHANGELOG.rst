@@ -1,3 +1,8 @@
+1.6.2
+-----
+
+* Provide source package in ``tar.gz`` format and remove obsolete ``MANIFEST.in``.
+
 1.6.1
 -----
 

@@ -25,10 +25,10 @@ deploy:
   provider: pypi
   user: nicoddemus
   skip_upload_docs: true
+  distributions: sdist bdist_wheel
   password:
     secure: OEWrbk09CZRrwFE6sBpRqQHu45zRu1S0Ly1ZeprkFCKxMd9tZOnrYM5qxCDQXxFHIvuyajuJ+qWTOgxUvurQMNsD6DbvJKTJ0R8upH1b1Q95KK8xiJFedhqBEUga5GrInK59oo0Sgblse2jtH5NnHXRUClSdT+iHdLY5sljCTRg=
   on:
     tags: true
-    distributions: sdist bdist_wheel
     repo: pytest-dev/pytest-mock
     condition: $TRAVIS_PYTHON_VERSION = 3.6

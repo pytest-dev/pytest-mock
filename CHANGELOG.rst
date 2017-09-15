@@ -1,3 +1,14 @@
+1.6.3
+-----
+
+* Fix ``UnicodeDecodeError`` during assert introspection in ``assert_called_with`` in Python 2.
+  Thanks `@AndreasHogstrom`_ for the report (`#91`_).
+
+
+.. _@AndreasHogstrom: https://github.com/AndreasHogstrom
+
+.. _#91: https://github.com/pytest-dev/pytest-mock/issues/91
+
 1.6.2
 -----
 

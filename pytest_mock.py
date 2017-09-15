@@ -11,7 +11,7 @@ __version__ = version
 
 # pseudo-six; if this starts to require more than this, depend on six already
 if sys.version_info[0] == 2:  # pragma: no cover
-    text_type = unicode
+    text_type = unicode  # noqa
 else:
     text_type = str
 

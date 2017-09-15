@@ -534,3 +534,13 @@ def test_detailed_introspection(testdir):
         "*{'bar': 4}*",
         "*Use -v to get the full diff*",
     ])
+
+
+def test_assert_called_with_unicode_arguments(mocker):
+    """Test bug in assert_call_with called with non-ascii unicode string (#91)"""
+    stub = mocker.stub()
+    stub(b'l\xc3\xb6k'.decode('UTF-8'))
+
+    with pytest.raises(AssertionError):
+        stub.assert_called_with(u'lak')
+

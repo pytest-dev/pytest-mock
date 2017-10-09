@@ -153,10 +153,10 @@ diff::
     E         Right contains more items:
     E         {'bar': 4}
     E         Use -v to get the full diff
-
-
-test_foo.py:6: AssertionError
-========================== 1 failed in 0.03 seconds ===========================
+    
+    
+    test_foo.py:6: AssertionError
+    ========================== 1 failed in 0.03 seconds ===========================
 
 
 This is useful when asserting mock calls with many/nested arguments and trying

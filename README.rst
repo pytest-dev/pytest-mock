@@ -44,6 +44,13 @@ of a test:
 
 .. |python| image:: https://img.shields.io/pypi/pyversions/pytest-mock.svg
   :target: https://pypi.python.org/pypi/pytest-mock/
+  
+  
+.. image:: http://www.opensourcecitizen.org/badge?url=github.com/pytest-dev/pytest-mock
+  :target: http://www.opensourcecitizen.org/project?url=github.com/pytest-dev/pytest-mock
+
+If you found this library useful, donate some CPU cycles to its
+development efforts by clicking above. Thank you! 😇  
 
 Usage
 =====

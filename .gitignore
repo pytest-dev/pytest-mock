@@ -56,3 +56,6 @@ docs/_build/
 .env*
 
 _pytest_mock_version.py
+
+# IDE
+.idea

@@ -198,14 +198,14 @@ than the one that comes with the Python distribution.
     mock_use_standalone_module = true
 
 This will force the plugin to import ``mock`` instead of the ``unittest.mock`` module bundled with
-Python 3.3+. Note that this option is only used in Python 3+, as Python 2 users only have the option
+Python 3.4+. Note that this option is only used in Python 3+, as Python 2 users only have the option
 to use the ``mock`` package from PyPI anyway.
 
 
 Requirements
 ============
 
-* Python 2.6+, Python 3.3+
+* Python 2.7, Python 3.4+
 * pytest
 * mock (for Python 2)
 

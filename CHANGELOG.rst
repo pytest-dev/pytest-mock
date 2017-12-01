@@ -1,3 +1,14 @@
+1.7.0
+-----
+
+**Incompatible change**
+
+* ``pytest-mock`` no longer supports Python 2.6 and Python 3.3, following the lead of
+  ``pytest`` and other projects in the community. Thanks `@hugovk`_ for the PR (`#96`_).
+
+.. _@hugovk: https://github.com/hugovk
+.. _#96: https://github.com/pytest-dev/pytest-mock/pull/96
+
 1.6.3
 -----
 

@@ -1,16 +1,3 @@
-1.7.1
------
-
-* Fix ``mock`` requirements in Python 2. Thanks `@ghisvail`_ for the report (`#101`_).
-
-**Internal change**
-
-* Some tests in ``pytest-mock``'s suite are skipped if assertion rewriting is disabled (`#102`_).
-
-.. _@ghisvail: https://github.com/ghisvail
-.. _#101: https://github.com/pytest-dev/pytest-mock/issues/101
-.. _#102: https://github.com/pytest-dev/pytest-mock/issues/102
-
 1.7.0
 -----
 
@@ -19,8 +6,19 @@
 * ``pytest-mock`` no longer supports Python 2.6 and Python 3.3, following the lead of
   ``pytest`` and other projects in the community. Thanks `@hugovk`_ for the PR (`#96`_).
 
+**Packaging**
+
+* Fix ``mock`` requirement in Python 2. Thanks `@ghisvail`_ for the report (`#101`_).
+
+**Internal**
+
+* Some tests in ``pytest-mock``'s suite are skipped if assertion rewriting is disabled (`#102`_).
+
+.. _@ghisvail: https://github.com/ghisvail
 .. _@hugovk: https://github.com/hugovk
 .. _#96: https://github.com/pytest-dev/pytest-mock/pull/96
+.. _#101: https://github.com/pytest-dev/pytest-mock/issues/101
+.. _#102: https://github.com/pytest-dev/pytest-mock/issues/102
 
 1.6.3
 -----

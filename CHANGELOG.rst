@@ -1,10 +1,15 @@
 1.7.1
 -----
 
-* Fix ``mock`` requirements in Python 2. Thanks `@ghisvail`_ for the report.
+* Fix ``mock`` requirements in Python 2. Thanks `@ghisvail`_ for the report (`#101`_).
+
+**Internal change**
+
+* Some tests in ``pytest-mock``'s suite are skipped if assertion rewriting is disabled (`#102`_).
 
 .. _@ghisvail: https://github.com/ghisvail
 .. _#101: https://github.com/pytest-dev/pytest-mock/issues/101
+.. _#102: https://github.com/pytest-dev/pytest-mock/issues/102
 
 1.7.0
 -----

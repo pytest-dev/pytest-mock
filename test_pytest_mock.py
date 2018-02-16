@@ -13,6 +13,19 @@ skip_pypy = pytest.mark.skipif(platform.python_implementation() == 'PyPy',
                                reason='could not make work on pypy')
 
 
+@pytest.fixture
+def needs_assert_rewrite(pytestconfig):
+    """
+    Fixture which skips requesting test if assertion rewrite is disabled (#102)
+
+    Making this a fixture to avoid acessing pytest's config in the global context.
+    """
+    option = pytestconfig.getoption('assertmode')
+    if option != 'rewrite':
+        pytest.skip('this test needs assertion rewrite to work but current option '
+                    'is "{}"'.format(option))
+
+
 class UnixFS(object):
     """
     Wrapper to os functions to simulate a Unix file system, used for testing
@@ -375,6 +388,7 @@ def test_assert_called_once_with_wrapper(mocker):
         stub.assert_called_once_with("foo")
 
 
+@pytest.mark.usefixtures('needs_assert_rewrite')
 def test_assert_called_args_with_introspection(mocker):
     stub = mocker.stub()
 
@@ -390,6 +404,7 @@ def test_assert_called_args_with_introspection(mocker):
         stub.assert_called_once_with(*wrong_args)
 
 
+@pytest.mark.usefixtures('needs_assert_rewrite')
 def test_assert_called_kwargs_with_introspection(mocker):
     stub = mocker.stub()
 
@@ -510,6 +525,7 @@ def runpytest_subprocess(testdir, *args):
         return testdir.runpytest(*args)
 
 
+@pytest.mark.usefixtures('needs_assert_rewrite')
 def test_detailed_introspection(testdir):
     """Check that the "mock_use_standalone" is being used.
     """

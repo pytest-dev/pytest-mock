@@ -18,6 +18,8 @@ jobs:
   include:
     - python: '3.6'
       env: TOXENV=linting
+    - python: '3.6'
+      env: TOXENV=norewrite
     - stage: deploy
       python: '3.6'
       install: pip install -U setuptools setuptools_scm

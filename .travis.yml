@@ -5,11 +5,6 @@ python:
   - "3.5"
   - "3.6"
 
-matrix:
-  include:
-    - python: '3.6'
-      env: TOXENV=linting
-
 install:
   - pip install tox-travis coveralls
 
@@ -21,6 +16,8 @@ after_success:
 
 jobs:
   include:
+    - python: '3.6'
+      env: TOXENV=linting
     - stage: deploy
       python: '3.6'
       install: pip install -U setuptools setuptools_scm

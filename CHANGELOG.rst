@@ -1,3 +1,11 @@
+1.7.1
+-----
+
+* Fix ``mock`` requirements in Python 2. Thanks `@ghisvail`_ for the report.
+
+.. _@ghisvail: https://github.com/ghisvail
+.. _#101: https://github.com/pytest-dev/pytest-mock/issues/101
+
 1.7.0
 -----
 

@@ -5,11 +5,6 @@ python:
   - "3.5"
   - "3.6"
 
-matrix:
-  include:
-    - python: '3.6'
-      env: TOXENV=linting
-
 install:
   - pip install tox-travis coveralls
 
@@ -19,14 +14,21 @@ script:
 after_success:
   - coveralls
 
-deploy:
-  provider: pypi
-  user: nicoddemus
-  skip_upload_docs: true
-  distributions: sdist bdist_wheel
-  password:
-    secure: OEWrbk09CZRrwFE6sBpRqQHu45zRu1S0Ly1ZeprkFCKxMd9tZOnrYM5qxCDQXxFHIvuyajuJ+qWTOgxUvurQMNsD6DbvJKTJ0R8upH1b1Q95KK8xiJFedhqBEUga5GrInK59oo0Sgblse2jtH5NnHXRUClSdT+iHdLY5sljCTRg=
-  on:
-    tags: true
-    repo: pytest-dev/pytest-mock
-    condition: $TRAVIS_PYTHON_VERSION = 3.6
+jobs:
+  include:
+    - python: '3.6'
+      env: TOXENV=linting
+    - stage: deploy
+      python: '3.6'
+      install: pip install -U setuptools setuptools_scm
+      script: skip
+      deploy:
+        provider: pypi
+        user: nicoddemus
+        skip_upload_docs: true
+        distributions: sdist bdist_wheel
+        password:
+          secure: OEWrbk09CZRrwFE6sBpRqQHu45zRu1S0Ly1ZeprkFCKxMd9tZOnrYM5qxCDQXxFHIvuyajuJ+qWTOgxUvurQMNsD6DbvJKTJ0R8upH1b1Q95KK8xiJFedhqBEUga5GrInK59oo0Sgblse2jtH5NnHXRUClSdT+iHdLY5sljCTRg=
+        on:
+          tags: true
+          repo: pytest-dev/pytest-mock

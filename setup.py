@@ -11,10 +11,8 @@ setup(
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*',
     install_requires=[
         'pytest>=2.7',
+        'mock;python_version<"3.0"',
     ],
-    extras_require={
-        ':python_version=="2.7"': ['mock'],
-    },
     use_scm_version={'write_to': '_pytest_mock_version.py'},
     setup_requires=['setuptools_scm'],
     url='https://github.com/pytest-dev/pytest-mock/',

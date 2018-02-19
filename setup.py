@@ -1,5 +1,6 @@
 from setuptools import setup
 
+from io import open
 
 setup(
     name='pytest-mock',
@@ -20,7 +21,7 @@ setup(
     author='Bruno Oliveira',
     author_email='nicoddemus@gmail.com',
     description='Thin-wrapper around the mock package for easier use with py.test',
-    long_description=open('README.rst').read(),
+    long_description=open('README.rst', encoding='utf-8').read(),
     keywords="pytest mock",
     classifiers=[
         'Development Status :: 5 - Production/Stable',

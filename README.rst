@@ -50,7 +50,7 @@ of a test:
   :target: http://www.opensourcecitizen.org/project?url=github.com/pytest-dev/pytest-mock
 
 If you found this library useful, donate some CPU cycles to its
-development efforts by clicking above. Thank you! 😇  
+development efforts by clicking above. Thank you!
 
 Usage
 =====

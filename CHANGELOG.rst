@@ -1,5 +1,9 @@
-1.7.1 (unreleased)
-------------------
+1.7.1
+-----
+
+* Fix ``setup.py`` to correctly read the ``README.rst``. Thanks `@ghisvail`_ for the fix (`#107`_).
+
+.. _#107: https://github.com/pytest-dev/pytest-mock/issues/107
 
 1.7.0
 -----

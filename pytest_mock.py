@@ -48,6 +48,7 @@ class MockFixture(object):
         # aliases for convenience
         self.Mock = mock_module.Mock
         self.MagicMock = mock_module.MagicMock
+        self.NonCallableMock = mock_module.NonCallableMock
         self.PropertyMock = mock_module.PropertyMock
         self.call = mock_module.call
         self.ANY = mock_module.ANY

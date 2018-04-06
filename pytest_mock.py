@@ -53,6 +53,7 @@ class MockFixture(object):
         self.call = mock_module.call
         self.ANY = mock_module.ANY
         self.DEFAULT = mock_module.DEFAULT
+        self.create_autospec = mock_module.create_autospec
         self.sentinel = mock_module.sentinel
         self.mock_open = mock_module.mock_open
 

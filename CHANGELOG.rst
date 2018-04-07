@@ -1,3 +1,10 @@
+1.8.0
+-----
+
+* Add aliases for ``NonCallableMock`` and ``create_autospec`` to ``mocker``. Thanks `@mlhamel`_ for the PR (`#111`_).
+
+.. _#111: https://github.com/pytest-dev/pytest-mock/pull/111
+
 1.7.1
 -----
 
@@ -300,13 +307,14 @@ First release.
 
 .. _#2: https://github.com/pytest-dev/pytest-qt/issues/2
 
-.. _@mathrick: https://github.com/mathrick
-.. _@tigarmo: https://github.com/tigarmo
-.. _@rouge8: https://github.com/rouge8
 .. _@fogo: https://github.com/fogo
-.. _@marcwebbie: https://github.com/marcwebbie
-.. _@RonnyPfannschmidt: https://github.com/RonnyPfannschmidt
-.. _@The-Compiler: https://github.com/The-Compiler
 .. _@kmosher: https://github.com/kmosher
+.. _@marcwebbie: https://github.com/marcwebbie
+.. _@mathrick: https://github.com/mathrick
+.. _@mlhamel: https://github.com/mlhamel
+.. _@RonnyPfannschmidt: https://github.com/RonnyPfannschmidt
+.. _@rouge8: https://github.com/rouge8
+.. _@The-Compiler: https://github.com/The-Compiler
+.. _@tigarmo: https://github.com/tigarmo
 
 

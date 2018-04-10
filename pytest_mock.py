@@ -221,6 +221,12 @@ def wrap_assert_called_with(*args, **kwargs):
                    *args, **kwargs)
 
 
+def wrap_assert_called_once(*args, **kwargs):
+    __tracebackhide__ = True
+    assert_wrapper(_mock_module_originals["assert_called_once"],
+                   *args, **kwargs)
+
+
 def wrap_assert_called_once_with(*args, **kwargs):
     __tracebackhide__ = True
     assert_wrapper(_mock_module_originals["assert_called_once_with"],
@@ -254,6 +260,7 @@ def wrap_assert_methods(config):
         'assert_not_called': wrap_assert_not_called,
         'assert_called_with': wrap_assert_called_with,
         'assert_called_once_with': wrap_assert_called_once_with,
+        'assert_called_once': wrap_assert_called_once,
         'assert_has_calls': wrap_assert_has_calls,
         'assert_any_call': wrap_assert_any_call,
     }

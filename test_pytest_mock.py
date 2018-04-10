@@ -388,6 +388,17 @@ def test_assert_called_once_with_wrapper(mocker):
         stub.assert_called_once_with("foo")
 
 
+def test_assert_called_once_wrapper(mocker):
+    stub = mocker.stub()
+    if not hasattr(stub, 'assert_called_once'):
+        pytest.skip('assert_called_once not available')
+    stub("foo")
+    stub.assert_called_once()
+    stub("foo")
+    with assert_traceback():
+        stub.assert_called_once()
+
+
 @pytest.mark.usefixtures('needs_assert_rewrite')
 def test_assert_called_args_with_introspection(mocker):
     stub = mocker.stub()

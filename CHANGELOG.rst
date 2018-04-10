@@ -1,3 +1,11 @@
+1.9.0
+-----
+
+* Add support for the recently added ``assert_called_once`` method in Python 3.6 and ``mock-2.0``. Thanks `@rouge8`_ for the PR (`#113`_).
+
+.. _#113: https://github.com/pytest-dev/pytest-mock/pull/113
+
+
 1.8.0
 -----
 

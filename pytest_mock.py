@@ -245,6 +245,12 @@ def wrap_assert_any_call(*args, **kwargs):
                    *args, **kwargs)
 
 
+def wrap_assert_called(*args, **kwargs):
+    __tracebackhide__ = True
+    assert_wrapper(_mock_module_originals["assert_called"],
+                   *args, **kwargs)
+
+
 def wrap_assert_methods(config):
     """
     Wrap assert methods of mock module so we can hide their traceback and
@@ -257,12 +263,13 @@ def wrap_assert_methods(config):
     mock_module = _get_mock_module(config)
 
     wrappers = {
-        'assert_not_called': wrap_assert_not_called,
+        'assert_called': wrap_assert_called,
+        'assert_called_once': wrap_assert_called_once,
         'assert_called_with': wrap_assert_called_with,
         'assert_called_once_with': wrap_assert_called_once_with,
-        'assert_called_once': wrap_assert_called_once,
-        'assert_has_calls': wrap_assert_has_calls,
         'assert_any_call': wrap_assert_any_call,
+        'assert_has_calls': wrap_assert_has_calls,
+        'assert_not_called': wrap_assert_not_called,
     }
     for method, wrapper in wrappers.items():
         try:

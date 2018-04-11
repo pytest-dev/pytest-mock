@@ -1,3 +1,10 @@
+NEXT
+----
+
+* Add support for the recently added ``assert_called`` method in Python 3.6 and ``mock-2.0``. Thanks `@rouge8`_ for the PR (`#115`_).
+
+.. _#115: https://github.com/pytest-dev/pytest-mock/pull/115
+
 1.9.0
 -----
 

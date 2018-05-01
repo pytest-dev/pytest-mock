@@ -30,7 +30,7 @@ of a test:
 .. |version| image:: http://img.shields.io/pypi/v/pytest-mock.svg
   :target: https://pypi.python.org/pypi/pytest-mock
 
-.. |anaconda| image:: https://anaconda.org/conda-forge/pytest-mock/badges/version.svg
+.. |anaconda| image:: https://img.shields.io/conda/vn/conda-forge/pytest-mock.svg
     :target: https://anaconda.org/conda-forge/pytest-mock
 
 .. |ci| image:: http://img.shields.io/travis/pytest-dev/pytest-mock.svg

@@ -1,5 +1,5 @@
-NEXT
-----
+1.10.0
+------
 
 * Add support for the recently added ``assert_called`` method in Python 3.6 and ``mock-2.0``. Thanks `@rouge8`_ for the PR (`#115`_).
 

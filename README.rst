@@ -11,6 +11,8 @@ of a test:
 
     import os
     
+    from pytest_mock import mocker
+    
     class UnixFS:
     
         @staticmethod

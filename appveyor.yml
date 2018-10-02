@@ -5,3 +5,5 @@ build: false  # Not a C# project
 
 test_script:
   - C:\Python36\scripts\tox
+
+skip_tags: true

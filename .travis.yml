@@ -14,6 +14,11 @@ script:
 after_success:
   - coveralls
 
+stages:
+- test
+- name: deploy
+  if: repo = pytest-dev/pytest-mock AND tag IS present
+
 jobs:
   include:
     - python: '3.7'

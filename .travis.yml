@@ -1,12 +1,8 @@
 language: python
-python:
-  - "2.7"
-  - "3.4"
-  - "3.5"
-  - "3.6"
 
 install:
-  - pip install tox-travis coveralls
+  - pip install -U pip
+  - pip install tox coveralls
 
 script:
   - tox
@@ -21,7 +17,16 @@ stages:
 
 jobs:
   include:
+    - python: '2.7'
+      env: TOXENV=py27
+    - python: '3.4'
+      env: TOXENV=py34
+    - python: '3.5'
+      env: TOXENV=py35
+    - python: '3.6'
+      env: TOXENV=py36
     - python: '3.7'
+      env: TOXENV=py37
       sudo: required
       dist: xenial
     - python: '3.6'

@@ -2,6 +2,8 @@
 pytest-mock
 ===========
 
+DUMMY CHANGE
+
 This plugin installs a ``mocker`` fixture which is a thin-wrapper around the patching API
 provided by the `mock package <http://pypi.python.org/pypi/mock>`_,
 but with the benefit of not having to worry about undoing patches at the end
@@ -10,13 +12,13 @@ of a test:
 .. code-block:: python
 
     import os
-    
+
     class UnixFS:
-    
+
         @staticmethod
         def rm(filename):
             os.remove(filename)
-    
+
     def test_unix_fs(mocker):
         mocker.patch('os.remove')
         UnixFS.rm('file')
@@ -44,13 +46,13 @@ of a test:
 
 .. |python| image:: https://img.shields.io/pypi/pyversions/pytest-mock.svg
   :target: https://pypi.python.org/pypi/pytest-mock/
-  
-  
+
+
 .. image:: http://www.opensourcecitizen.org/badge?url=github.com/pytest-dev/pytest-mock
   :target: http://www.opensourcecitizen.org/project?url=github.com/pytest-dev/pytest-mock
 
 If you found this library useful, donate some CPU cycles to its
-development efforts by clicking above. Thank you! 😇  
+development efforts by clicking above. Thank you! 😇
 
 Usage
 =====
@@ -160,8 +162,8 @@ diff::
     E         Right contains more items:
     E         {'bar': 4}
     E         Use -v to get the full diff
-    
-    
+
+
     test_foo.py:6: AssertionError
     ========================== 1 failed in 0.03 seconds ===========================
 

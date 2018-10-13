@@ -1,6 +1,6 @@
-from setuptools import setup
-
 from io import open
+
+from setuptools import setup
 
 setup(
     name='pytest-mock',
@@ -23,6 +23,12 @@ setup(
     description='Thin-wrapper around the mock package for easier use with py.test',
     long_description=open('README.rst', encoding='utf-8').read(),
     keywords="pytest mock",
+    extras_require={
+        "dev": [
+            "pre-commit",
+            "tox",
+        ]
+    },
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Framework :: Pytest',

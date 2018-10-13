@@ -6,11 +6,12 @@ from contextlib import contextmanager
 import py.code
 import pytest
 
-pytest_plugins = 'pytester'
+pytest_plugins = "pytester"
 
 # could not make some of the tests work on PyPy, patches are welcome!
-skip_pypy = pytest.mark.skipif(platform.python_implementation() == 'PyPy',
-                               reason='could not make work on pypy')
+skip_pypy = pytest.mark.skipif(
+    platform.python_implementation() == "PyPy", reason="could not make work on pypy"
+)
 
 
 @pytest.fixture
@@ -20,10 +21,12 @@ def needs_assert_rewrite(pytestconfig):
 
     Making this a fixture to avoid acessing pytest's config in the global context.
     """
-    option = pytestconfig.getoption('assertmode')
-    if option != 'rewrite':
-        pytest.skip('this test needs assertion rewrite to work but current option '
-                    'is "{}"'.format(option))
+    option = pytestconfig.getoption("assertmode")
+    if option != "rewrite":
+        pytest.skip(
+            "this test needs assertion rewrite to work but current option "
+            'is "{}"'.format(option)
+        )
 
 
 class UnixFS(object):
@@ -52,20 +55,20 @@ def check_unix_fs_mocked(tmpdir, mocker):
         assert mocked_rm is os.remove
         assert mocked_ls is os.listdir
 
-        file_name = tmpdir / 'foo.txt'
+        file_name = tmpdir / "foo.txt"
         file_name.ensure()
 
         UnixFS.rm(str(file_name))
         mocked_rm.assert_called_once_with(str(file_name))
         assert os.path.isfile(str(file_name))
 
-        mocked_ls.return_value = ['bar.txt']
-        assert UnixFS.ls(str(tmpdir)) == ['bar.txt']
+        mocked_ls.return_value = ["bar.txt"]
+        assert UnixFS.ls(str(tmpdir)) == ["bar.txt"]
         mocked_ls.assert_called_once_with(str(tmpdir))
 
         mocker.stopall()
 
-        assert UnixFS.ls(str(tmpdir)) == ['foo.txt']
+        assert UnixFS.ls(str(tmpdir)) == ["foo.txt"]
         UnixFS.rm(str(file_name))
         assert not os.path.isfile(str(file_name))
 
@@ -73,21 +76,20 @@ def check_unix_fs_mocked(tmpdir, mocker):
 
 
 def mock_using_patch_object(mocker):
-    return mocker.patch.object(os, 'remove'), mocker.patch.object(os, 'listdir')
+    return mocker.patch.object(os, "remove"), mocker.patch.object(os, "listdir")
 
 
 def mock_using_patch(mocker):
-    return mocker.patch('os.remove'), mocker.patch('os.listdir')
+    return mocker.patch("os.remove"), mocker.patch("os.listdir")
 
 
 def mock_using_patch_multiple(mocker):
-    r = mocker.patch.multiple('os', remove=mocker.DEFAULT,
-                              listdir=mocker.DEFAULT)
-    return r['remove'], r['listdir']
+    r = mocker.patch.multiple("os", remove=mocker.DEFAULT, listdir=mocker.DEFAULT)
+    return r["remove"], r["listdir"]
 
 
-@pytest.mark.parametrize('mock_fs', [mock_using_patch_object, mock_using_patch,
-                                     mock_using_patch_multiple],
+@pytest.mark.parametrize(
+    "mock_fs", [mock_using_patch_object, mock_using_patch, mock_using_patch_multiple]
 )
 def test_mock_patches(mock_fs, mocker, check_unix_fs_mocked):
     """
@@ -108,11 +110,11 @@ def test_mock_patch_dict(mocker):
     Testing
     :param mock:
     """
-    x = {'original': 1}
-    mocker.patch.dict(x, values=[('new', 10)], clear=True)
-    assert x == {'new': 10}
+    x = {"original": 1}
+    mocker.patch.dict(x, values=[("new", 10)], clear=True)
+    assert x == {"new": 10}
     mocker.stopall()
-    assert x == {'original': 1}
+    assert x == {"original": 1}
 
 
 def test_mock_patch_dict_resetall(mocker):
@@ -120,24 +122,37 @@ def test_mock_patch_dict_resetall(mocker):
     We can call resetall after patching a dict.
     :param mock:
     """
-    x = {'original': 1}
-    mocker.patch.dict(x, values=[('new', 10)], clear=True)
-    assert x == {'new': 10}
+    x = {"original": 1}
+    mocker.patch.dict(x, values=[("new", 10)], clear=True)
+    assert x == {"new": 10}
     mocker.resetall()
-    assert x == {'new': 10}
+    assert x == {"new": 10}
 
 
 def test_deprecated_mock(mock, tmpdir):
     """
     Use backward-compatibility-only mock fixture to ensure complete coverage.
     """
-    mock.patch('os.listdir', return_value=['mocked'])
-    assert os.listdir(str(tmpdir)) == ['mocked']
+    mock.patch("os.listdir", return_value=["mocked"])
+    assert os.listdir(str(tmpdir)) == ["mocked"]
     mock.stopall()
     assert os.listdir(str(tmpdir)) == []
 
 
-@pytest.mark.parametrize('name', ['MagicMock', 'NonCallableMock', 'PropertyMock', 'Mock', 'call', 'ANY', 'create_autospec', 'sentinel', 'mock_open'])
+@pytest.mark.parametrize(
+    "name",
+    [
+        "MagicMock",
+        "NonCallableMock",
+        "PropertyMock",
+        "Mock",
+        "call",
+        "ANY",
+        "create_autospec",
+        "sentinel",
+        "mock_open",
+    ],
+)
 def test_mocker_aliases(name, pytestconfig):
     from pytest_mock import _get_mock_module, MockFixture
 
@@ -148,8 +163,8 @@ def test_mocker_aliases(name, pytestconfig):
 
 
 def test_mocker_resetall(mocker):
-    listdir = mocker.patch('os.listdir')
-    open = mocker.patch('os.open')
+    listdir = mocker.patch("os.listdir")
+    open = mocker.patch("os.open")
 
     listdir("/tmp")
     open("/tmp/foo.txt")
@@ -165,21 +180,21 @@ def test_mocker_resetall(mocker):
 class TestMockerStub:
     def test_call(self, mocker):
         stub = mocker.stub()
-        stub('foo', 'bar')
-        stub.assert_called_once_with('foo', 'bar')
+        stub("foo", "bar")
+        stub.assert_called_once_with("foo", "bar")
 
     def test_repr_with_no_name(self, mocker):
         stub = mocker.stub()
-        assert not 'name' in repr(stub)
+        assert not "name" in repr(stub)
 
     def test_repr_with_name(self, mocker):
-        test_name = 'funny walk'
+        test_name = "funny walk"
         stub = mocker.stub(name=test_name)
         assert "name={0!r}".format(test_name) in repr(stub)
 
     def __test_failure_message(self, mocker, **kwargs):
-        expected_name = kwargs.get('name') or 'mock'
-        expected_message = 'Expected call: {0}()\nNot called'.format(expected_name)
+        expected_name = kwargs.get("name") or "mock"
+        expected_message = "Expected call: {0}()\nNot called".format(expected_name)
         stub = mocker.stub(**kwargs)
         with pytest.raises(AssertionError) as exc_info:
             stub.assert_called_with()
@@ -188,20 +203,19 @@ class TestMockerStub:
     def test_failure_message_with_no_name(self, mocker):
         self.__test_failure_message(mocker)
 
-    @pytest.mark.parametrize('name', (None, '', 'f', 'The Castle of aaarrrrggh'))
+    @pytest.mark.parametrize("name", (None, "", "f", "The Castle of aaarrrrggh"))
     def test_failure_message_with_name(self, mocker, name):
         self.__test_failure_message(mocker, name=name)
 
 
 def test_instance_method_spy(mocker):
     class Foo(object):
-
         def bar(self, arg):
             return arg * 2
 
     foo = Foo()
     other = Foo()
-    spy = mocker.spy(foo, 'bar')
+    spy = mocker.spy(foo, "bar")
     assert foo.bar(arg=10) == 20
     assert other.bar(arg=10) == 20
     foo.bar.assert_called_once_with(arg=10)
@@ -211,11 +225,10 @@ def test_instance_method_spy(mocker):
 @skip_pypy
 def test_instance_method_by_class_spy(mocker):
     class Foo(object):
-
         def bar(self, arg):
             return arg * 2
 
-    spy = mocker.spy(Foo, 'bar')
+    spy = mocker.spy(Foo, "bar")
     foo = Foo()
     other = Foo()
     assert foo.bar(arg=10) == 20
@@ -226,16 +239,14 @@ def test_instance_method_by_class_spy(mocker):
 
 @skip_pypy
 def test_instance_method_by_subclass_spy(mocker):
-
     class Base(object):
-
         def bar(self, arg):
             return arg * 2
 
     class Foo(Base):
         pass
 
-    spy = mocker.spy(Foo, 'bar')
+    spy = mocker.spy(Foo, "bar")
     foo = Foo()
     other = Foo()
     assert foo.bar(arg=10) == 20
@@ -247,22 +258,20 @@ def test_instance_method_by_subclass_spy(mocker):
 @skip_pypy
 def test_class_method_spy(mocker):
     class Foo(object):
-
         @classmethod
         def bar(cls, arg):
             return arg * 2
 
-    spy = mocker.spy(Foo, 'bar')
+    spy = mocker.spy(Foo, "bar")
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)
     spy.assert_called_once_with(arg=10)
 
 
 @skip_pypy
-@pytest.mark.xfail(sys.version_info[0] == 2, reason='does not work on Python 2')
+@pytest.mark.xfail(sys.version_info[0] == 2, reason="does not work on Python 2")
 def test_class_method_subclass_spy(mocker):
     class Base(object):
-
         @classmethod
         def bar(self, arg):
             return arg * 2
@@ -270,7 +279,7 @@ def test_class_method_subclass_spy(mocker):
     class Foo(Base):
         pass
 
-    spy = mocker.spy(Foo, 'bar')
+    spy = mocker.spy(Foo, "bar")
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)
     spy.assert_called_once_with(arg=10)
@@ -289,7 +298,7 @@ def test_class_method_with_metaclass_spy(mocker):
         def bar(cls, arg):
             return arg * 2
 
-    spy = mocker.spy(Foo, 'bar')
+    spy = mocker.spy(Foo, "bar")
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)
     spy.assert_called_once_with(arg=10)
@@ -298,22 +307,20 @@ def test_class_method_with_metaclass_spy(mocker):
 @skip_pypy
 def test_static_method_spy(mocker):
     class Foo(object):
-
         @staticmethod
         def bar(arg):
             return arg * 2
 
-    spy = mocker.spy(Foo, 'bar')
+    spy = mocker.spy(Foo, "bar")
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)
     spy.assert_called_once_with(arg=10)
 
 
 @skip_pypy
-@pytest.mark.xfail(sys.version_info[0] == 2, reason='does not work on Python 2')
+@pytest.mark.xfail(sys.version_info[0] == 2, reason="does not work on Python 2")
 def test_static_method_subclass_spy(mocker):
     class Base(object):
-
         @staticmethod
         def bar(arg):
             return arg * 2
@@ -321,7 +328,7 @@ def test_static_method_subclass_spy(mocker):
     class Foo(Base):
         pass
 
-    spy = mocker.spy(Foo, 'bar')
+    spy = mocker.spy(Foo, "bar")
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)
     spy.assert_called_once_with(arg=10)
@@ -352,17 +359,20 @@ def assert_argument_introspection(left, right):
     except AssertionError as e:
         # this may be a bit too assuming, but seems nicer then hard-coding
         import _pytest.assertion.util as util
+
         # NOTE: we assert with either verbose or not, depending on how our own
         #       test was run by examining sys.argv
-        verbose = any(a.startswith('-v') for a in sys.argv)
-        expected = '\n  '.join(util._compare_eq_iterable(left, right, verbose))
+        verbose = any(a.startswith("-v") for a in sys.argv)
+        expected = "\n  ".join(util._compare_eq_iterable(left, right, verbose))
         assert expected in str(e)
     else:
         raise AssertionError("DID NOT RAISE")
 
 
-@pytest.mark.skipif(sys.version_info[:2] == (3, 4),
-                    reason="assert_not_called not available in Python 3.4")
+@pytest.mark.skipif(
+    sys.version_info[:2] == (3, 4),
+    reason="assert_not_called not available in Python 3.4",
+)
 def test_assert_not_called_wrapper(mocker):
     stub = mocker.stub()
     stub.assert_not_called()
@@ -390,8 +400,8 @@ def test_assert_called_once_with_wrapper(mocker):
 
 def test_assert_called_once_wrapper(mocker):
     stub = mocker.stub()
-    if not hasattr(stub, 'assert_called_once'):
-        pytest.skip('assert_called_once not available')
+    if not hasattr(stub, "assert_called_once"):
+        pytest.skip("assert_called_once not available")
     stub("foo")
     stub.assert_called_once()
     stub("foo")
@@ -401,8 +411,8 @@ def test_assert_called_once_wrapper(mocker):
 
 def test_assert_called_wrapper(mocker):
     stub = mocker.stub()
-    if not hasattr(stub, 'assert_called'):
-        pytest.skip('assert_called_once not available')
+    if not hasattr(stub, "assert_called"):
+        pytest.skip("assert_called_once not available")
     with assert_traceback():
         stub.assert_called()
     stub("foo")
@@ -411,12 +421,12 @@ def test_assert_called_wrapper(mocker):
     stub.assert_called()
 
 
-@pytest.mark.usefixtures('needs_assert_rewrite')
+@pytest.mark.usefixtures("needs_assert_rewrite")
 def test_assert_called_args_with_introspection(mocker):
     stub = mocker.stub()
 
-    complex_args = ('a', 1, set(['test']))
-    wrong_args = ('b', 2, set(['jest']))
+    complex_args = ("a", 1, set(["test"]))
+    wrong_args = ("b", 2, set(["jest"]))
 
     stub(*complex_args)
     stub.assert_called_with(*complex_args)
@@ -427,12 +437,12 @@ def test_assert_called_args_with_introspection(mocker):
         stub.assert_called_once_with(*wrong_args)
 
 
-@pytest.mark.usefixtures('needs_assert_rewrite')
+@pytest.mark.usefixtures("needs_assert_rewrite")
 def test_assert_called_kwargs_with_introspection(mocker):
     stub = mocker.stub()
 
-    complex_kwargs = dict(foo={'bar': 1, 'baz': 'spam'})
-    wrong_kwargs = dict(foo={'goo': 1, 'baz': 'bran'})
+    complex_kwargs = dict(foo={"bar": 1, "baz": "spam"})
+    wrong_kwargs = dict(foo={"goo": 1, "baz": "bran"})
 
     stub(**complex_kwargs)
     stub.assert_called_with(**complex_kwargs)
@@ -465,26 +475,31 @@ def test_monkeypatch_ini(mocker, testdir):
     stub = mocker.stub()
     assert stub.assert_called_with.__module__ != stub.__module__
 
-    testdir.makepyfile("""
+    testdir.makepyfile(
+        """
         import py.code
         def test_foo(mocker):
             stub = mocker.stub()
             assert stub.assert_called_with.__module__ == stub.__module__
-    """)
-    testdir.makeini("""
+    """
+    )
+    testdir.makeini(
+        """
         [pytest]
         mock_traceback_monkeypatch = false
-    """)
+    """
+    )
     result = runpytest_subprocess(testdir)
     assert result.ret == 0
 
 
 def test_parse_ini_boolean():
     import pytest_mock
-    assert pytest_mock.parse_ini_boolean('True') is True
-    assert pytest_mock.parse_ini_boolean('false') is False
+
+    assert pytest_mock.parse_ini_boolean("True") is True
+    assert pytest_mock.parse_ini_boolean("false") is False
     with pytest.raises(ValueError):
-        pytest_mock.parse_ini_boolean('foo')
+        pytest_mock.parse_ini_boolean("foo")
 
 
 def test_patched_method_parameter_name(mocker):
@@ -497,89 +512,101 @@ def test_patched_method_parameter_name(mocker):
         def request(cls, method, args):
             pass
 
-    m = mocker.patch.object(Request, 'request')
-    Request.request(method='get', args={'type': 'application/json'})
-    m.assert_called_once_with(method='get', args={'type': 'application/json'})
+    m = mocker.patch.object(Request, "request")
+    Request.request(method="get", args={"type": "application/json"})
+    m.assert_called_once_with(method="get", args={"type": "application/json"})
 
 
 def test_monkeypatch_native(testdir):
     """Automatically disable monkeypatching when --tb=native.
     """
-    testdir.makepyfile("""
+    testdir.makepyfile(
+        """
         def test_foo(mocker):
             stub = mocker.stub()
             stub(1, greet='hello')
             stub.assert_called_once_with(1, greet='hey')
-    """)
-    result = runpytest_subprocess(testdir, '--tb=native')
+    """
+    )
+    result = runpytest_subprocess(testdir, "--tb=native")
     assert result.ret == 1
-    assert 'During handling of the above exception' not in result.stdout.str()
-    assert 'Differing items:' not in result.stdout.str()
-    traceback_lines = [x for x in result.stdout.str().splitlines()
-                       if 'Traceback (most recent call last)' in x]
-    assert len(traceback_lines) == 1  # make sure there are no duplicated tracebacks (#44)
+    assert "During handling of the above exception" not in result.stdout.str()
+    assert "Differing items:" not in result.stdout.str()
+    traceback_lines = [
+        x
+        for x in result.stdout.str().splitlines()
+        if "Traceback (most recent call last)" in x
+    ]
+    assert (
+        len(traceback_lines) == 1
+    )  # make sure there are no duplicated tracebacks (#44)
 
 
-@pytest.mark.skipif(sys.version_info[0] < 3, reason='Py3 only')
+@pytest.mark.skipif(sys.version_info[0] < 3, reason="Py3 only")
 def test_standalone_mock(testdir):
     """Check that the "mock_use_standalone" is being used.
     """
-    testdir.makepyfile("""
+    testdir.makepyfile(
+        """
         def test_foo(mocker):
             pass
-    """)
-    testdir.makeini("""
+    """
+    )
+    testdir.makeini(
+        """
         [pytest]
         mock_use_standalone_module = true
-    """)
+    """
+    )
     result = runpytest_subprocess(testdir)
     assert result.ret == 3
-    result.stderr.fnmatch_lines([
-        "*No module named 'mock'*",
-    ])
+    result.stderr.fnmatch_lines(["*No module named 'mock'*"])
 
 
 def runpytest_subprocess(testdir, *args):
     """Testdir.runpytest_subprocess only available in pytest-2.8+"""
-    if hasattr(testdir, 'runpytest_subprocess'):
+    if hasattr(testdir, "runpytest_subprocess"):
         return testdir.runpytest_subprocess(*args)
     else:
         # pytest 2.7.X
         return testdir.runpytest(*args)
 
 
-@pytest.mark.usefixtures('needs_assert_rewrite')
+@pytest.mark.usefixtures("needs_assert_rewrite")
 def test_detailed_introspection(testdir):
     """Check that the "mock_use_standalone" is being used.
     """
-    testdir.makepyfile("""
+    testdir.makepyfile(
+        """
         def test(mocker):
             m = mocker.Mock()
             m('fo')
             m.assert_called_once_with('', bar=4)
-    """)
-    result = testdir.runpytest('-s')
-    result.stdout.fnmatch_lines([
-        "*AssertionError: Expected call: mock('', bar=4)*",
-        "*Actual call: mock('fo')*",
-        "*pytest introspection follows:*",
-        '*Args:',
-        "*assert ('fo',) == ('',)",
-        "*At index 0 diff: 'fo' != ''*",
-        "*Use -v to get the full diff*",
-        "*Kwargs:*",
-        "*assert {} == {'bar': 4}*",
-        "*Right contains more items:*",
-        "*{'bar': 4}*",
-        "*Use -v to get the full diff*",
-    ])
+    """
+    )
+    result = testdir.runpytest("-s")
+    result.stdout.fnmatch_lines(
+        [
+            "*AssertionError: Expected call: mock('', bar=4)*",
+            "*Actual call: mock('fo')*",
+            "*pytest introspection follows:*",
+            "*Args:",
+            "*assert ('fo',) == ('',)",
+            "*At index 0 diff: 'fo' != ''*",
+            "*Use -v to get the full diff*",
+            "*Kwargs:*",
+            "*assert {} == {'bar': 4}*",
+            "*Right contains more items:*",
+            "*{'bar': 4}*",
+            "*Use -v to get the full diff*",
+        ]
+    )
 
 
 def test_assert_called_with_unicode_arguments(mocker):
     """Test bug in assert_call_with called with non-ascii unicode string (#91)"""
     stub = mocker.stub()
-    stub(b'l\xc3\xb6k'.decode('UTF-8'))
+    stub(b"l\xc3\xb6k".decode("UTF-8"))
 
     with pytest.raises(AssertionError):
-        stub.assert_called_with(u'lak')
-
+        stub.assert_called_with(u"lak")

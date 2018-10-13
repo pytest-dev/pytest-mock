@@ -23,9 +23,8 @@ of a test:
         os.remove.assert_called_once_with('file')
 
 
-.. Using PNG badges because PyPI doesn't support SVG
 
-|python| |version| |anaconda| |ci| |appveyor| |coverage|
+|python| |version| |anaconda| |ci| |appveyor| |coverage| |black|
 
 .. |version| image:: http://img.shields.io/pypi/v/pytest-mock.svg
   :target: https://pypi.python.org/pypi/pytest-mock
@@ -44,6 +43,9 @@ of a test:
 
 .. |python| image:: https://img.shields.io/pypi/pyversions/pytest-mock.svg
   :target: https://pypi.python.org/pypi/pytest-mock/
+
+.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+  :target: https://github.com/ambv/black
 
 
 .. image:: http://www.opensourcecitizen.org/badge?url=github.com/pytest-dev/pytest-mock

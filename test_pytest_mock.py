@@ -142,15 +142,15 @@ def test_deprecated_mock(mock, tmpdir):
 @pytest.mark.parametrize(
     "name",
     [
+        "ANY",
+        "call",
+        "create_autospec",
         "MagicMock",
+        "Mock",
+        "mock_open",
         "NonCallableMock",
         "PropertyMock",
-        "Mock",
-        "call",
-        "ANY",
-        "create_autospec",
         "sentinel",
-        "mock_open",
     ],
 )
 def test_mocker_aliases(name, pytestconfig):

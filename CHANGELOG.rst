@@ -331,5 +331,3 @@ First release.
 .. _@rouge8: https://github.com/rouge8
 .. _@The-Compiler: https://github.com/The-Compiler
 .. _@tigarmo: https://github.com/tigarmo
-
-

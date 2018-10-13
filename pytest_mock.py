@@ -22,13 +22,17 @@ def _get_mock_module(config):
     "unittest.mock" for Python 3, but the user can force to always use "mock" on Python 3 using
     the mock_use_standalone_module ini option.
     """
-    if not hasattr(_get_mock_module, '_module'):
-        use_standalone_module = parse_ini_boolean(config.getini('mock_use_standalone_module'))
+    if not hasattr(_get_mock_module, "_module"):
+        use_standalone_module = parse_ini_boolean(
+            config.getini("mock_use_standalone_module")
+        )
         if sys.version_info[0] == 2 or use_standalone_module:
             import mock
+
             _get_mock_module._module = mock
         else:
             import unittest.mock
+
             _get_mock_module._module = unittest.mock
 
     return _get_mock_module._module
@@ -100,8 +104,7 @@ class MockFixture(object):
                 if isinstance(value, (classmethod, staticmethod)):
                     autospec = False
 
-        result = self.patch.object(obj, name, side_effect=method,
-                                   autospec=autospec)
+        result = self.patch.object(obj, name, side_effect=method, autospec=autospec)
         return result
 
     def stub(self, name=None):
@@ -134,7 +137,7 @@ class MockFixture(object):
             p = mock_func(*args, **kwargs)
             mocked = p.start()
             self._patches.append(p)
-            if hasattr(mocked, 'reset_mock'):
+            if hasattr(mocked, "reset_mock"):
                 self._mocks.append(mocked)
             return mocked
 
@@ -144,8 +147,7 @@ class MockFixture(object):
 
         def multiple(self, *args, **kwargs):
             """API to mock.patch.multiple"""
-            return self._start_patch(self.mock_module.patch.multiple, *args,
-                                     **kwargs)
+            return self._start_patch(self.mock_module.patch.multiple, *args, **kwargs)
 
         def dict(self, *args, **kwargs):
             """API to mock.patch.dict"""
@@ -173,8 +175,10 @@ def mock(mocker):
     Same as "mocker", but kept only for backward compatibility.
     """
     import warnings
-    warnings.warn('"mock" fixture has been deprecated, use "mocker" instead',
-                  DeprecationWarning)
+
+    warnings.warn(
+        '"mock" fixture has been deprecated, use "mocker" instead', DeprecationWarning
+    )
     return mocker
 
 
@@ -188,22 +192,22 @@ def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
         __wrapped_mock_method__(*args, **kwargs)
         return
     except AssertionError as e:
-        if getattr(e, '_mock_introspection_applied', 0):
+        if getattr(e, "_mock_introspection_applied", 0):
             msg = text_type(e)
         else:
             __mock_self = args[0]
             msg = text_type(e)
             if __mock_self.call_args is not None:
                 actual_args, actual_kwargs = __mock_self.call_args
-                msg += '\n\npytest introspection follows:\n'
+                msg += "\n\npytest introspection follows:\n"
                 try:
                     assert actual_args == args[1:]
                 except AssertionError as e:
-                    msg += '\nArgs:\n' + text_type(e)
+                    msg += "\nArgs:\n" + text_type(e)
                 try:
                     assert actual_kwargs == kwargs
                 except AssertionError as e:
-                    msg += '\nKwargs:\n' + text_type(e)
+                    msg += "\nKwargs:\n" + text_type(e)
     e = AssertionError(msg)
     e._mock_introspection_applied = True
     raise e
@@ -211,44 +215,37 @@ def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
 
 def wrap_assert_not_called(*args, **kwargs):
     __tracebackhide__ = True
-    assert_wrapper(_mock_module_originals["assert_not_called"],
-                   *args, **kwargs)
+    assert_wrapper(_mock_module_originals["assert_not_called"], *args, **kwargs)
 
 
 def wrap_assert_called_with(*args, **kwargs):
     __tracebackhide__ = True
-    assert_wrapper(_mock_module_originals["assert_called_with"],
-                   *args, **kwargs)
+    assert_wrapper(_mock_module_originals["assert_called_with"], *args, **kwargs)
 
 
 def wrap_assert_called_once(*args, **kwargs):
     __tracebackhide__ = True
-    assert_wrapper(_mock_module_originals["assert_called_once"],
-                   *args, **kwargs)
+    assert_wrapper(_mock_module_originals["assert_called_once"], *args, **kwargs)
 
 
 def wrap_assert_called_once_with(*args, **kwargs):
     __tracebackhide__ = True
-    assert_wrapper(_mock_module_originals["assert_called_once_with"],
-                   *args, **kwargs)
+    assert_wrapper(_mock_module_originals["assert_called_once_with"], *args, **kwargs)
 
 
 def wrap_assert_has_calls(*args, **kwargs):
     __tracebackhide__ = True
-    assert_wrapper(_mock_module_originals["assert_has_calls"],
-                   *args, **kwargs)
+    assert_wrapper(_mock_module_originals["assert_has_calls"], *args, **kwargs)
 
 
 def wrap_assert_any_call(*args, **kwargs):
     __tracebackhide__ = True
-    assert_wrapper(_mock_module_originals["assert_any_call"],
-                   *args, **kwargs)
+    assert_wrapper(_mock_module_originals["assert_any_call"], *args, **kwargs)
 
 
 def wrap_assert_called(*args, **kwargs):
     __tracebackhide__ = True
-    assert_wrapper(_mock_module_originals["assert_called"],
-                   *args, **kwargs)
+    assert_wrapper(_mock_module_originals["assert_called"], *args, **kwargs)
 
 
 def wrap_assert_methods(config):
@@ -263,13 +260,13 @@ def wrap_assert_methods(config):
     mock_module = _get_mock_module(config)
 
     wrappers = {
-        'assert_called': wrap_assert_called,
-        'assert_called_once': wrap_assert_called_once,
-        'assert_called_with': wrap_assert_called_with,
-        'assert_called_once_with': wrap_assert_called_once_with,
-        'assert_any_call': wrap_assert_any_call,
-        'assert_has_calls': wrap_assert_has_calls,
-        'assert_not_called': wrap_assert_not_called,
+        "assert_called": wrap_assert_called,
+        "assert_called_once": wrap_assert_called_once,
+        "assert_called_with": wrap_assert_called_with,
+        "assert_called_once_with": wrap_assert_called_once_with,
+        "assert_any_call": wrap_assert_any_call,
+        "assert_has_calls": wrap_assert_has_calls,
+        "assert_not_called": wrap_assert_not_called,
     }
     for method, wrapper in wrappers.items():
         try:
@@ -277,12 +274,11 @@ def wrap_assert_methods(config):
         except AttributeError:  # pragma: no cover
             continue
         _mock_module_originals[method] = original
-        patcher = mock_module.patch.object(
-            mock_module.NonCallableMock, method, wrapper)
+        patcher = mock_module.patch.object(mock_module.NonCallableMock, method, wrapper)
         patcher.start()
         _mock_module_patches.append(patcher)
 
-    if hasattr(config, 'add_cleanup'):
+    if hasattr(config, "add_cleanup"):
         add_cleanup = config.add_cleanup
     else:
         # pytest 2.7 compatibility
@@ -298,26 +294,33 @@ def unwrap_assert_methods():
 
 
 def pytest_addoption(parser):
-    parser.addini('mock_traceback_monkeypatch',
-                  'Monkeypatch the mock library to improve reporting of the '
-                  'assert_called_... methods',
-                  default=True)
-    parser.addini('mock_use_standalone_module',
-                  'Use standalone "mock" (from PyPI) instead of builtin "unittest.mock" '
-                  'on Python 3',
-                  default=False)
+    parser.addini(
+        "mock_traceback_monkeypatch",
+        "Monkeypatch the mock library to improve reporting of the "
+        "assert_called_... methods",
+        default=True,
+    )
+    parser.addini(
+        "mock_use_standalone_module",
+        'Use standalone "mock" (from PyPI) instead of builtin "unittest.mock" '
+        "on Python 3",
+        default=False,
+    )
 
 
 def parse_ini_boolean(value):
     if value in (True, False):
         return value
     try:
-        return {'true': True, 'false': False}[value.lower()]
+        return {"true": True, "false": False}[value.lower()]
     except KeyError:
-        raise ValueError('unknown string for bool: %r' % value)
+        raise ValueError("unknown string for bool: %r" % value)
 
 
 def pytest_configure(config):
-    tb = config.getoption('--tb')
-    if parse_ini_boolean(config.getini('mock_traceback_monkeypatch')) and tb != 'native':
+    tb = config.getoption("--tb")
+    if (
+        parse_ini_boolean(config.getini("mock_traceback_monkeypatch"))
+        and tb != "native"
+    ):
         wrap_assert_methods(config)

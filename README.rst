@@ -10,22 +10,21 @@ of a test:
 .. code-block:: python
 
     import os
-    
+
     class UnixFS:
-    
+
         @staticmethod
         def rm(filename):
             os.remove(filename)
-    
+
     def test_unix_fs(mocker):
         mocker.patch('os.remove')
         UnixFS.rm('file')
         os.remove.assert_called_once_with('file')
 
 
-.. Using PNG badges because PyPI doesn't support SVG
 
-|python| |version| |anaconda| |ci| |appveyor| |coverage|
+|python| |version| |anaconda| |ci| |appveyor| |coverage| |black|
 
 .. |version| image:: http://img.shields.io/pypi/v/pytest-mock.svg
   :target: https://pypi.python.org/pypi/pytest-mock
@@ -44,13 +43,16 @@ of a test:
 
 .. |python| image:: https://img.shields.io/pypi/pyversions/pytest-mock.svg
   :target: https://pypi.python.org/pypi/pytest-mock/
-  
-  
+
+.. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+  :target: https://github.com/ambv/black
+
+
 .. image:: http://www.opensourcecitizen.org/badge?url=github.com/pytest-dev/pytest-mock
   :target: http://www.opensourcecitizen.org/project?url=github.com/pytest-dev/pytest-mock
 
 If you found this library useful, donate some CPU cycles to its
-development efforts by clicking above. Thank you! 😇  
+development efforts by clicking above. Thank you! 😇
 
 Usage
 =====
@@ -160,8 +162,8 @@ diff::
     E         Right contains more items:
     E         {'bar': 4}
     E         Use -v to get the full diff
-    
-    
+
+
     test_foo.py:6: AssertionError
     ========================== 1 failed in 0.03 seconds ===========================
 
@@ -321,6 +323,26 @@ temporarily:
                 yield
         return my_cm
 
+
+Contributing
+============
+
+Contributions are welcome! After cloning the repository, create a virtual env
+and install ``pytest-mock`` in editable mode with ``dev`` extras:
+
+.. code-block:: console
+
+    $ pip install --editable .[dev]
+    $ pre-commit install
+
+Tests are run with ``tox``, you can run the baseline environments before submitting a PR:
+
+.. code-block:: console
+
+    $ tox -e py27,py36,linting
+
+Style checks and formatting are done automatically during commit courtesy of
+`pre-commit <https://pre-commit.com>`_.
 
 License
 =======

@@ -58,7 +58,7 @@ Usage
 =====
 
 The ``mocker`` fixture has the same API as
-`mock.patch <http://www.voidspace.org.uk/python/mock/patch.html#patch-decorators>`_,
+`mock.patch <https://docs.python.org/3/library/unittest.mock.html#patch>`_,
 supporting the same arguments:
 
 .. code-block:: python
@@ -71,14 +71,14 @@ supporting the same arguments:
 
 The supported methods are:
 
-* ``mocker.patch``: see http://www.voidspace.org.uk/python/mock/patch.html#patch.
-* ``mocker.patch.object``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-object.
-* ``mocker.patch.multiple``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-multiple.
-* ``mocker.patch.dict``: see http://www.voidspace.org.uk/python/mock/patch.html#patch-dict.
-* ``mocker.stopall()``: stops all active patches up to this point.
-* ``mocker.resetall()``: calls ``reset_mock()`` in all mocked objects up to this point.
+* `mocker.patch <https://docs.python.org/3/library/unittest.mock.html#patch>`_
+* `mocker.patch.object <https://docs.python.org/3/library/unittest.mock.html#patch-object>`_
+* `mocker.patch.multiple <https://docs.python.org/3/library/unittest.mock.html#patch-multiple>`_
+* `mocker.patch.dict <https://docs.python.org/3/library/unittest.mock.html#patch-dict>`_
+* `mocker.stopall <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.patch.stopall>`_
+* ``mocker.resetall()``: calls `reset_mock() <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock.reset_mock>`_ in all mocked objects up to this point.
 
-Some objects from the ``mock`` module are accessible directly from ``mocker`` for convenience:
+These objects from the ``mock`` module are accessible directly from ``mocker`` for convenience:
 
 * `Mock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock>`_
 * `MagicMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.MagicMock>`_

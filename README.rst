@@ -47,13 +47,6 @@ of a test:
 .. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
   :target: https://github.com/ambv/black
 
-
-.. image:: http://www.opensourcecitizen.org/badge?url=github.com/pytest-dev/pytest-mock
-  :target: http://www.opensourcecitizen.org/project?url=github.com/pytest-dev/pytest-mock
-
-If you found this library useful, donate some CPU cycles to its
-development efforts by clicking above. Thank you! 😇
-
 Usage
 =====
 

@@ -1,3 +1,8 @@
+1.10.1
+------
+
+* Fix broken links and update README. Also the code is now formatted using `black <https://github.com/ambv/black>`__.
+
 1.10.0
 ------
 

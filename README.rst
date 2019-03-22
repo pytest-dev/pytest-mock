@@ -46,6 +46,8 @@ of a test:
 
 .. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
   :target: https://github.com/ambv/black
+  
+`Professionally supported pytest-mock is now available <https://tidelift.com/subscription/pkg/pypi-pytest_mock?utm_source=pypi-pytest-mock&utm_medium=referral&utm_campaign=readme>`_
 
 Usage
 =====

@@ -610,3 +610,24 @@ def test_assert_called_with_unicode_arguments(mocker):
 
     with pytest.raises(AssertionError):
         stub.assert_called_with(u"lak")
+
+
+def test_plain_stopall(testdir):
+    """Calling patch.stopall() in a test would cause an error during unconfigure (#137)"""
+    testdir.makepyfile(
+        """
+        import random
+
+        def get_random_number():
+            return random.randint(0, 100)
+
+        def test_get_random_number(mocker):
+            patcher = mocker.mock_module.patch("random.randint", lambda x, y: 5)
+            patcher.start()
+            assert get_random_number() == 5
+            mocker.mock_module.patch.stopall()
+    """
+    )
+    result = testdir.runpytest_subprocess()
+    result.stdout.fnmatch_lines("* 1 passed in *")
+    assert "RuntimeError" not in result.stderr.str()

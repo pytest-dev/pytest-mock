@@ -1,3 +1,12 @@
+1.10.2
+------
+
+* Fix bug at the end of the test session when a call to ``patch.stopall`` is done explicitly by
+  user code. Thanks `@craiga`_ for the report (`#137`_).
+
+.. _#137: https://github.com/pytest-dev/pytest-mock/issues/137
+.. _@craiga: https://github.com/craiga
+
 1.10.1
 ------
 

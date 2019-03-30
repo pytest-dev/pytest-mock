@@ -13,6 +13,9 @@ skip_pypy = pytest.mark.skipif(
     platform.python_implementation() == "PyPy", reason="could not make work on pypy"
 )
 
+# Python 3.8 changed the output formatting (bpo-35500).
+PY38 = sys.version_info >= (3, 8)
+
 
 @pytest.fixture
 def needs_assert_rewrite(pytestconfig):
@@ -185,7 +188,7 @@ class TestMockerStub:
 
     def test_repr_with_no_name(self, mocker):
         stub = mocker.stub()
-        assert not "name" in repr(stub)
+        assert "name" not in repr(stub)
 
     def test_repr_with_name(self, mocker):
         test_name = "funny walk"
@@ -194,7 +197,11 @@ class TestMockerStub:
 
     def __test_failure_message(self, mocker, **kwargs):
         expected_name = kwargs.get("name") or "mock"
-        expected_message = "Expected call: {0}()\nNot called".format(expected_name)
+        if PY38:
+            msg = "expected call not found.\nExpected: {0}()\nActual: not called."
+        else:
+            msg = "Expected call: {0}()\nNot called"
+        expected_message = msg.format(expected_name)
         stub = mocker.stub(**kwargs)
         with pytest.raises(AssertionError) as exc_info:
             stub.assert_called_with()
@@ -585,22 +592,30 @@ def test_detailed_introspection(testdir):
     """
     )
     result = testdir.runpytest("-s")
-    result.stdout.fnmatch_lines(
-        [
+    if PY38:
+        expected_lines = [
+            "*AssertionError: expected call not found.",
+            "*Expected: mock('', bar=4)",
+            "*Actual: mock('fo')",
+        ]
+    else:
+        expected_lines = [
             "*AssertionError: Expected call: mock('', bar=4)*",
             "*Actual call: mock('fo')*",
-            "*pytest introspection follows:*",
-            "*Args:",
-            "*assert ('fo',) == ('',)",
-            "*At index 0 diff: 'fo' != ''*",
-            "*Use -v to get the full diff*",
-            "*Kwargs:*",
-            "*assert {} == {'bar': 4}*",
-            "*Right contains more items:*",
-            "*{'bar': 4}*",
-            "*Use -v to get the full diff*",
         ]
-    )
+    expected_lines += [
+        "*pytest introspection follows:*",
+        "*Args:",
+        "*assert ('fo',) == ('',)",
+        "*At index 0 diff: 'fo' != ''*",
+        "*Use -v to get the full diff*",
+        "*Kwargs:*",
+        "*assert {} == {'bar': 4}*",
+        "*Right contains more items:*",
+        "*{'bar': 4}*",
+        "*Use -v to get the full diff*",
+    ]
+    result.stdout.fnmatch_lines(expected_lines)
 
 
 def test_assert_called_with_unicode_arguments(mocker):
@@ -613,7 +628,7 @@ def test_assert_called_with_unicode_arguments(mocker):
 
 
 def test_plain_stopall(testdir):
-    """Calling patch.stopall() in a test would cause an error during unconfigure (#137)"""
+    """patch.stopall() in a test should not cause an error during unconfigure (#137)"""
     testdir.makepyfile(
         """
         import random

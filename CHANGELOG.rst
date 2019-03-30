@@ -1,3 +1,11 @@
+1.10.3
+------
+
+* Fix test suite in Python 3.8. Thanks `@hroncok`_ for the report and `@blueyed`_ for the PR (`#140`_).
+
+.. _#140: https://github.com/pytest-dev/pytest-mock/pull/140
+.. _@hroncok: https://github.com/hroncok
+
 1.10.2
 ------
 

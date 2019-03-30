@@ -188,7 +188,7 @@ class TestMockerStub:
 
     def test_repr_with_no_name(self, mocker):
         stub = mocker.stub()
-        assert not "name" in repr(stub)
+        assert "name" not in repr(stub)
 
     def test_repr_with_name(self, mocker):
         test_name = "funny walk"
@@ -628,7 +628,7 @@ def test_assert_called_with_unicode_arguments(mocker):
 
 
 def test_plain_stopall(testdir):
-    """Calling patch.stopall() in a test would cause an error during unconfigure (#137)"""
+    """patch.stopall() in a test should not cause an error during unconfigure (#137)"""
     testdir.makepyfile(
         """
         import random

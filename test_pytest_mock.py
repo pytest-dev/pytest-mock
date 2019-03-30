@@ -132,14 +132,26 @@ def test_mock_patch_dict_resetall(mocker):
     assert x == {"new": 10}
 
 
-def test_deprecated_mock(mock, tmpdir):
+def test_deprecated_mock(testdir):
     """
     Use backward-compatibility-only mock fixture to ensure complete coverage.
     """
-    mock.patch("os.listdir", return_value=["mocked"])
-    assert os.listdir(str(tmpdir)) == ["mocked"]
-    mock.stopall()
-    assert os.listdir(str(tmpdir)) == []
+    p1 = testdir.makepyfile(
+        """
+        import os
+
+        def test(mock, tmpdir):
+            mock.patch("os.listdir", return_value=["mocked"])
+            assert os.listdir(str(tmpdir)) == ["mocked"]
+            mock.stopall()
+            assert os.listdir(str(tmpdir)) == []
+        """
+    )
+    result = testdir.runpytest(str(p1))
+    result.stdout.fnmatch_lines(
+        ['*DeprecationWarning: "mock" fixture has been deprecated, use "mocker"*']
+    )
+    assert result.ret == 0
 
 
 @pytest.mark.parametrize(

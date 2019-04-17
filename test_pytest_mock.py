@@ -561,6 +561,22 @@ def test_monkeypatch_native(testdir):
     )  # make sure there are no duplicated tracebacks (#44)
 
 
+def test_monkeypatch_no_terminal(testdir):
+    """Don't crash without 'terminal' plugin.
+    """
+    testdir.makepyfile(
+        """
+        def test_foo(mocker):
+            stub = mocker.stub()
+            stub(1, greet='hello')
+            stub.assert_called_once_with(1, greet='hey')
+        """
+    )
+    result = runpytest_subprocess(testdir, "-p", "no:terminal", "-s")
+    assert result.ret == 1
+    assert result.stdout.lines == []
+
+
 @pytest.mark.skipif(sys.version_info[0] < 3, reason="Py3 only")
 def test_standalone_mock(testdir):
     """Check that the "mock_use_standalone" is being used.

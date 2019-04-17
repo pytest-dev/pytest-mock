@@ -1,3 +1,8 @@
+1.10.4
+------
+
+* Fix plugin when 'terminal' plugin is disabled
+
 1.10.3
 ------
 

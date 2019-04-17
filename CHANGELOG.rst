@@ -1,3 +1,8 @@
+1.10.4
+------
+
+* Remove dependency on 'terminal' plugin
+
 1.10.3
 ------
 

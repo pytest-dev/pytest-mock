@@ -344,4 +344,9 @@ License
 
 Distributed under the terms of the `MIT`_ license.
 
+Security contact information
+============================
+
+To report a security vulnerability, please use the `Tidelift security contact <https://tidelift.com/security>`__. Tidelift will coordinate the fix and disclosure.
+
 .. _MIT: https://github.com/pytest-dev/pytest-mock/blob/master/LICENSE

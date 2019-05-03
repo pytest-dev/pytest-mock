@@ -10,11 +10,11 @@ pytest_plugins = "pytester"
 
 # could not make some of the tests work on PyPy, patches are welcome!
 skip_pypy = pytest.mark.skipif(
-    platform.python_implementation() == "PyPy", reason="could not make work on pypy"
+    platform.python_implementation() == "PyPy", reason="could not make it work on pypy"
 )
 
-# Python 3.8 changed the output formatting (bpo-35500).
-PY38 = sys.version_info >= (3, 8)
+# Python 3.8 changed the output formatting (bpo-35500), which has been ported to mock 3.0
+NEW_FORMATTING = sys.version_info >= (3, 8) or sys.version_info[0] == 2
 
 
 @pytest.fixture
@@ -209,7 +209,7 @@ class TestMockerStub:
 
     def __test_failure_message(self, mocker, **kwargs):
         expected_name = kwargs.get("name") or "mock"
-        if PY38:
+        if NEW_FORMATTING:
             msg = "expected call not found.\nExpected: {0}()\nActual: not called."
         else:
             msg = "Expected call: {0}()\nNot called"
@@ -620,7 +620,7 @@ def test_detailed_introspection(testdir):
     """
     )
     result = testdir.runpytest("-s")
-    if PY38:
+    if NEW_FORMATTING:
         expected_lines = [
             "*AssertionError: expected call not found.",
             "*Expected: mock('', bar=4)",

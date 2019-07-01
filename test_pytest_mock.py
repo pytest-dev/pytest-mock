@@ -639,7 +639,7 @@ def test_detailed_introspection(testdir):
         "*Use -v to get the full diff*",
         "*Kwargs:*",
         "*assert {} == {'bar': 4}*",
-        "*Right contains more items:*",
+        "*Right contains* more item*",
         "*{'bar': 4}*",
         "*Use -v to get the full diff*",
     ]

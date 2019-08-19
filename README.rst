@@ -277,6 +277,27 @@ But this poses a few disadvantages:
   naming fixtures as parameters, or ``pytest.mark.parametrize``;
 - you can't easily undo the mocking during the test execution;
 
+One can use ``contextlib.ExitStack`` to improve the flow of the test:
+
+.. code-block:: python
+
+    import contextlib
+    import mock
+
+    def test_unix_fs():
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(mock.patch('os.remove'))
+            UnixFS.rm('file')
+            os.remove.assert_called_once_with('file')
+
+            stack.enter_context(mock.patch('os.listdir'))
+            assert UnixFS.ls('dir') == expected
+            # ...
+
+            stack.enter_context(mock.patch('shutil.copy'))
+            UnixFS.cp('src', 'dst')
+            # ...
+
 
 **Note about usage as context manager**
 

@@ -294,7 +294,7 @@ But this poses a few disadvantages:
   naming fixtures as parameters, or ``pytest.mark.parametrize``;
 - you can't easily undo the mocking during the test execution;
 
-An alternative is to use ``contextlib.ExitStack`` to stack the context managers in a single level of indentation 
+An alternative is to use ``contextlib.ExitStack`` to stack the context managers in a single level of indentation
 to improve the flow of the test:
 
 .. code-block:: python
@@ -316,7 +316,7 @@ to improve the flow of the test:
             UnixFS.cp('src', 'dst')
             # ...
 
-But this is arguably a little more complex.
+But this is arguably a little more complex than using ``pytest-mock``.
 
 Contributing
 ============

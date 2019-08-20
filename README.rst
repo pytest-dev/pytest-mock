@@ -198,6 +198,23 @@ This will force the plugin to import ``mock`` instead of the ``unittest.mock`` m
 Python 3.4+. Note that this option is only used in Python 3+, as Python 2 users only have the option
 to use the ``mock`` package from PyPI anyway.
 
+Note about usage as context manager
+-----------------------------------
+
+Although mocker's API is intentionally the same as ``mock.patch``'s, its use
+as context manager and function decorator is **not** supported through the
+fixture:
+
+.. code-block:: python
+
+    def test_context_manager(mocker):
+        a = A()
+        with mocker.patch.object(a, 'doIt', return_value=True, autospec=True):  # DO NOT DO THIS
+            assert a.doIt() == True
+
+The purpose of this plugin is to make the use of context managers and
+function decorators for mocking unnecessary.
+
 
 Requirements
 ============
@@ -277,7 +294,8 @@ But this poses a few disadvantages:
   naming fixtures as parameters, or ``pytest.mark.parametrize``;
 - you can't easily undo the mocking during the test execution;
 
-One can use ``contextlib.ExitStack`` to improve the flow of the test:
+An alternative is to use ``contextlib.ExitStack`` to stack the context managers in a single level of indentation 
+to improve the flow of the test:
 
 .. code-block:: python
 
@@ -298,47 +316,7 @@ One can use ``contextlib.ExitStack`` to improve the flow of the test:
             UnixFS.cp('src', 'dst')
             # ...
 
-
-**Note about usage as context manager**
-
-Although mocker's API is intentionally the same as ``mock.patch``'s, its use
-as context manager and function decorator is **not** supported through the
-fixture. The purpose of this plugin is to make the use of context managers and
-function decorators for mocking unnecessary. Indeed, trying to use the
-functionality in ``mocker`` in this manner can lead to non-intuitive errors:
-
-.. code-block:: python
-
-    def test_context_manager(mocker):
-        a = A()
-        with mocker.patch.object(a, 'doIt', return_value=True, autospec=True):
-            assert a.doIt() == True
-
-.. code-block:: console
-
-    ================================== FAILURES ===================================
-    ____________________________ test_context_manager _____________________________
-    in test_context_manager
-        with mocker.patch.object(a, 'doIt', return_value=True, autospec=True):
-    E   AttributeError: __exit__
-
-You can however use ``mocker.mock_module`` to access the underlying ``mock``
-module, e.g. to return a context manager in a fixture that mocks something
-temporarily:
-
-.. code-block:: python
-
-    @pytest.fixture
-    def fixture_cm(mocker):
-        @contextlib.contextmanager
-        def my_cm():
-            def mocked():
-                pass
-
-            with mocker.mock_module.patch.object(SomeClass, 'method', mocked):
-                yield
-        return my_cm
-
+But this is arguably a little more complex.
 
 Contributing
 ============

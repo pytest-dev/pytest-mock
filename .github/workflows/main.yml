@@ -1,4 +1,4 @@
-name: pytest plugin
+name: build
 
 on: [push, pull_request]
 

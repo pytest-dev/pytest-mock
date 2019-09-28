@@ -32,7 +32,7 @@ of a test:
 .. |anaconda| image:: https://img.shields.io/conda/vn/conda-forge/pytest-mock.svg
     :target: https://anaconda.org/conda-forge/pytest-mock
 
-.. |ci| image:: https://github.com/pytest-dev/pytest-mock/workflows/main/badge.svg
+.. |ci| image:: https://github.com/pytest-dev/pytest-mock/workflows/build/badge.svg
   :target: https://github.com/pytest-dev/pytest-mock/actions
 
 .. |coverage| image:: http://img.shields.io/coveralls/pytest-dev/pytest-mock.svg

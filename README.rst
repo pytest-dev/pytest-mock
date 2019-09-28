@@ -24,7 +24,7 @@ of a test:
 
 
 
-|python| |version| |anaconda| |ci| |appveyor| |coverage| |black|
+|python| |version| |anaconda| |ci| |coverage| |black|
 
 .. |version| image:: http://img.shields.io/pypi/v/pytest-mock.svg
   :target: https://pypi.python.org/pypi/pytest-mock
@@ -32,11 +32,8 @@ of a test:
 .. |anaconda| image:: https://img.shields.io/conda/vn/conda-forge/pytest-mock.svg
     :target: https://anaconda.org/conda-forge/pytest-mock
 
-.. |ci| image:: http://img.shields.io/travis/pytest-dev/pytest-mock.svg
-  :target: https://travis-ci.org/pytest-dev/pytest-mock
-
-.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/pid1t7iuwhkm9eh6/branch/master?svg=true
-  :target: https://ci.appveyor.com/project/pytestbot/pytest-mock
+.. |ci| image:: https://github.com/pytest-dev/pytest-mock/workflows/main/badge.svg
+  :target: https://github.com/pytest-dev/pytest-mock/actions
 
 .. |coverage| image:: http://img.shields.io/coveralls/pytest-dev/pytest-mock.svg
   :target: https://coveralls.io/r/pytest-dev/pytest-mock

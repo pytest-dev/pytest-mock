@@ -85,9 +85,8 @@ These objects from the ``mock`` module are accessible directly from ``mocker`` f
 Spy
 ---
 
-The spy acts exactly like the original method in all cases, except it allows use of `mock`
+The spy acts exactly like the original method in all cases, except it allows use of ``mock``
 features with it, like retrieving call count. It also works for class and static methods.
-
 
 .. code-block:: python
 
@@ -100,6 +99,9 @@ features with it, like retrieving call count. It also works for class and static
         mocker.spy(foo, 'bar')
         assert foo.bar() == 42
         assert foo.bar.call_count == 1
+
+Since version ``1.11``, it is also possible to query the ``return_value`` attribute
+to observe what the spied function/method returned.
 
 Stub
 ----

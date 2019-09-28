@@ -1,3 +1,9 @@
+1.11.0
+------
+
+* The object returned by ``mocker.spy`` now also tracks the return value
+  of the spied method/function.
+
 1.10.4
 ------
 

@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 import inspect
 import sys
+from functools import wraps
 
 import pytest
 
@@ -104,7 +105,13 @@ class MockFixture(object):
                 if isinstance(value, (classmethod, staticmethod)):
                     autospec = False
 
-        result = self.patch.object(obj, name, side_effect=method, autospec=autospec)
+        @wraps(method)
+        def wrapper(*args, **kwargs):
+            r = method(*args, **kwargs)
+            result.return_value = r
+            return r
+
+        result = self.patch.object(obj, name, side_effect=wrapper, autospec=autospec)
         return result
 
     def stub(self, name=None):

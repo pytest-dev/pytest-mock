@@ -238,7 +238,9 @@ def test_instance_method_spy(mocker):
     assert foo.bar(arg=10) == 20
     assert other.bar(arg=10) == 20
     foo.bar.assert_called_once_with(arg=10)
+    assert foo.bar.return_value == 20
     spy.assert_called_once_with(arg=10)
+    assert spy.return_value == 20
 
 
 @skip_pypy
@@ -272,6 +274,7 @@ def test_instance_method_by_subclass_spy(mocker):
     assert other.bar(arg=10) == 20
     calls = [mocker.call(foo, arg=10), mocker.call(other, arg=10)]
     assert spy.call_args_list == calls
+    assert spy.return_value == 20
 
 
 @skip_pypy
@@ -284,7 +287,9 @@ def test_class_method_spy(mocker):
     spy = mocker.spy(Foo, "bar")
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)
+    assert Foo.bar.return_value == 20
     spy.assert_called_once_with(arg=10)
+    assert spy.return_value == 20
 
 
 @skip_pypy
@@ -301,7 +306,9 @@ def test_class_method_subclass_spy(mocker):
     spy = mocker.spy(Foo, "bar")
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)
+    assert Foo.bar.return_value == 20
     spy.assert_called_once_with(arg=10)
+    assert spy.return_value == 20
 
 
 @skip_pypy
@@ -320,7 +327,9 @@ def test_class_method_with_metaclass_spy(mocker):
     spy = mocker.spy(Foo, "bar")
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)
+    assert Foo.bar.return_value == 20
     spy.assert_called_once_with(arg=10)
+    assert spy.return_value == 20
 
 
 @skip_pypy
@@ -333,7 +342,9 @@ def test_static_method_spy(mocker):
     spy = mocker.spy(Foo, "bar")
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)
+    assert Foo.bar.return_value == 20
     spy.assert_called_once_with(arg=10)
+    assert spy.return_value == 20
 
 
 @skip_pypy
@@ -350,7 +361,9 @@ def test_static_method_subclass_spy(mocker):
     spy = mocker.spy(Foo, "bar")
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)
+    assert Foo.bar.return_value == 20
     spy.assert_called_once_with(arg=10)
+    assert spy.return_value == 20
 
 
 @contextmanager

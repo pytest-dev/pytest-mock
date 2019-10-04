@@ -1,3 +1,13 @@
+1.11.1
+------
+
+* Fix ``mocker.spy`` on Python 2 when used on non-function objects
+  which implement ``__call__`` (`#157`_). Thanks `@pbasista`_  for
+  the report.
+
+.. _#157: https://github.com/pytest-dev/pytest-mock/issues/157
+.. _@pbasista: https://github.com/pbasista
+
 1.11.0
 ------
 

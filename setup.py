@@ -1,15 +1,16 @@
 from io import open
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name="pytest-mock",
     entry_points={"pytest11": ["pytest_mock = pytest_mock"]},
-    py_modules=["pytest_mock", "_pytest_mock_version"],
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
     platforms="any",
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
     install_requires=["pytest>=2.7", 'mock;python_version<"3.0"'],
-    use_scm_version={"write_to": "_pytest_mock_version.py"},
+    use_scm_version={"write_to": "src/pytest_mock/_version.py"},
     setup_requires=["setuptools_scm"],
     url="https://github.com/pytest-dev/pytest-mock/",
     license="MIT",

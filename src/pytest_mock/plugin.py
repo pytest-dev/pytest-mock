@@ -6,7 +6,7 @@ import sys
 
 import pytest
 
-from _pytest_mock_version import version
+from ._version import version
 
 __version__ = version
 

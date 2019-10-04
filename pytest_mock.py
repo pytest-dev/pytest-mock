@@ -1,8 +1,8 @@
 from __future__ import unicode_literals
 
+import functools
 import inspect
 import sys
-from functools import wraps
 
 import pytest
 
@@ -105,7 +105,13 @@ class MockFixture(object):
                 if isinstance(value, (classmethod, staticmethod)):
                     autospec = False
 
-        @wraps(method)
+        if sys.version_info[0] == 2:
+            assigned = [x for x in functools.WRAPPER_ASSIGNMENTS if hasattr(method, x)]
+            w = functools.wraps(method, assigned=assigned)
+        else:
+            w = functools.wraps(method)
+
+        @w
         def wrapper(*args, **kwargs):
             r = method(*args, **kwargs)
             result.return_value = r

@@ -366,6 +366,26 @@ def test_static_method_subclass_spy(mocker):
     assert spy.return_value == 20
 
 
+def test_callable_like_spy(testdir, mocker):
+    testdir.makepyfile(
+        uut="""
+        class CallLike(object):
+            def __call__(self, x):
+                return x * 2
+
+        call_like = CallLike()
+    """
+    )
+    testdir.syspathinsert()
+
+    import uut
+
+    spy = mocker.spy(uut, "call_like")
+    uut.call_like(10)
+    spy.assert_called_once_with(10)
+    assert spy.return_value == 20
+
+
 @contextmanager
 def assert_traceback():
     """

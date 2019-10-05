@@ -212,15 +212,18 @@ def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
             msg = text_type(e)
             if __mock_self.call_args is not None:
                 actual_args, actual_kwargs = __mock_self.call_args
-                msg += "\n\npytest introspection follows:\n"
+                introspection = ""
                 try:
                     assert actual_args == args[1:]
                 except AssertionError as e:
-                    msg += "\nArgs:\n" + text_type(e)
+                    introspection += "\nArgs:\n" + text_type(e)
                 try:
                     assert actual_kwargs == kwargs
                 except AssertionError as e:
-                    msg += "\nKwargs:\n" + text_type(e)
+                    introspection += "\nKwargs:\n" + text_type(e)
+
+                if introspection:
+                    msg += "\n\npytest introspection follows:\n" + introspection
     e = AssertionError(msg)
     e._mock_introspection_applied = True
     raise e

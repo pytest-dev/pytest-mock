@@ -1,5 +1,14 @@
-1.11.1
-------
+1.11.2 (unreleased)
+-------------------
+
+* The *pytest introspection follows* message is no longer shown
+  if there is no pytest introspection (`#154`_).
+  Thanks `@The-Compiler`_ for the report.
+
+.. _#154: https://github.com/pytest-dev/pytest-mock/issues/154
+
+1.11.1 (2019-10-04)
+-------------------
 
 * Fix ``mocker.spy`` on Python 2 when used on non-function objects
   which implement ``__call__`` (`#157`_). Thanks `@pbasista`_  for

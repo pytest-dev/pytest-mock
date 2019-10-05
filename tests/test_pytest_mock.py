@@ -679,6 +679,20 @@ def test_detailed_introspection(testdir):
     result.stdout.fnmatch_lines(expected_lines)
 
 
+def test_missing_introspection(testdir):
+    testdir.makepyfile(
+        """
+        def test_foo(mocker):
+            mock = mocker.Mock()
+            mock('foo')
+            mock('test')
+            mock.assert_called_once_with('test')
+    """
+    )
+    result = testdir.runpytest()
+    assert "pytest introspection follows:" not in result.stdout.str()
+
+
 def test_assert_called_with_unicode_arguments(mocker):
     """Test bug in assert_call_with called with non-ascii unicode string (#91)"""
     stub = mocker.stub()

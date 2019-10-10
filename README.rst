@@ -218,7 +218,7 @@ function decorators for mocking unnecessary.
 Requirements
 ============
 
-* Python 2.7, Python 3.4+
+* Python 2.7, Python 3.5+
 * pytest
 * mock (for Python 2)
 

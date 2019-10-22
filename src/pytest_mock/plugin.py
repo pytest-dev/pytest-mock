@@ -156,7 +156,21 @@ class MockFixture(object):
 
         def object(self, *args, **kwargs):
             """API to mock.patch.object"""
+            self._enforce_no_with_context(inspect.stack())
             return self._start_patch(self.mock_module.patch.object, *args, **kwargs)
+
+        def _enforce_no_with_context(self, stack):
+            """raises a ValueError if mocker is used in a with context"""
+            caller = stack[1]
+            frame = caller[0]
+            info = inspect.getframeinfo(frame)
+            code_context = " ".join(info.code_context).strip()
+
+            if "with mocker" in code_context:
+                raise ValueError(
+                    "Using mocker in a with context is not supported. "
+                    "https://github.com/pytest-dev/pytest-mock#note-about-usage-as-context-manager"
+                )
 
         def multiple(self, *args, **kwargs):
             """API to mock.patch.multiple"""

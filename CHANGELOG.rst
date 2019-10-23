@@ -1,11 +1,16 @@
-1.11.2 (unreleased)
+1.11.2 (2019-10-19)
 -------------------
 
 * The *pytest introspection follows* message is no longer shown
   if there is no pytest introspection (`#154`_).
   Thanks `@The-Compiler`_ for the report.
 
+* ``mocker`` now raises a ``TypeError`` when used as a context-manager.
+  Thanks `@binarymason`_ for the PR (`#165`_).
+
 .. _#154: https://github.com/pytest-dev/pytest-mock/issues/154
+.. _#165: https://github.com/pytest-dev/pytest-mock/pull/165
+.. _@binarymason: https://github.com/binarymason
 
 1.11.1 (2019-10-04)
 -------------------

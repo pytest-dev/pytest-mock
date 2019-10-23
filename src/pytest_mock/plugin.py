@@ -166,7 +166,7 @@ class MockFixture(object):
             info = inspect.getframeinfo(frame)
             code_context = " ".join(info.code_context).strip()
 
-            if "with mocker" in code_context:
+            if code_context.startswith("with mocker."):
                 raise ValueError(
                     "Using mocker in a with context is not supported. "
                     "https://github.com/pytest-dev/pytest-mock#note-about-usage-as-context-manager"

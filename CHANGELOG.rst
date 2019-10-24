@@ -5,7 +5,7 @@
   if there is no pytest introspection (`#154`_).
   Thanks `@The-Compiler`_ for the report.
 
-* ``mocker`` now raises a ``TypeError`` when used as a context-manager.
+* ``mocker`` now raises a ``ValueError`` when used as a context-manager.
   Thanks `@binarymason`_ for the PR (`#165`_).
 
 .. _#154: https://github.com/pytest-dev/pytest-mock/issues/154

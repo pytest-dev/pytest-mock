@@ -1,3 +1,12 @@
+1.12.0 (2019-11-19)
+-------------------
+
+* Now all patch functions also raise a ``ValueError`` when used
+  as a context-manager. Thanks `@AlexGascon`_ for the PR (`#168`_).
+
+.. _@AlexGascon: https://github.com/AlexGascon
+.. _#168: https://github.com/pytest-dev/pytest-mock/pull/168
+
 1.11.2 (2019-10-19)
 -------------------
 

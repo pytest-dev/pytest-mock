@@ -753,3 +753,41 @@ def test_abort_patch_context_manager(mocker):
     )
 
     assert str(excinfo.value) == expected_error_msg
+
+
+def test_abort_patch_context_manager_with_stale_pyc(testdir):
+    """Ensure we don't trigger an error in case the frame where mocker.patch is being
+    used doesn't have a 'context' (#169)"""
+    import compileall
+
+    py_fn = testdir.makepyfile(
+        c="""
+        class C:
+            x = 1
+
+        def check(mocker):
+            mocker.patch.object(C, "x", 2)
+            assert C.x == 2
+    """
+    )
+    testdir.syspathinsert()
+
+    testdir.makepyfile(
+        """
+        from c import check
+        def test_foo(mocker):
+            check(mocker)
+    """
+    )
+    result = testdir.runpytest()
+    result.stdout.fnmatch_lines("* 1 passed *")
+
+    kwargs = {"legacy": True} if sys.version_info[0] >= 3 else {}
+    assert compileall.compile_file(str(py_fn), **kwargs)
+
+    pyc_fn = str(py_fn) + "c"
+    assert os.path.isfile(pyc_fn)
+
+    py_fn.remove()
+    result = testdir.runpytest()
+    result.stdout.fnmatch_lines("* 1 passed *")

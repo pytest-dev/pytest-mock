@@ -160,6 +160,9 @@ class MockFixture(object):
             caller = stack[2]
             frame = caller[0]
             info = inspect.getframeinfo(frame)
+            if info.code_context is None:
+                # no source code available (#169)
+                return
             code_context = " ".join(info.code_context).strip()
 
             if code_context.startswith("with mocker."):

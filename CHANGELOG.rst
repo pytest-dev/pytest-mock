@@ -1,3 +1,11 @@
+1.12.1 (2019-11-20)
+-------------------
+
+* Fix error if ``mocker.patch`` is used in code where the source file
+  is not available, for example stale ``.pyc`` files (`#169`_).
+
+.. _#169: https://github.com/pytest-dev/pytest-mock/issues/169#issuecomment-555729265
+
 1.12.0 (2019-11-19)
 -------------------
 

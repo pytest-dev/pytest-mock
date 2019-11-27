@@ -245,6 +245,7 @@ def test_instance_method_spy(mocker):
 
 def test_instance_method_spy_exception(mocker):
     excepted_message = "foo"
+
     class Foo(object):
         def bar(self, arg):
             raise Exception(excepted_message)

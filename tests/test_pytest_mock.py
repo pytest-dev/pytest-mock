@@ -259,7 +259,7 @@ def test_instance_method_spy_exception(mocker):
     assert str(exc_info.value) == excepted_message
 
     foo.bar.assert_called_once_with(arg=10)
-    assert spy.return_value == exc_info.value
+    assert spy.side_effect == exc_info.value
 
 
 @skip_pypy

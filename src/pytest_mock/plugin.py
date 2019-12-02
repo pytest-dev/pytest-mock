@@ -116,7 +116,7 @@ class MockFixture(object):
             try:
                 r = method(*args, **kwargs)
             except Exception as e:
-                result.return_value = e
+                result.side_effect = e
                 raise
             else:
                 result.return_value = r

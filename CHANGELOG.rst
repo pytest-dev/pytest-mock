@@ -1,3 +1,9 @@
+1.13.0
+------
+
+* The object returned by ``mocker.spy`` now also tracks any side effect
+  of the spied method/function.
+
 1.12.1 (2019-11-20)
 -------------------
 

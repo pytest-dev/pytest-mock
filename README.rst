@@ -103,6 +103,9 @@ features with it, like retrieving call count. It also works for class and static
 Since version ``1.11``, it is also possible to query the ``return_value`` attribute
 to observe what the spied function/method returned.
 
+Since version ``1.13``, it is also possible to query the ``side_effect`` attribute
+to observe any exception thrown by the spied function/method.
+
 Stub
 ----
 

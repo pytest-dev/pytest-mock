@@ -243,6 +243,25 @@ def test_instance_method_spy(mocker):
     assert spy.return_value == 20
 
 
+def test_instance_method_spy_exception(mocker):
+    excepted_message = "foo"
+
+    class Foo(object):
+        def bar(self, arg):
+            raise Exception(excepted_message)
+
+    foo = Foo()
+    other = Foo()
+    spy = mocker.spy(foo, "bar")
+
+    with pytest.raises(Exception) as exc_info:
+        foo.bar(10)
+    assert str(exc_info.value) == excepted_message
+
+    foo.bar.assert_called_once_with(arg=10)
+    assert spy.side_effect == exc_info.value
+
+
 @skip_pypy
 def test_instance_method_by_class_spy(mocker):
     class Foo(object):

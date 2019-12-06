@@ -113,8 +113,13 @@ class MockFixture(object):
 
         @w
         def wrapper(*args, **kwargs):
-            r = method(*args, **kwargs)
-            result.return_value = r
+            try:
+                r = method(*args, **kwargs)
+            except Exception as e:
+                result.side_effect = e
+                raise
+            else:
+                result.return_value = r
             return r
 
         result = self.patch.object(obj, name, side_effect=wrapper, autospec=autospec)

@@ -1,5 +1,5 @@
-1.13.0
-------
+1.13.0 (2019-12-05)
+-------------------
 
 * The object returned by ``mocker.spy`` now also tracks any side effect
   of the spied method/function.

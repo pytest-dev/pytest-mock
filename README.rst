@@ -135,7 +135,7 @@ entries from the ``mock`` module.
 
 It also adds introspection information on differing call arguments when
 calling the helper methods. This features catches `AssertionError` raised in
-the method, and uses py.test's own `advanced assertions`_ to return a better
+the method, and uses pytest's own `advanced assertions`_ to return a better
 diff::
 
 

@@ -16,7 +16,7 @@ setup(
     license="MIT",
     author="Bruno Oliveira",
     author_email="nicoddemus@gmail.com",
-    description="Thin-wrapper around the mock package for easier use with py.test",
+    description="Thin-wrapper around the mock package for easier use with pytest",
     long_description=open("README.rst", encoding="utf-8").read(),
     keywords="pytest mock",
     extras_require={"dev": ["pre-commit", "tox"]},

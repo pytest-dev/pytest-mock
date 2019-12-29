@@ -32,7 +32,7 @@ def needs_assert_rewrite(pytestconfig):
         )
 
 
-class UnixFS(object):
+class UnixFS:
     """
     Wrapper to os functions to simulate a Unix file system, used for testing
     the mock fixture.
@@ -205,7 +205,7 @@ class TestMockerStub:
     def test_repr_with_name(self, mocker):
         test_name = "funny walk"
         stub = mocker.stub(name=test_name)
-        assert "name={0!r}".format(test_name) in repr(stub)
+        assert "name={!r}".format(test_name) in repr(stub)
 
     def __test_failure_message(self, mocker, **kwargs):
         expected_name = kwargs.get("name") or "mock"
@@ -228,7 +228,7 @@ class TestMockerStub:
 
 
 def test_instance_method_spy(mocker):
-    class Foo(object):
+    class Foo:
         def bar(self, arg):
             return arg * 2
 
@@ -246,7 +246,7 @@ def test_instance_method_spy(mocker):
 def test_instance_method_spy_exception(mocker):
     excepted_message = "foo"
 
-    class Foo(object):
+    class Foo:
         def bar(self, arg):
             raise Exception(excepted_message)
 
@@ -264,7 +264,7 @@ def test_instance_method_spy_exception(mocker):
 
 @skip_pypy
 def test_instance_method_by_class_spy(mocker):
-    class Foo(object):
+    class Foo:
         def bar(self, arg):
             return arg * 2
 
@@ -279,7 +279,7 @@ def test_instance_method_by_class_spy(mocker):
 
 @skip_pypy
 def test_instance_method_by_subclass_spy(mocker):
-    class Base(object):
+    class Base:
         def bar(self, arg):
             return arg * 2
 
@@ -298,7 +298,7 @@ def test_instance_method_by_subclass_spy(mocker):
 
 @skip_pypy
 def test_class_method_spy(mocker):
-    class Foo(object):
+    class Foo:
         @classmethod
         def bar(cls, arg):
             return arg * 2
@@ -314,7 +314,7 @@ def test_class_method_spy(mocker):
 @skip_pypy
 @pytest.mark.xfail(sys.version_info[0] == 2, reason="does not work on Python 2")
 def test_class_method_subclass_spy(mocker):
-    class Base(object):
+    class Base:
         @classmethod
         def bar(self, arg):
             return arg * 2
@@ -335,7 +335,7 @@ def test_class_method_with_metaclass_spy(mocker):
     class MetaFoo(type):
         pass
 
-    class Foo(object):
+    class Foo:
 
         __metaclass__ = MetaFoo
 
@@ -353,7 +353,7 @@ def test_class_method_with_metaclass_spy(mocker):
 
 @skip_pypy
 def test_static_method_spy(mocker):
-    class Foo(object):
+    class Foo:
         @staticmethod
         def bar(arg):
             return arg * 2
@@ -369,7 +369,7 @@ def test_static_method_spy(mocker):
 @skip_pypy
 @pytest.mark.xfail(sys.version_info[0] == 2, reason="does not work on Python 2")
 def test_static_method_subclass_spy(mocker):
-    class Base(object):
+    class Base:
         @staticmethod
         def bar(arg):
             return arg * 2
@@ -492,8 +492,8 @@ def test_assert_called_wrapper(mocker):
 def test_assert_called_args_with_introspection(mocker):
     stub = mocker.stub()
 
-    complex_args = ("a", 1, set(["test"]))
-    wrong_args = ("b", 2, set(["jest"]))
+    complex_args = ("a", 1, {"test"})
+    wrong_args = ("b", 2, {"jest"})
 
     stub(*complex_args)
     stub.assert_called_with(*complex_args)
@@ -714,7 +714,7 @@ def test_assert_called_with_unicode_arguments(mocker):
     stub(b"l\xc3\xb6k".decode("UTF-8"))
 
     with pytest.raises(AssertionError):
-        stub.assert_called_with(u"lak")
+        stub.assert_called_with("lak")
 
 
 def test_plain_stopall(testdir):
@@ -739,7 +739,7 @@ def test_plain_stopall(testdir):
 
 
 def test_abort_patch_object_context_manager(mocker):
-    class A(object):
+    class A:
         def doIt(self):
             return False
 

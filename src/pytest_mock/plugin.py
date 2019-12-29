@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import functools
 import inspect
 import sys
@@ -39,7 +37,7 @@ def _get_mock_module(config):
     return _get_mock_module._module
 
 
-class MockFixture(object):
+class MockFixture:
     """
     Fixture that provides the same interface to functions in the mock module,
     ensuring that they are uninstalled at the end of each test.
@@ -136,7 +134,7 @@ class MockFixture(object):
         """
         return self.mock_module.MagicMock(spec=lambda *args, **kwargs: None, name=name)
 
-    class _Patcher(object):
+    class _Patcher:
         """
         Object to provide the same interface as mock.patch, mock.patch.object,
         etc. We need this indirection to keep the same API of the mock package.

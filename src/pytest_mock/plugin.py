@@ -1,6 +1,5 @@
 import functools
 import inspect
-import sys
 
 import pytest
 

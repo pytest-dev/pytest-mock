@@ -251,7 +251,6 @@ def test_instance_method_spy_exception(mocker):
             raise Exception(excepted_message)
 
     foo = Foo()
-    other = Foo()
     spy = mocker.spy(foo, "bar")
 
     with pytest.raises(Exception) as exc_info:
@@ -744,7 +743,7 @@ def test_abort_patch_object_context_manager(mocker):
 
     with pytest.raises(ValueError) as excinfo:
         with mocker.patch.object(a, "doIt", return_value=True):
-            assert a.doIt() == True
+            assert a.doIt() is True
 
     expected_error_msg = (
         "Using mocker in a with context is not supported. "

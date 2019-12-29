@@ -35,8 +35,8 @@ of a test:
 .. |ci| image:: https://github.com/pytest-dev/pytest-mock/workflows/build/badge.svg
   :target: https://github.com/pytest-dev/pytest-mock/actions
 
-.. |coverage| image:: http://img.shields.io/coveralls/pytest-dev/pytest-mock.svg
-  :target: https://coveralls.io/r/pytest-dev/pytest-mock
+.. |coverage| image:: https://coveralls.io/repos/github/pytest-dev/pytest-mock/badge.svg?branch=master
+  :target: https://coveralls.io/github/pytest-dev/pytest-mock?branch=master
 
 .. |python| image:: https://img.shields.io/pypi/pyversions/pytest-mock.svg
   :target: https://pypi.python.org/pypi/pytest-mock/
@@ -102,6 +102,9 @@ features with it, like retrieving call count. It also works for class and static
 
 Since version ``1.11``, it is also possible to query the ``return_value`` attribute
 to observe what the spied function/method returned.
+
+Since version ``1.13``, it is also possible to query the ``side_effect`` attribute
+to observe any exception thrown by the spied function/method.
 
 Stub
 ----

@@ -1,11 +1,39 @@
-1.11.2 (unreleased)
+1.13.0 (2019-12-05)
+-------------------
+
+* The object returned by ``mocker.spy`` now also tracks any side effect
+  of the spied method/function.
+
+1.12.1 (2019-11-20)
+-------------------
+
+* Fix error if ``mocker.patch`` is used in code where the source file
+  is not available, for example stale ``.pyc`` files (`#169`_).
+
+.. _#169: https://github.com/pytest-dev/pytest-mock/issues/169#issuecomment-555729265
+
+1.12.0 (2019-11-19)
+-------------------
+
+* Now all patch functions also raise a ``ValueError`` when used
+  as a context-manager. Thanks `@AlexGascon`_ for the PR (`#168`_).
+
+.. _@AlexGascon: https://github.com/AlexGascon
+.. _#168: https://github.com/pytest-dev/pytest-mock/pull/168
+
+1.11.2 (2019-10-19)
 -------------------
 
 * The *pytest introspection follows* message is no longer shown
   if there is no pytest introspection (`#154`_).
   Thanks `@The-Compiler`_ for the report.
 
+* ``mocker`` now raises a ``ValueError`` when used as a context-manager.
+  Thanks `@binarymason`_ for the PR (`#165`_).
+
 .. _#154: https://github.com/pytest-dev/pytest-mock/issues/154
+.. _#165: https://github.com/pytest-dev/pytest-mock/pull/165
+.. _@binarymason: https://github.com/binarymason
 
 1.11.1 (2019-10-04)
 -------------------

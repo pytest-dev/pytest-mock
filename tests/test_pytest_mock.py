@@ -243,6 +243,25 @@ def test_instance_method_spy(mocker):
     assert spy.return_value == 20
 
 
+def test_instance_method_spy_exception(mocker):
+    excepted_message = "foo"
+
+    class Foo(object):
+        def bar(self, arg):
+            raise Exception(excepted_message)
+
+    foo = Foo()
+    other = Foo()
+    spy = mocker.spy(foo, "bar")
+
+    with pytest.raises(Exception) as exc_info:
+        foo.bar(10)
+    assert str(exc_info.value) == excepted_message
+
+    foo.bar.assert_called_once_with(arg=10)
+    assert spy.side_effect == exc_info.value
+
+
 @skip_pypy
 def test_instance_method_by_class_spy(mocker):
     class Foo(object):
@@ -717,3 +736,73 @@ def test_plain_stopall(testdir):
     result = testdir.runpytest_subprocess()
     result.stdout.fnmatch_lines("* 1 passed in *")
     assert "RuntimeError" not in result.stderr.str()
+
+
+def test_abort_patch_object_context_manager(mocker):
+    class A(object):
+        def doIt(self):
+            return False
+
+    a = A()
+
+    with pytest.raises(ValueError) as excinfo:
+        with mocker.patch.object(a, "doIt", return_value=True):
+            assert a.doIt() == True
+
+    expected_error_msg = (
+        "Using mocker in a with context is not supported. "
+        "https://github.com/pytest-dev/pytest-mock#note-about-usage-as-context-manager"
+    )
+
+    assert str(excinfo.value) == expected_error_msg
+
+
+def test_abort_patch_context_manager(mocker):
+    with pytest.raises(ValueError) as excinfo:
+        with mocker.patch("some_package"):
+            pass
+
+    expected_error_msg = (
+        "Using mocker in a with context is not supported. "
+        "https://github.com/pytest-dev/pytest-mock#note-about-usage-as-context-manager"
+    )
+
+    assert str(excinfo.value) == expected_error_msg
+
+
+def test_abort_patch_context_manager_with_stale_pyc(testdir):
+    """Ensure we don't trigger an error in case the frame where mocker.patch is being
+    used doesn't have a 'context' (#169)"""
+    import compileall
+
+    py_fn = testdir.makepyfile(
+        c="""
+        class C:
+            x = 1
+
+        def check(mocker):
+            mocker.patch.object(C, "x", 2)
+            assert C.x == 2
+    """
+    )
+    testdir.syspathinsert()
+
+    testdir.makepyfile(
+        """
+        from c import check
+        def test_foo(mocker):
+            check(mocker)
+    """
+    )
+    result = testdir.runpytest()
+    result.stdout.fnmatch_lines("* 1 passed *")
+
+    kwargs = {"legacy": True} if sys.version_info[0] >= 3 else {}
+    assert compileall.compile_file(str(py_fn), **kwargs)
+
+    pyc_fn = str(py_fn) + "c"
+    assert os.path.isfile(pyc_fn)
+
+    py_fn.remove()
+    result = testdir.runpytest()
+    result.stdout.fnmatch_lines("* 1 passed *")

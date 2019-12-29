@@ -113,8 +113,13 @@ class MockFixture(object):
 
         @w
         def wrapper(*args, **kwargs):
-            r = method(*args, **kwargs)
-            result.return_value = r
+            try:
+                r = method(*args, **kwargs)
+            except Exception as e:
+                result.side_effect = e
+                raise
+            else:
+                result.return_value = r
             return r
 
         result = self.patch.object(obj, name, side_effect=wrapper, autospec=autospec)
@@ -147,12 +152,29 @@ class MockFixture(object):
             module, registering the patch to stop it later and returns the
             mock object resulting from the mock call.
             """
+            self._enforce_no_with_context(inspect.stack())
             p = mock_func(*args, **kwargs)
             mocked = p.start()
             self._patches.append(p)
             if hasattr(mocked, "reset_mock"):
                 self._mocks.append(mocked)
             return mocked
+
+        def _enforce_no_with_context(self, stack):
+            """raises a ValueError if mocker is used in a with context"""
+            caller = stack[2]
+            frame = caller[0]
+            info = inspect.getframeinfo(frame)
+            if info.code_context is None:
+                # no source code available (#169)
+                return
+            code_context = " ".join(info.code_context).strip()
+
+            if code_context.startswith("with mocker."):
+                raise ValueError(
+                    "Using mocker in a with context is not supported. "
+                    "https://github.com/pytest-dev/pytest-mock#note-about-usage-as-context-manager"
+                )
 
         def object(self, *args, **kwargs):
             """API to mock.patch.object"""

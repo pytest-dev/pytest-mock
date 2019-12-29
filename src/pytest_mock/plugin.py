@@ -8,24 +8,18 @@ from ._version import version
 
 __version__ = version
 
-# pseudo-six; if this starts to require more than this, depend on six already
-if sys.version_info[0] == 2:  # pragma: no cover
-    text_type = unicode  # noqa
-else:
-    text_type = str
-
 
 def _get_mock_module(config):
     """
-    Import and return the actual "mock" module. By default this is "mock" for Python 2 and
-    "unittest.mock" for Python 3, but the user can force to always use "mock" on Python 3 using
+    Import and return the actual "mock" module. By default this is
+    "unittest.mock", but the user can force to always use "mock" using
     the mock_use_standalone_module ini option.
     """
     if not hasattr(_get_mock_module, "_module"):
         use_standalone_module = parse_ini_boolean(
             config.getini("mock_use_standalone_module")
         )
-        if sys.version_info[0] == 2 or use_standalone_module:
+        if use_standalone_module:
             import mock
 
             _get_mock_module._module = mock
@@ -103,13 +97,7 @@ class MockFixture:
                 if isinstance(value, (classmethod, staticmethod)):
                     autospec = False
 
-        if sys.version_info[0] == 2:
-            assigned = [x for x in functools.WRAPPER_ASSIGNMENTS if hasattr(method, x)]
-            w = functools.wraps(method, assigned=assigned)
-        else:
-            w = functools.wraps(method)
-
-        @w
+        @functools.wraps(method)
         def wrapper(*args, **kwargs):
             try:
                 r = method(*args, **kwargs)
@@ -226,21 +214,21 @@ def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
         return
     except AssertionError as e:
         if getattr(e, "_mock_introspection_applied", 0):
-            msg = text_type(e)
+            msg = str(e)
         else:
             __mock_self = args[0]
-            msg = text_type(e)
+            msg = str(e)
             if __mock_self.call_args is not None:
                 actual_args, actual_kwargs = __mock_self.call_args
                 introspection = ""
                 try:
                     assert actual_args == args[1:]
                 except AssertionError as e:
-                    introspection += "\nArgs:\n" + text_type(e)
+                    introspection += "\nArgs:\n" + str(e)
                 try:
                     assert actual_kwargs == kwargs
                 except AssertionError as e:
-                    introspection += "\nKwargs:\n" + text_type(e)
+                    introspection += "\nKwargs:\n" + str(e)
 
                 if introspection:
                     msg += "\n\npytest introspection follows:\n" + introspection
@@ -331,7 +319,7 @@ def unwrap_assert_methods():
             # so we need to catch this error here and ignore it;
             # unfortunately there's no public API to check if a patch
             # has been started, so catching the error it is
-            if text_type(e) == "stop called on unstarted patcher":
+            if str(e) == "stop called on unstarted patcher":
                 pass
             else:
                 raise

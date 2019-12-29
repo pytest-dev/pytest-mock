@@ -14,7 +14,7 @@ skip_pypy = pytest.mark.skipif(
 )
 
 # Python 3.8 changed the output formatting (bpo-35500), which has been ported to mock 3.0
-NEW_FORMATTING = sys.version_info >= (3, 8) or sys.version_info[0] == 2
+NEW_FORMATTING = sys.version_info >= (3, 8)
 
 
 @pytest.fixture
@@ -312,7 +312,6 @@ def test_class_method_spy(mocker):
 
 
 @skip_pypy
-@pytest.mark.xfail(sys.version_info[0] == 2, reason="does not work on Python 2")
 def test_class_method_subclass_spy(mocker):
     class Base:
         @classmethod
@@ -367,7 +366,6 @@ def test_static_method_spy(mocker):
 
 
 @skip_pypy
-@pytest.mark.xfail(sys.version_info[0] == 2, reason="does not work on Python 2")
 def test_static_method_subclass_spy(mocker):
     class Base:
         @staticmethod
@@ -625,7 +623,6 @@ def test_monkeypatch_no_terminal(testdir):
     assert result.stdout.lines == []
 
 
-@pytest.mark.skipif(sys.version_info[0] < 3, reason="Py3 only")
 def test_standalone_mock(testdir):
     """Check that the "mock_use_standalone" is being used.
     """
@@ -797,7 +794,7 @@ def test_abort_patch_context_manager_with_stale_pyc(testdir):
     result = testdir.runpytest()
     result.stdout.fnmatch_lines("* 1 passed *")
 
-    kwargs = {"legacy": True} if sys.version_info[0] >= 3 else {}
+    kwargs = {"legacy": True}
     assert compileall.compile_file(str(py_fn), **kwargs)
 
     pyc_fn = str(py_fn) + "c"

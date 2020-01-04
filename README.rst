@@ -2,10 +2,8 @@
 pytest-mock
 ===========
 
-This plugin installs a ``mocker`` fixture which is a thin-wrapper around the patching API
-provided by the `mock package <http://pypi.python.org/pypi/mock>`_,
-but with the benefit of not having to worry about undoing patches at the end
-of a test:
+This plugin provides a ``mocker`` fixture which is a thin-wrapper around the patching API
+provided by the `mock package <http://pypi.python.org/pypi/mock>`_:
 
 .. code-block:: python
 
@@ -23,6 +21,9 @@ of a test:
         os.remove.assert_called_once_with('file')
 
 
+Besides undoing the mocking automatically after the end of the test, it also provides other
+nice utilities such as ``spy`` and ``stub``, and uses pytest introspection when
+comparing calls.
 
 |python| |version| |anaconda| |ci| |coverage| |black|
 
@@ -70,7 +71,7 @@ The supported methods are:
 * `mocker.stopall <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.patch.stopall>`_
 * ``mocker.resetall()``: calls `reset_mock() <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock.reset_mock>`_ in all mocked objects up to this point.
 
-These objects from the ``mock`` module are accessible directly from ``mocker`` for convenience:
+Also, as a convenience, these names from the ``mock`` module are accessible directly from ``mocker``:
 
 * `Mock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock>`_
 * `MagicMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.MagicMock>`_
@@ -85,7 +86,7 @@ These objects from the ``mock`` module are accessible directly from ``mocker`` f
 Spy
 ---
 
-The spy acts exactly like the original method in all cases, except the spy
+The ``mocker.spy`` object acts exactly like the original method in all cases, except the spy
 also tracks method calls, return values and exceptions raised.
 
 .. code-block:: python
@@ -111,7 +112,7 @@ In addition, spy objects contain two extra attributes:
 * ``spy_exception``: contain the last exception value raised by the spied function/method when
   it was last called, or ``None`` if no exception was raised.
 
-It also works for class and static methods.
+``mocker.spy`` also works for class and static methods.
 
 .. note::
 
@@ -124,9 +125,8 @@ It also works for class and static methods.
 Stub
 ----
 
-
-The stub is a mock object that accepts any arguments and is useful to test callbacks, for instance.
-May be passed a name to be used by the constructed stub object in its repr (useful for debugging).
+The stub is a mock object that accepts any arguments and is useful to test callbacks.
+It may receive an optional name that is shown in its ``repr``, useful for debugging.
 
 .. code-block:: python
 
@@ -142,7 +142,6 @@ May be passed a name to be used by the constructed stub object in its repr (usef
 
 Improved reporting of mock call assertion errors
 ------------------------------------------------
-
 
 This plugin monkeypatches the mock library to improve pytest output for failures
 of mock call assertions like ``Mock.assert_called_with()`` by hiding internal traceback

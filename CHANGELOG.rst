@@ -13,6 +13,8 @@ Breaking Changes
   always raising the first exception instead: assigning to ``side_effect`` causes
   ``unittest.mock`` to behave this way (`#175`_).
 
+* The deprecated ``mock`` alias to the ``mocker`` fixture has finally been removed.
+
 .. _#175: https://github.com/pytest-dev/pytest-mock/issues/175
 
 

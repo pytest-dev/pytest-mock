@@ -208,19 +208,6 @@ def mocker(pytestconfig):
     result.stopall()
 
 
-@pytest.fixture
-def mock(mocker):
-    """
-    Same as "mocker", but kept only for backward compatibility.
-    """
-    import warnings
-
-    warnings.warn(
-        '"mock" fixture has been deprecated, use "mocker" instead', DeprecationWarning
-    )
-    return mocker
-
-
 _mock_module_patches = []
 _mock_module_originals = {}
 

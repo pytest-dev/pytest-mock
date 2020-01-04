@@ -1,3 +1,23 @@
+2.0.0 (2020-01-04)
+------------------
+
+Breaking Changes
+++++++++++++++++
+
+* ``mocker.spy`` attributes for tracking returned values and raised exceptions of its spied functions
+  are now called ``spy_return`` and ``spy_exception``, instead of reusing the existing
+  ``MagicMock`` attributes ``return_value`` and ``side_effect``.
+
+  Version ``1.13`` introduced a serious regression: after a spied function using ``mocker.spy``
+  raises an exception, further calls to the spy will not call the spied function,
+  always raising the first exception instead: assigning to ``side_effect`` causes
+  ``unittest.mock`` to behave this way (`#175`_).
+
+* The deprecated ``mock`` alias to the ``mocker`` fixture has finally been removed.
+
+.. _#175: https://github.com/pytest-dev/pytest-mock/issues/175
+
+
 1.13.0 (2019-12-05)
 -------------------
 

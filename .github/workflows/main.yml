@@ -10,11 +10,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["2.7", "3.5", "3.6", "3.7", "3.8"]
+        python: ["3.5", "3.6", "3.7", "3.8"]
         os: [ubuntu-latest, windows-latest]
         include:
-          - python: "2.7"
-            tox_env: "py27"
           - python: "3.5"
             tox_env: "py35"
           - python: "3.6"

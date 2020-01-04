@@ -14,7 +14,7 @@ skip_pypy = pytest.mark.skipif(
 )
 
 # Python 3.8 changed the output formatting (bpo-35500), which has been ported to mock 3.0
-NEW_FORMATTING = sys.version_info >= (3, 8) or sys.version_info[0] == 2
+NEW_FORMATTING = sys.version_info >= (3, 8)
 
 
 @pytest.fixture
@@ -32,7 +32,7 @@ def needs_assert_rewrite(pytestconfig):
         )
 
 
-class UnixFS(object):
+class UnixFS:
     """
     Wrapper to os functions to simulate a Unix file system, used for testing
     the mock fixture.
@@ -183,7 +183,7 @@ class TestMockerStub:
     def test_repr_with_name(self, mocker):
         test_name = "funny walk"
         stub = mocker.stub(name=test_name)
-        assert "name={0!r}".format(test_name) in repr(stub)
+        assert "name={!r}".format(test_name) in repr(stub)
 
     def __test_failure_message(self, mocker, **kwargs):
         expected_name = kwargs.get("name") or "mock"
@@ -206,7 +206,7 @@ class TestMockerStub:
 
 
 def test_instance_method_spy(mocker):
-    class Foo(object):
+    class Foo:
         def bar(self, arg):
             return arg * 2
 
@@ -222,7 +222,7 @@ def test_instance_method_spy(mocker):
 
 
 def test_instance_method_spy_exception(mocker):
-    class Foo(object):
+    class Foo:
         def bar(self, arg):
             raise Exception("Error with {}".format(arg))
 
@@ -266,7 +266,7 @@ def test_spy_reset(mocker):
 
 @skip_pypy
 def test_instance_method_by_class_spy(mocker):
-    class Foo(object):
+    class Foo:
         def bar(self, arg):
             return arg * 2
 
@@ -281,7 +281,7 @@ def test_instance_method_by_class_spy(mocker):
 
 @skip_pypy
 def test_instance_method_by_subclass_spy(mocker):
-    class Base(object):
+    class Base:
         def bar(self, arg):
             return arg * 2
 
@@ -300,7 +300,7 @@ def test_instance_method_by_subclass_spy(mocker):
 
 @skip_pypy
 def test_class_method_spy(mocker):
-    class Foo(object):
+    class Foo:
         @classmethod
         def bar(cls, arg):
             return arg * 2
@@ -314,9 +314,8 @@ def test_class_method_spy(mocker):
 
 
 @skip_pypy
-@pytest.mark.xfail(sys.version_info[0] == 2, reason="does not work on Python 2")
 def test_class_method_subclass_spy(mocker):
-    class Base(object):
+    class Base:
         @classmethod
         def bar(self, arg):
             return arg * 2
@@ -337,7 +336,7 @@ def test_class_method_with_metaclass_spy(mocker):
     class MetaFoo(type):
         pass
 
-    class Foo(object):
+    class Foo:
 
         __metaclass__ = MetaFoo
 
@@ -355,7 +354,7 @@ def test_class_method_with_metaclass_spy(mocker):
 
 @skip_pypy
 def test_static_method_spy(mocker):
-    class Foo(object):
+    class Foo:
         @staticmethod
         def bar(arg):
             return arg * 2
@@ -369,9 +368,8 @@ def test_static_method_spy(mocker):
 
 
 @skip_pypy
-@pytest.mark.xfail(sys.version_info[0] == 2, reason="does not work on Python 2")
 def test_static_method_subclass_spy(mocker):
-    class Base(object):
+    class Base:
         @staticmethod
         def bar(arg):
             return arg * 2
@@ -442,10 +440,6 @@ def assert_argument_introspection(left, right):
         raise AssertionError("DID NOT RAISE")
 
 
-@pytest.mark.skipif(
-    sys.version_info[:2] == (3, 4),
-    reason="assert_not_called not available in Python 3.4",
-)
 def test_assert_not_called_wrapper(mocker):
     stub = mocker.stub()
     stub.assert_not_called()
@@ -498,8 +492,8 @@ def test_assert_called_wrapper(mocker):
 def test_assert_called_args_with_introspection(mocker):
     stub = mocker.stub()
 
-    complex_args = ("a", 1, set(["test"]))
-    wrong_args = ("b", 2, set(["jest"]))
+    complex_args = ("a", 1, {"test"})
+    wrong_args = ("b", 2, {"jest"})
 
     stub(*complex_args)
     stub.assert_called_with(*complex_args)
@@ -631,7 +625,6 @@ def test_monkeypatch_no_terminal(testdir):
     assert result.stdout.lines == []
 
 
-@pytest.mark.skipif(sys.version_info[0] < 3, reason="Py3 only")
 def test_standalone_mock(testdir):
     """Check that the "mock_use_standalone" is being used.
     """
@@ -720,7 +713,7 @@ def test_assert_called_with_unicode_arguments(mocker):
     stub(b"l\xc3\xb6k".decode("UTF-8"))
 
     with pytest.raises(AssertionError):
-        stub.assert_called_with(u"lak")
+        stub.assert_called_with("lak")
 
 
 def test_plain_stopall(testdir):
@@ -745,7 +738,7 @@ def test_plain_stopall(testdir):
 
 
 def test_abort_patch_object_context_manager(mocker):
-    class A(object):
+    class A:
         def doIt(self):
             return False
 
@@ -753,7 +746,7 @@ def test_abort_patch_object_context_manager(mocker):
 
     with pytest.raises(ValueError) as excinfo:
         with mocker.patch.object(a, "doIt", return_value=True):
-            assert a.doIt() == True
+            assert a.doIt() is True
 
     expected_error_msg = (
         "Using mocker in a with context is not supported. "
@@ -803,7 +796,7 @@ def test_abort_patch_context_manager_with_stale_pyc(testdir):
     result = testdir.runpytest()
     result.stdout.fnmatch_lines("* 1 passed *")
 
-    kwargs = {"legacy": True} if sys.version_info[0] >= 3 else {}
+    kwargs = {"legacy": True}
     assert compileall.compile_file(str(py_fn), **kwargs)
 
     pyc_fn = str(py_fn) + "c"

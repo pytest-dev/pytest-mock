@@ -149,7 +149,7 @@ entries from the ``mock`` module.
 
 It also adds introspection information on differing call arguments when
 calling the helper methods. This features catches `AssertionError` raised in
-the method, and uses py.test's own `advanced assertions`_ to return a better
+the method, and uses pytest's own `advanced assertions`_ to return a better
 diff::
 
 
@@ -235,9 +235,8 @@ function decorators for mocking unnecessary.
 Requirements
 ============
 
-* Python 2.7, Python 3.4+
+* Python Python 3.5+
 * pytest
-* mock (for Python 2)
 
 
 Install
@@ -349,7 +348,7 @@ Tests are run with ``tox``, you can run the baseline environments before submitt
 
 .. code-block:: console
 
-    $ tox -e py27,py36,linting
+    $ tox -e py38,linting
 
 Style checks and formatting are done automatically during commit courtesy of
 `pre-commit <https://pre-commit.com>`_.

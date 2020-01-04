@@ -132,28 +132,6 @@ def test_mock_patch_dict_resetall(mocker):
     assert x == {"new": 10}
 
 
-def test_deprecated_mock(testdir):
-    """
-    Use backward-compatibility-only mock fixture to ensure complete coverage.
-    """
-    p1 = testdir.makepyfile(
-        """
-        import os
-
-        def test(mock, tmpdir):
-            mock.patch("os.listdir", return_value=["mocked"])
-            assert os.listdir(str(tmpdir)) == ["mocked"]
-            mock.stopall()
-            assert os.listdir(str(tmpdir)) == []
-        """
-    )
-    result = testdir.runpytest(str(p1))
-    result.stdout.fnmatch_lines(
-        ['*DeprecationWarning: "mock" fixture has been deprecated, use "mocker"*']
-    )
-    assert result.ret == 0
-
-
 @pytest.mark.parametrize(
     "name",
     [
@@ -238,28 +216,52 @@ def test_instance_method_spy(mocker):
     assert foo.bar(arg=10) == 20
     assert other.bar(arg=10) == 20
     foo.bar.assert_called_once_with(arg=10)
-    assert foo.bar.return_value == 20
+    assert foo.bar.spy_return == 20
     spy.assert_called_once_with(arg=10)
-    assert spy.return_value == 20
+    assert spy.spy_return == 20
 
 
 def test_instance_method_spy_exception(mocker):
-    excepted_message = "foo"
-
     class Foo(object):
         def bar(self, arg):
-            raise Exception(excepted_message)
+            raise Exception("Error with {}".format(arg))
 
     foo = Foo()
-    other = Foo()
     spy = mocker.spy(foo, "bar")
 
-    with pytest.raises(Exception) as exc_info:
-        foo.bar(10)
-    assert str(exc_info.value) == excepted_message
+    expected_calls = []
+    for i, v in enumerate([10, 20]):
+        with pytest.raises(Exception, match="Error with {}".format(v)) as exc_info:
+            foo.bar(arg=v)
 
-    foo.bar.assert_called_once_with(arg=10)
-    assert spy.side_effect == exc_info.value
+        expected_calls.append(mocker.call(arg=v))
+        assert foo.bar.call_args_list == expected_calls
+        assert str(spy.spy_exception) == "Error with {}".format(v)
+
+
+def test_spy_reset(mocker):
+    class Foo(object):
+        def bar(self, x):
+            if x == 0:
+                raise ValueError("invalid x")
+            return x * 3
+
+    spy = mocker.spy(Foo, "bar")
+    assert spy.spy_return is None
+    assert spy.spy_exception is None
+
+    Foo().bar(10)
+    assert spy.spy_return == 30
+    assert spy.spy_exception is None
+
+    with pytest.raises(ValueError):
+        Foo().bar(0)
+    assert spy.spy_return is None
+    assert str(spy.spy_exception) == "invalid x"
+
+    Foo().bar(15)
+    assert spy.spy_return == 45
+    assert spy.spy_exception is None
 
 
 @skip_pypy
@@ -293,7 +295,7 @@ def test_instance_method_by_subclass_spy(mocker):
     assert other.bar(arg=10) == 20
     calls = [mocker.call(foo, arg=10), mocker.call(other, arg=10)]
     assert spy.call_args_list == calls
-    assert spy.return_value == 20
+    assert spy.spy_return == 20
 
 
 @skip_pypy
@@ -306,9 +308,9 @@ def test_class_method_spy(mocker):
     spy = mocker.spy(Foo, "bar")
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)
-    assert Foo.bar.return_value == 20
+    assert Foo.bar.spy_return == 20
     spy.assert_called_once_with(arg=10)
-    assert spy.return_value == 20
+    assert spy.spy_return == 20
 
 
 @skip_pypy
@@ -325,9 +327,9 @@ def test_class_method_subclass_spy(mocker):
     spy = mocker.spy(Foo, "bar")
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)
-    assert Foo.bar.return_value == 20
+    assert Foo.bar.spy_return == 20
     spy.assert_called_once_with(arg=10)
-    assert spy.return_value == 20
+    assert spy.spy_return == 20
 
 
 @skip_pypy
@@ -346,9 +348,9 @@ def test_class_method_with_metaclass_spy(mocker):
     spy = mocker.spy(Foo, "bar")
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)
-    assert Foo.bar.return_value == 20
+    assert Foo.bar.spy_return == 20
     spy.assert_called_once_with(arg=10)
-    assert spy.return_value == 20
+    assert spy.spy_return == 20
 
 
 @skip_pypy
@@ -361,9 +363,9 @@ def test_static_method_spy(mocker):
     spy = mocker.spy(Foo, "bar")
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)
-    assert Foo.bar.return_value == 20
+    assert Foo.bar.spy_return == 20
     spy.assert_called_once_with(arg=10)
-    assert spy.return_value == 20
+    assert spy.spy_return == 20
 
 
 @skip_pypy
@@ -380,9 +382,9 @@ def test_static_method_subclass_spy(mocker):
     spy = mocker.spy(Foo, "bar")
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)
-    assert Foo.bar.return_value == 20
+    assert Foo.bar.spy_return == 20
     spy.assert_called_once_with(arg=10)
-    assert spy.return_value == 20
+    assert spy.spy_return == 20
 
 
 def test_callable_like_spy(testdir, mocker):
@@ -402,7 +404,7 @@ def test_callable_like_spy(testdir, mocker):
     spy = mocker.spy(uut, "call_like")
     uut.call_like(10)
     spy.assert_called_once_with(10)
-    assert spy.return_value == 20
+    assert spy.spy_return == 20
 
 
 @contextmanager

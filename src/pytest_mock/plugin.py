@@ -113,17 +113,21 @@ class MockFixture(object):
 
         @w
         def wrapper(*args, **kwargs):
+            spy_obj.spy_return = None
+            spy_obj.spy_exception = None
             try:
                 r = method(*args, **kwargs)
             except Exception as e:
-                result.side_effect = e
+                spy_obj.spy_exception = e
                 raise
             else:
-                result.return_value = r
+                spy_obj.spy_return = r
             return r
 
-        result = self.patch.object(obj, name, side_effect=wrapper, autospec=autospec)
-        return result
+        spy_obj = self.patch.object(obj, name, side_effect=wrapper, autospec=autospec)
+        spy_obj.spy_return = None
+        spy_obj.spy_exception = None
+        return spy_obj
 
     def stub(self, name=None):
         """
@@ -202,19 +206,6 @@ def mocker(pytestconfig):
     result = MockFixture(pytestconfig)
     yield result
     result.stopall()
-
-
-@pytest.fixture
-def mock(mocker):
-    """
-    Same as "mocker", but kept only for backward compatibility.
-    """
-    import warnings
-
-    warnings.warn(
-        '"mock" fixture has been deprecated, use "mocker" instead', DeprecationWarning
-    )
-    return mocker
 
 
 _mock_module_patches = []

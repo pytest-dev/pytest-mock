@@ -85,26 +85,41 @@ These objects from the ``mock`` module are accessible directly from ``mocker`` f
 Spy
 ---
 
-The spy acts exactly like the original method in all cases, except it allows use of ``mock``
-features with it, like retrieving call count. It also works for class and static methods.
+The spy acts exactly like the original method in all cases, except the spy
+also tracks method calls, return values and exceptions raised.
 
 .. code-block:: python
 
     def test_spy(mocker):
         class Foo(object):
-            def bar(self):
-                return 42
+            def bar(self, v):
+                return v * 2
 
         foo = Foo()
-        mocker.spy(foo, 'bar')
-        assert foo.bar() == 42
-        assert foo.bar.call_count == 1
+        spy = mocker.spy(foo, 'bar')
+        assert foo.bar(21) == 42
 
-Since version ``1.11``, it is also possible to query the ``return_value`` attribute
-to observe what the spied function/method returned.
+        spy.assert_called_once_with(21)
+        assert spy.spy_return == 42
 
-Since version ``1.13``, it is also possible to query the ``side_effect`` attribute
-to observe any exception thrown by the spied function/method.
+The object returned by ``mocker.spy`` is a ``MagicMock`` object, so all standard checking functions
+are available (like ``assert_called_once_with`` in the example above).
+
+In addition, spy objects contain two extra attributes:
+
+* ``spy_return``: contains the returned value of the spied function.
+* ``spy_exception``: contain the last exception value raised by the spied function/method when
+  it was last called, or ``None`` if no exception was raised.
+
+It also works for class and static methods.
+
+.. note::
+
+    In versions earlier than ``2.0``, the attributes were called ``return_value`` and
+    ``side_effect`` respectively, but due to incompatibilities with ``unittest.mock``
+    they had to be renamed (see `#175`_ for details).
+
+    .. _#175: https://github.com/pytest-dev/pytest-mock/issues/175
 
 Stub
 ----

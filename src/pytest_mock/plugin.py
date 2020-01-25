@@ -1,3 +1,4 @@
+import asyncio
 import functools
 import inspect
 
@@ -96,7 +97,6 @@ class MockFixture:
                 if isinstance(value, (classmethod, staticmethod)):
                     autospec = False
 
-        @functools.wraps(method)
         def wrapper(*args, **kwargs):
             spy_obj.spy_return = None
             spy_obj.spy_exception = None
@@ -109,7 +109,24 @@ class MockFixture:
                 spy_obj.spy_return = r
             return r
 
-        spy_obj = self.patch.object(obj, name, side_effect=wrapper, autospec=autospec)
+        async def async_wrapper(*args, **kwargs):
+            spy_obj.spy_return = None
+            spy_obj.spy_exception = None
+            try:
+                r = await method(*args, **kwargs)
+            except Exception as e:
+                spy_obj.spy_exception = e
+                raise
+            else:
+                spy_obj.spy_return = r
+            return r
+
+        if asyncio.iscoroutinefunction(method):
+            wrapped = functools.update_wrapper(async_wrapper, method)
+        else:
+            wrapped = functools.update_wrapper(wrapper, method)
+
+        spy_obj = self.patch.object(obj, name, side_effect=wrapped, autospec=autospec)
         spy_obj.spy_return = None
         spy_obj.spy_exception = None
         return spy_obj

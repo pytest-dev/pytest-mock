@@ -405,6 +405,21 @@ def test_callable_like_spy(testdir, mocker):
     assert spy.spy_return == 20
 
 
+@pytest.mark.asyncio
+async def test_instance_async_method_spy(mocker):
+    class Foo:
+        async def bar(self, arg):
+            return arg * 2
+
+    foo = Foo()
+    spy = mocker.spy(foo, "bar")
+
+    result = await foo.bar(10)
+
+    spy.assert_called_once_with(10)
+    assert result == 20
+
+
 @contextmanager
 def assert_traceback():
     """

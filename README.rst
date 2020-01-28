@@ -114,6 +114,8 @@ In addition, spy objects contain two extra attributes:
 
 ``mocker.spy`` also works for class and static methods.
 
+As of version 3.0.0, ``mocker.spy`` also works with ``async def`` functions.
+
 .. note::
 
     In versions earlier than ``2.0``, the attributes were called ``return_value`` and

@@ -1,3 +1,14 @@
+3.0.0 (UNRELEASED)
+------------------
+
+* Python 2.7 and 3.4 are no longer supported. Users using ``pip 9`` or later will install
+  a compatible version automatically.
+
+* ``mocker.spy`` now also works with ``async def`` functions (`#179`_). Thanks `@frankie567`_ for the PR!
+
+.. _#179: https://github.com/pytest-dev/pytest-mock/issues/179
+.. _@frankie567: https://github.com/frankie567
+
 2.0.0 (2020-01-04)
 ------------------
 

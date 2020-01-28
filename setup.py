@@ -19,7 +19,7 @@ setup(
     description="Thin-wrapper around the mock package for easier use with pytest",
     long_description=open("README.rst", encoding="utf-8").read(),
     keywords="pytest mock",
-    extras_require={"dev": ["pre-commit", "tox"]},
+    extras_require={"dev": ["pre-commit", "tox", "pytest-asyncio"]},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Framework :: Pytest",

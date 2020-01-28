@@ -56,10 +56,11 @@ jobs:
 
   deploy:
 
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+
     runs-on: ubuntu-latest
 
     needs: [build, linting]
-
 
     steps:
     - uses: actions/checkout@v1
@@ -75,7 +76,6 @@ jobs:
       run: |
         python setup.py sdist bdist_wheel
     - name: Publish package to PyPI
-      if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
       uses: pypa/gh-action-pypi-publish@master
       with:
         user: __token__

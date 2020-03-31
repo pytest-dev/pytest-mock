@@ -1,4 +1,4 @@
-3.0.0 (UNRELEASED)
+3.0.0 (2020-03-31)
 ------------------
 
 * Python 2.7 and 3.4 are no longer supported. Users using ``pip 9`` or later will install

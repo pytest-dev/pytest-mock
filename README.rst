@@ -82,6 +82,13 @@ Also, as a convenience, these names from the ``mock`` module are accessible dire
 * `sentinel <https://docs.python.org/3/library/unittest.mock.html#sentinel>`_ *(Version 1.2)*
 * `mock_open <https://docs.python.org/3/library/unittest.mock.html#mock-open>`_
 
+It is also possible to use mocking functionality from fixtures of other scopes using
+the appropriate mock fixture:
+
+* ``class_mocker``
+* ``module_mocker``
+* ``package_mocker``
+* ``session_mocker``
 
 Spy
 ---

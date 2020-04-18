@@ -1,3 +1,18 @@
+3.1.0 (2020-04-18)
+------------------
+
+* New mocker fixtures added that allow using mocking functionality in other scopes:
+
+  * ``class_mocker``
+  * ``module_mocker``
+  * ``package_mocker``
+  * ``session_mocker``
+
+  Added by `@scorphus`_ in `#182`_.
+
+.. _@scorphus: https://github.com/scorphus
+.. _#182: https://github.com/pytest-dev/pytest-mock/pull/182
+
 3.0.0 (2020-03-31)
 ------------------
 

@@ -199,8 +199,7 @@ class MockFixture:
             return self._start_patch(self.mock_module.patch, *args, **kwargs)
 
 
-@pytest.yield_fixture
-def mocker(pytestconfig):
+def _mocker(pytestconfig):
     """
     return an object that has the same interface to the `mock` module, but
     takes care of automatically undoing all patches after each test method.
@@ -208,6 +207,13 @@ def mocker(pytestconfig):
     result = MockFixture(pytestconfig)
     yield result
     result.stopall()
+
+
+mocker = pytest.yield_fixture()(_mocker)  # default scope is function
+class_mocker = pytest.yield_fixture(scope="class")(_mocker)
+module_mocker = pytest.yield_fixture(scope="module")(_mocker)
+package_mocker = pytest.yield_fixture(scope="package")(_mocker)
+session_mocker = pytest.yield_fixture(scope="session")(_mocker)
 
 
 _mock_module_patches = []

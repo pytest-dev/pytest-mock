@@ -820,3 +820,97 @@ def test_abort_patch_context_manager_with_stale_pyc(testdir):
     py_fn.remove()
     result = testdir.runpytest()
     result.stdout.fnmatch_lines("* 1 passed *")
+
+
+def test_used_with_class_scope(testdir):
+    """..."""
+    testdir.makepyfile(
+        """
+        import pytest
+        import random
+        import unittest
+
+        def get_random_number():
+            return random.randint(0, 1)
+
+        @pytest.fixture(autouse=True, scope="class")
+        def randint_mock(class_mocker):
+            return class_mocker.patch("random.randint", lambda x, y: 5)
+
+        class TestGetRandomNumber(unittest.TestCase):
+            def test_get_random_number(self):
+                assert get_random_number() == 5
+    """
+    )
+    result = testdir.runpytest_subprocess()
+    assert "AssertionError" not in result.stderr.str()
+    result.stdout.fnmatch_lines("* 1 passed in *")
+
+
+def test_used_with_module_scope(testdir):
+    """..."""
+    testdir.makepyfile(
+        """
+        import pytest
+        import random
+
+        def get_random_number():
+            return random.randint(0, 1)
+
+        @pytest.fixture(autouse=True, scope="module")
+        def randint_mock(module_mocker):
+            return module_mocker.patch("random.randint", lambda x, y: 5)
+
+        def test_get_random_number():
+            assert get_random_number() == 5
+    """
+    )
+    result = testdir.runpytest_subprocess()
+    assert "AssertionError" not in result.stderr.str()
+    result.stdout.fnmatch_lines("* 1 passed in *")
+
+
+def test_used_with_package_scope(testdir):
+    """..."""
+    testdir.makepyfile(
+        """
+        import pytest
+        import random
+
+        def get_random_number():
+            return random.randint(0, 1)
+
+        @pytest.fixture(autouse=True, scope="package")
+        def randint_mock(package_mocker):
+            return package_mocker.patch("random.randint", lambda x, y: 5)
+
+        def test_get_random_number():
+            assert get_random_number() == 5
+    """
+    )
+    result = testdir.runpytest_subprocess()
+    assert "AssertionError" not in result.stderr.str()
+    result.stdout.fnmatch_lines("* 1 passed in *")
+
+
+def test_used_with_session_scope(testdir):
+    """..."""
+    testdir.makepyfile(
+        """
+        import pytest
+        import random
+
+        def get_random_number():
+            return random.randint(0, 1)
+
+        @pytest.fixture(autouse=True, scope="session")
+        def randint_mock(session_mocker):
+            return session_mocker.patch("random.randint", lambda x, y: 5)
+
+        def test_get_random_number():
+            assert get_random_number() == 5
+    """
+    )
+    result = testdir.runpytest_subprocess()
+    assert "AssertionError" not in result.stderr.str()
+    result.stdout.fnmatch_lines("* 1 passed in *")

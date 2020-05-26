@@ -809,7 +809,7 @@ def test_abort_patch_context_manager_with_stale_pyc(testdir):
     """
     )
     result = testdir.runpytest()
-    result.stdout.fnmatch_lines("* 1 passed *")
+    result.stdout.fnmatch_lines("* 1 passed*")
 
     kwargs = {"legacy": True}
     assert compileall.compile_file(str(py_fn), **kwargs)
@@ -819,7 +819,7 @@ def test_abort_patch_context_manager_with_stale_pyc(testdir):
 
     py_fn.remove()
     result = testdir.runpytest()
-    result.stdout.fnmatch_lines("* 1 passed *")
+    result.stdout.fnmatch_lines("* 1 passed*")
 
 
 def test_used_with_class_scope(testdir):

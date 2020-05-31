@@ -1,3 +1,11 @@
+3.1.1 (2020-05-31)
+------------------
+
+* Fixed performance regression caused by the ``ValueError`` raised
+  when ``mocker`` is used as context manager (`#191`_).
+
+.. _#191: https://github.com/pytest-dev/pytest-mock/issues/191
+
 3.1.0 (2020-04-18)
 ------------------
 

@@ -773,7 +773,7 @@ def test_abort_patch_object_context_manager(mocker):
 
 def test_abort_patch_context_manager(mocker):
     with pytest.raises(ValueError) as excinfo:
-        with mocker.patch("some_package"):
+        with mocker.patch("json.loads"):
             pass
 
     expected_error_msg = (
@@ -782,6 +782,26 @@ def test_abort_patch_context_manager(mocker):
     )
 
     assert str(excinfo.value) == expected_error_msg
+
+
+def test_context_manager_patch_example(mocker):
+    """Our message about misusing mocker as a context manager should not affect mocking
+    context managers (see #192)"""
+
+    class dummy_module:
+        class MyContext:
+            def __enter__(self, *args, **kwargs):
+                return 10
+
+            def __exit__(self, *args, **kwargs):
+                pass
+
+    def my_func():
+        with dummy_module.MyContext() as v:
+            return v
+
+    m = mocker.patch.object(dummy_module, "MyContext")
+    assert isinstance(my_func(), mocker.MagicMock)
 
 
 def test_abort_patch_context_manager_with_stale_pyc(testdir):

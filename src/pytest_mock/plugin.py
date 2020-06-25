@@ -1,12 +1,11 @@
+from typing import Any
+from typing import Dict
+
 import asyncio
 import functools
 import inspect
 
 import pytest
-
-from ._version import version
-
-__version__ = version
 
 
 def _get_mock_module(config):
@@ -207,7 +206,7 @@ session_mocker = pytest.yield_fixture(scope="session")(_mocker)
 
 
 _mock_module_patches = []
-_mock_module_originals = {}
+_mock_module_originals: Dict[str, Any] = {}
 
 
 def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
@@ -226,18 +225,17 @@ def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
                 introspection = ""
                 try:
                     assert actual_args == args[1:]
-                except AssertionError as e:
-                    introspection += "\nArgs:\n" + str(e)
+                except AssertionError as e_args:
+                    introspection += "\nArgs:\n" + str(e_args)
                 try:
                     assert actual_kwargs == kwargs
-                except AssertionError as e:
-                    introspection += "\nKwargs:\n" + str(e)
-
+                except AssertionError as e_kwargs:
+                    introspection += "\nKwargs:\n" + str(e_kwargs)
                 if introspection:
                     msg += "\n\npytest introspection follows:\n" + introspection
-    e = AssertionError(msg)
-    e._mock_introspection_applied = True
-    raise e
+        e = AssertionError(msg)
+        e._mock_introspection_applied = True
+        raise e
 
 
 def wrap_assert_not_called(*args, **kwargs):

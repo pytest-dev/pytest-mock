@@ -342,24 +342,25 @@ def wrap_assert_methods(config):
         patcher.start()
         _mock_module_patches.append(patcher)
 
-    async_wrappers = {
-        "assert_awaited": wrap_assert_awaited,
-        "assert_awaited_once": wrap_assert_awaited_once,
-        "assert_awaited_with": wrap_assert_awaited_with,
-        "assert_awaited_once_with": wrap_assert_awaited_once_with,
-        "assert_any_await": wrap_assert_any_await,
-        "assert_has_awaits": wrap_assert_has_awaits,
-        "assert_not_awaited": wrap_assert_not_awaited,
-    }
-    for method, wrapper in async_wrappers.items():
-        try:
-            original = getattr(mock_module.AsyncMock, method)
-        except AttributeError:  # pragma: no cover
-            continue
-        _mock_module_originals[method] = original
-        patcher = mock_module.patch.object(mock_module.AsyncMock, method, wrapper)
-        patcher.start()
-        _mock_module_patches.append(patcher)
+    if hasattr(mock_module, "AsyncMock"):
+        async_wrappers = {
+            "assert_awaited": wrap_assert_awaited,
+            "assert_awaited_once": wrap_assert_awaited_once,
+            "assert_awaited_with": wrap_assert_awaited_with,
+            "assert_awaited_once_with": wrap_assert_awaited_once_with,
+            "assert_any_await": wrap_assert_any_await,
+            "assert_has_awaits": wrap_assert_has_awaits,
+            "assert_not_awaited": wrap_assert_not_awaited,
+        }
+        for method, wrapper in async_wrappers.items():
+            try:
+                original = getattr(mock_module.AsyncMock, method)
+            except AttributeError:  # pragma: no cover
+                continue
+            _mock_module_originals[method] = original
+            patcher = mock_module.patch.object(mock_module.AsyncMock, method, wrapper)
+            patcher.start()
+            _mock_module_patches.append(patcher)
 
     if hasattr(config, "add_cleanup"):
         add_cleanup = config.add_cleanup

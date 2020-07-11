@@ -708,6 +708,43 @@ def test_detailed_introspection(testdir):
     result.stdout.fnmatch_lines(expected_lines)
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 8), reason="AsyncMock is present on 3.8 and above"
+)
+@pytest.mark.usefixtures("needs_assert_rewrite")
+def test_detailed_introspection_async(testdir):
+    """Check that the "mock_use_standalone" is being used.
+    """
+    testdir.makepyfile(
+        """
+        import pytest
+
+        @pytest.mark.asyncio
+        async def test(mocker):
+            m = mocker.AsyncMock()
+            await m('fo')
+            m.assert_awaited_once_with('', bar=4)
+    """
+    )
+    result = testdir.runpytest("-s")
+    expected_lines = [
+        "*AssertionError: expected await not found.",
+        "*Expected: mock('', bar=4)",
+        "*Actual: mock('fo')",
+        "*pytest introspection follows:*",
+        "*Args:",
+        "*assert ('fo',) == ('',)",
+        "*At index 0 diff: 'fo' != ''*",
+        "*Use -v to get the full diff*",
+        "*Kwargs:*",
+        "*assert {} == {'bar': 4}*",
+        "*Right contains* more item*",
+        "*{'bar': 4}*",
+        "*Use -v to get the full diff*",
+    ]
+    result.stdout.fnmatch_lines(expected_lines)
+
+
 def test_missing_introspection(testdir):
     testdir.makepyfile(
         """

@@ -1,3 +1,13 @@
+3.2.0 (2020-07-11)
+------------------
+
+* `AsyncMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.AsyncMock>`__ is now exposed in ``mocker`` and supports provides assertion introspection similar to ``Mock`` objects.
+
+  Added by `@tirkarthi`_ in `#197`_.
+
+.. _@tirkarthi: https://github.com/tirkarthi
+.. _#197: https://github.com/pytest-dev/pytest-mock/pull/197
+
 3.1.1 (2020-05-31)
 ------------------
 

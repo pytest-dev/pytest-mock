@@ -206,7 +206,7 @@ session_mocker = pytest.yield_fixture(scope="session")(_mocker)
 
 
 _mock_module_patches = []
-_mock_module_originals: Dict[str, Any] = {}
+_mock_module_originals = {}
 
 
 def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):

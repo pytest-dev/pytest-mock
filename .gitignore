@@ -58,4 +58,5 @@ docs/_build/
 
 # IDE
 .idea
+.vscode
 /src/pytest_mock/_version.py

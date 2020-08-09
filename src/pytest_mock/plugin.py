@@ -1,5 +1,6 @@
 from typing import Any
 from typing import Dict
+from typing import List
 
 import asyncio
 import functools
@@ -36,9 +37,9 @@ class MockFixture:
     ensuring that they are uninstalled at the end of each test.
     """
 
-    def __init__(self, config):
-        self._patches = []  # list of mock._patch objects
-        self._mocks = []  # list of MagicMock objects
+    def __init__(self, config: Any) -> None:
+        self._patches = []  # type: List[Any]
+        self._mocks = []  # type: List[Any]
         self.mock_module = mock_module = _get_mock_module(config)
         self.patch = self._Patcher(self._patches, self._mocks, mock_module)
         # aliases for convenience
@@ -55,14 +56,12 @@ class MockFixture:
         self.sentinel = mock_module.sentinel
         self.mock_open = mock_module.mock_open
 
-    def resetall(self):
-        """
-        Call reset_mock() on all patchers started by this fixture.
-        """
+    def resetall(self) -> None:
+        """Call reset_mock() on all patchers started by this fixture."""
         for m in self._mocks:
             m.reset_mock()
 
-    def stopall(self):
+    def stopall(self) -> None:
         """
         Stop all patchers started by this fixture. Can be safely called multiple
         times.
@@ -72,9 +71,9 @@ class MockFixture:
         self._patches[:] = []
         self._mocks[:] = []
 
-    def spy(self, obj, name):
+    def spy(self, obj: Any, name: str) -> Any:
         """
-        Creates a spy of method. It will run method normally, but it is now
+        Create a spy of method. It will run method normally, but it is now
         possible to use `mock` call features with it, like call count.
 
         :param object obj: An object.
@@ -134,7 +133,7 @@ class MockFixture:
 
     def stub(self, name=None):
         """
-        Creates a stub method. It accepts any arguments. Ideal to register to
+        Create a stub method. It accepts any arguments. Ideal to register to
         callbacks in tests.
 
         :param name: the constructed stub's name as used in repr
@@ -192,7 +191,7 @@ class MockFixture:
 
 def _mocker(pytestconfig):
     """
-    return an object that has the same interface to the `mock` module, but
+    Return an object that has the same interface to the `mock` module, but
     takes care of automatically undoing all patches after each test method.
     """
     result = MockFixture(pytestconfig)

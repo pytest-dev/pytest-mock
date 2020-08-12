@@ -131,7 +131,7 @@ class MockFixture:
         spy_obj.spy_exception = None
         return spy_obj
 
-    def stub(self, name: str=None) -> mock.MagicMock:
+    def stub(self, name: str = None) -> mock.MagicMock:
         """
         Create a stub method. It accepts any arguments. Ideal to register to
         callbacks in tests.

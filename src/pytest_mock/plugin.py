@@ -1,6 +1,11 @@
+import unittest.mock
+from typing import cast
 from typing import Any
+from typing import Callable
 from typing import Dict
 from typing import List
+from typing import Optional
+from typing import Union
 
 import asyncio
 import functools
@@ -71,7 +76,7 @@ class MockFixture:
         self._patches[:] = []
         self._mocks[:] = []
 
-    def spy(self, obj: object, name: str) -> mock.MagicMock:
+    def spy(self, obj: object, name: str) -> unittest.mock.MagicMock:
         """
         Create a spy of method. It will run method normally, but it is now
         possible to use `mock` call features with it, like call count.
@@ -129,9 +134,9 @@ class MockFixture:
         spy_obj = self.patch.object(obj, name, side_effect=wrapped, autospec=autospec)
         spy_obj.spy_return = None
         spy_obj.spy_exception = None
-        return spy_obj
+        return cast(unittest.mock.MagicMock, spy_obj)
 
-    def stub(self, name: str = None) -> mock.MagicMock:
+    def stub(self, name: Optional[str] = None) -> unittest.mock.MagicMock:
         """
         Create a stub method. It accepts any arguments. Ideal to register to
         callbacks in tests.
@@ -210,7 +215,9 @@ _mock_module_patches = []
 _mock_module_originals = {}  # type: Dict[str, Any]
 
 
-def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
+def assert_wrapper(
+    __wrapped_mock_method__: Callable[..., Any], *args: Any, **kwargs: Any
+) -> None:
     __tracebackhide__ = True
     try:
         __wrapped_mock_method__(*args, **kwargs)
@@ -239,77 +246,77 @@ def assert_wrapper(__wrapped_mock_method__, *args, **kwargs):
         raise e
 
 
-def wrap_assert_not_called(*args, **kwargs):
+def wrap_assert_not_called(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
     assert_wrapper(_mock_module_originals["assert_not_called"], *args, **kwargs)
 
 
-def wrap_assert_called_with(*args, **kwargs):
+def wrap_assert_called_with(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
     assert_wrapper(_mock_module_originals["assert_called_with"], *args, **kwargs)
 
 
-def wrap_assert_called_once(*args, **kwargs):
+def wrap_assert_called_once(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
     assert_wrapper(_mock_module_originals["assert_called_once"], *args, **kwargs)
 
 
-def wrap_assert_called_once_with(*args, **kwargs):
+def wrap_assert_called_once_with(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
     assert_wrapper(_mock_module_originals["assert_called_once_with"], *args, **kwargs)
 
 
-def wrap_assert_has_calls(*args, **kwargs):
+def wrap_assert_has_calls(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
     assert_wrapper(_mock_module_originals["assert_has_calls"], *args, **kwargs)
 
 
-def wrap_assert_any_call(*args, **kwargs):
+def wrap_assert_any_call(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
     assert_wrapper(_mock_module_originals["assert_any_call"], *args, **kwargs)
 
 
-def wrap_assert_called(*args, **kwargs):
+def wrap_assert_called(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
     assert_wrapper(_mock_module_originals["assert_called"], *args, **kwargs)
 
 
-def wrap_assert_not_awaited(*args, **kwargs):
+def wrap_assert_not_awaited(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
     assert_wrapper(_mock_module_originals["assert_not_awaited"], *args, **kwargs)
 
 
-def wrap_assert_awaited_with(*args, **kwargs):
+def wrap_assert_awaited_with(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
     assert_wrapper(_mock_module_originals["assert_awaited_with"], *args, **kwargs)
 
 
-def wrap_assert_awaited_once(*args, **kwargs):
+def wrap_assert_awaited_once(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
     assert_wrapper(_mock_module_originals["assert_awaited_once"], *args, **kwargs)
 
 
-def wrap_assert_awaited_once_with(*args, **kwargs):
+def wrap_assert_awaited_once_with(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
     assert_wrapper(_mock_module_originals["assert_awaited_once_with"], *args, **kwargs)
 
 
-def wrap_assert_has_awaits(*args, **kwargs):
+def wrap_assert_has_awaits(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
     assert_wrapper(_mock_module_originals["assert_has_awaits"], *args, **kwargs)
 
 
-def wrap_assert_any_await(*args, **kwargs):
+def wrap_assert_any_await(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
     assert_wrapper(_mock_module_originals["assert_any_await"], *args, **kwargs)
 
 
-def wrap_assert_awaited(*args, **kwargs):
+def wrap_assert_awaited(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
     assert_wrapper(_mock_module_originals["assert_awaited"], *args, **kwargs)
 
 
-def wrap_assert_methods(config):
+def wrap_assert_methods(config: Any) -> None:
     """
     Wrap assert methods of mock module so we can hide their traceback and
     add introspection information to specified argument asserts.
@@ -367,7 +374,7 @@ def wrap_assert_methods(config):
     add_cleanup(unwrap_assert_methods)
 
 
-def unwrap_assert_methods():
+def unwrap_assert_methods() -> None:
     for patcher in _mock_module_patches:
         try:
             patcher.stop()
@@ -384,7 +391,7 @@ def unwrap_assert_methods():
     _mock_module_originals.clear()
 
 
-def pytest_addoption(parser):
+def pytest_addoption(parser) -> None:
     parser.addini(
         "mock_traceback_monkeypatch",
         "Monkeypatch the mock library to improve reporting of the "
@@ -399,7 +406,7 @@ def pytest_addoption(parser):
     )
 
 
-def parse_ini_boolean(value):
+def parse_ini_boolean(value: Union[bool, str]) -> bool:
     if value in (True, False):
         return value
     try:
@@ -408,7 +415,7 @@ def parse_ini_boolean(value):
         raise ValueError("unknown string for bool: %r" % value)
 
 
-def pytest_configure(config):
+def pytest_configure(config: Any) -> None:
     tb = config.getoption("--tb", default="auto")
     if (
         parse_ini_boolean(config.getini("mock_traceback_monkeypatch"))

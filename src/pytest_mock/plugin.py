@@ -221,7 +221,7 @@ class MockerFixture:
             autospec: Optional[builtins.object] = None,
             new_callable: Optional[builtins.object] = None,
             **kwargs: Any
-        ) -> Any:
+        ) -> Dict[str, unittest.mock.MagicMock]:
             """API to mock.patch.multiple"""
             return self._start_patch(
                 self.mock_module.patch.multiple,

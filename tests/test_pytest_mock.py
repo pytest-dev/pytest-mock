@@ -3,8 +3,8 @@ import platform
 import sys
 from contextlib import contextmanager
 
-import py.code
 import pytest
+from pytest_mock import MockerFixture
 
 pytest_plugins = "pytester"
 
@@ -147,11 +147,11 @@ def test_mock_patch_dict_resetall(mocker):
     ],
 )
 def test_mocker_aliases(name, pytestconfig):
-    from pytest_mock import _get_mock_module, MockFixture
+    from pytest_mock.plugin import _get_mock_module
 
     mock_module = _get_mock_module(pytestconfig)
 
-    mocker = MockFixture(pytestconfig)
+    mocker = MockerFixture(pytestconfig)
     assert getattr(mocker, name) is getattr(mock_module, name)
 
 
@@ -397,7 +397,7 @@ def test_callable_like_spy(testdir, mocker):
     )
     testdir.syspathinsert()
 
-    import uut
+    uut = __import__("uut")
 
     spy = mocker.spy(uut, "call_like")
     uut.call_like(10)
@@ -406,7 +406,7 @@ def test_callable_like_spy(testdir, mocker):
 
 
 @pytest.mark.asyncio
-async def test_instance_async_method_spy(mocker):
+async def test_instance_async_method_spy(mocker: MockerFixture) -> None:
     class Foo:
         async def bar(self, arg):
             return arg * 2
@@ -427,10 +427,8 @@ def assert_traceback():
     """
     try:
         yield
-    except AssertionError:
-        traceback = py.code.ExceptionInfo().traceback
-        crashentry = traceback.getcrashentry()
-        assert crashentry.path == __file__
+    except AssertionError as e:
+        assert e.__traceback__.tb_frame.f_code.co_filename == __file__
     else:
         raise AssertionError("DID NOT RAISE")
 

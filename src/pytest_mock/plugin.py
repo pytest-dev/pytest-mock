@@ -1,12 +1,15 @@
 import unittest.mock
-from typing import cast
+from typing import cast, Generator
 from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import List
+
 from typing import Optional
 from typing import Union
 
+
+from unittest import mock
 import asyncio
 import functools
 import inspect
@@ -36,7 +39,7 @@ def _get_mock_module(config):
     return _get_mock_module._module
 
 
-class MockFixture:
+class MockerFixture:
     """
     Fixture that provides the same interface to functions in the mock module,
     ensuring that they are uninstalled at the end of each test.
@@ -95,7 +98,7 @@ class MockFixture:
             # Bypass class descriptor:
             # http://stackoverflow.com/questions/14187973/python3-check-if-method-is-static
             try:
-                value = obj.__getattribute__(obj, name)
+                value = obj.__getattribute__(obj, name)  # type:ignore
             except AttributeError:
                 pass
             else:
@@ -145,7 +148,10 @@ class MockFixture:
         :rtype: mock.MagicMock
         :return: Stub object.
         """
-        return self.mock_module.MagicMock(spec=lambda *args, **kwargs: None, name=name)
+        return cast(
+            unittest.mock.MagicMock,
+            self.mock_module.MagicMock(spec=lambda *args, **kwargs: None, name=name),
+        )
 
     class _Patcher:
         """
@@ -194,12 +200,12 @@ class MockFixture:
             return self._start_patch(self.mock_module.patch, *args, **kwargs)
 
 
-def _mocker(pytestconfig):
+def _mocker(pytestconfig: Any) -> Generator[MockerFixture, None, None]:
     """
     Return an object that has the same interface to the `mock` module, but
     takes care of automatically undoing all patches after each test method.
     """
-    result = MockFixture(pytestconfig)
+    result = MockerFixture(pytestconfig)
     yield result
     result.stopall()
 
@@ -211,7 +217,7 @@ package_mocker = pytest.yield_fixture(scope="package")(_mocker)
 session_mocker = pytest.yield_fixture(scope="session")(_mocker)
 
 
-_mock_module_patches = []
+_mock_module_patches = []  # type: List[Any]
 _mock_module_originals = {}  # type: Dict[str, Any]
 
 
@@ -242,7 +248,7 @@ def assert_wrapper(
                 if introspection:
                     msg += "\n\npytest introspection follows:\n" + introspection
         e = AssertionError(msg)
-        e._mock_introspection_applied = True
+        e._mock_introspection_applied = True  # type:ignore[attr-defined]
         raise e
 
 
@@ -366,12 +372,7 @@ def wrap_assert_methods(config: Any) -> None:
             patcher.start()
             _mock_module_patches.append(patcher)
 
-    if hasattr(config, "add_cleanup"):
-        add_cleanup = config.add_cleanup
-    else:
-        # pytest 2.7 compatibility
-        add_cleanup = config._cleanup.append
-    add_cleanup(unwrap_assert_methods)
+    config.add_cleanup(unwrap_assert_methods)
 
 
 def unwrap_assert_methods() -> None:
@@ -391,7 +392,7 @@ def unwrap_assert_methods() -> None:
     _mock_module_originals.clear()
 
 
-def pytest_addoption(parser) -> None:
+def pytest_addoption(parser: Any) -> None:
     parser.addini(
         "mock_traceback_monkeypatch",
         "Monkeypatch the mock library to improve reporting of the "
@@ -407,12 +408,13 @@ def pytest_addoption(parser) -> None:
 
 
 def parse_ini_boolean(value: Union[bool, str]) -> bool:
-    if value in (True, False):
+    if isinstance(value, bool):
         return value
-    try:
-        return {"true": True, "false": False}[value.lower()]
-    except KeyError:
-        raise ValueError("unknown string for bool: %r" % value)
+    if value.lower() == "true":
+        return True
+    if value.lower() == "false":
+        return False
+    raise ValueError("unknown string for bool: %r" % value)
 
 
 def pytest_configure(config: Any) -> None:

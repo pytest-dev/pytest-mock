@@ -1,5 +1,6 @@
+import builtins
 import unittest.mock
-from typing import cast, Generator
+from typing import cast, Generator, Mapping, Iterable, Tuple
 from typing import Any
 from typing import Callable
 from typing import Dict
@@ -137,7 +138,7 @@ class MockerFixture:
         spy_obj = self.patch.object(obj, name, side_effect=wrapped, autospec=autospec)
         spy_obj.spy_return = None
         spy_obj.spy_exception = None
-        return cast(unittest.mock.MagicMock, spy_obj)
+        return spy_obj
 
     def stub(self, name: Optional[str] = None) -> unittest.mock.MagicMock:
         """
@@ -164,13 +165,15 @@ class MockerFixture:
             self._mocks = mocks
             self.mock_module = mock_module
 
-        def _start_patch(self, mock_func, *args, **kwargs):
+        def _start_patch(
+            self, mock_func: Any, *args: Any, **kwargs: Any
+        ) -> unittest.mock.MagicMock:
             """Patches something by calling the given function from the mock
             module, registering the patch to stop it later and returns the
             mock object resulting from the mock call.
             """
             p = mock_func(*args, **kwargs)
-            mocked = p.start()
+            mocked = p.start()  # type: unittest.mock.MagicMock
             self._patches.append(p)
             if hasattr(mocked, "reset_mock"):
                 self._mocks.append(mocked)
@@ -183,21 +186,93 @@ class MockerFixture:
                     )
             return mocked
 
-        def object(self, *args, **kwargs):
+        def object(
+            self,
+            target: object,
+            attribute: str,
+            new: object = unittest.mock.DEFAULT,
+            spec: Optional[object] = None,
+            create: bool = False,
+            spec_set: Optional[object] = None,
+            autospec: Optional[object] = None,
+            new_callable: object = None,
+            **kwargs: Any
+        ) -> unittest.mock.MagicMock:
             """API to mock.patch.object"""
-            return self._start_patch(self.mock_module.patch.object, *args, **kwargs)
+            return self._start_patch(
+                self.mock_module.patch.object,
+                target,
+                attribute,
+                new=new,
+                spec=spec,
+                create=create,
+                spec_set=spec_set,
+                autospec=autospec,
+                new_callable=new_callable,
+                **kwargs
+            )
 
-        def multiple(self, *args, **kwargs):
+        def multiple(
+            self,
+            target: builtins.object,
+            spec: Optional[builtins.object] = None,
+            create: bool = False,
+            spec_set: Optional[None] = None,
+            autospec: Optional[builtins.object] = None,
+            new_callable: Optional[builtins.object] = None,
+            **kwargs: Any
+        ) -> Any:
             """API to mock.patch.multiple"""
-            return self._start_patch(self.mock_module.patch.multiple, *args, **kwargs)
+            return self._start_patch(
+                self.mock_module.patch.multiple,
+                target,
+                spec=spec,
+                create=create,
+                spec_set=spec_set,
+                autospec=autospec,
+                new_callable=new_callable,
+                **kwargs
+            )
 
-        def dict(self, *args, **kwargs):
+        def dict(
+            self,
+            in_dict: Mapping[Any, Any],
+            values: Union[Mapping[Any, Any], Iterable[Tuple[Any, Any]]] = (),
+            clear: bool = False,
+            **kwargs: Any
+        ) -> Any:
             """API to mock.patch.dict"""
-            return self._start_patch(self.mock_module.patch.dict, *args, **kwargs)
+            return self._start_patch(
+                self.mock_module.patch.dict,
+                in_dict,
+                values=values,
+                clear=clear,
+                **kwargs
+            )
 
-        def __call__(self, *args, **kwargs):
+        def __call__(
+            self,
+            target: str,
+            new: builtins.object = unittest.mock.DEFAULT,
+            spec: Optional[builtins.object] = None,
+            create: bool = False,
+            spec_set: Optional[builtins.object] = None,
+            autospec: Optional[builtins.object] = None,
+            new_callable: Optional[builtins.object] = None,
+            **kwargs: Any
+        ) -> unittest.mock.MagicMock:
             """API to mock.patch"""
-            return self._start_patch(self.mock_module.patch, *args, **kwargs)
+            return self._start_patch(
+                self.mock_module.patch,
+                target,
+                new=new,
+                spec=spec,
+                create=create,
+                spec_set=spec_set,
+                autospec=autospec,
+                new_callable=new_callable,
+                **kwargs
+            )
 
 
 def _mocker(pytestconfig: Any) -> Generator[MockerFixture, None, None]:

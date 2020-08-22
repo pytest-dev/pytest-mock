@@ -1,2 +1,12 @@
 from pytest_mock.plugin import *
-from pytest_mock.plugin import _get_mock_module
+
+__all__ = [
+    "MockerFixture",
+    "pytest_addoption",
+    "pytest_configure",
+    "session_mocker",
+    "package_mocker",
+    "module_mocker",
+    "class_mocker",
+    "mocker",
+]

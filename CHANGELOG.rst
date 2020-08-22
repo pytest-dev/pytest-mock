@@ -1,3 +1,23 @@
+3.3.0 (2020-08-21)
+------------------
+
+* ``pytest-mock`` now includes inline type annotations and exposes them to user programs. The ``mocker`` fixture returns ``pytest_mock.MockerFixture``, which can be used to annotate your tests:
+
+  .. code-block:: python
+
+        from pytest_mock import MockerFixture
+
+        def test_foo(mocker: MockerFixture) -> None:
+            ...
+
+  The type annotations were developed against mypy version ``0.782``, the
+  minimum version supported at the moment. If you run into an error that you believe to be incorrect, please open an issue.
+
+  Many thanks to `@staticdev`_ for providing the initial patch (`#199`_).
+
+.. _@staticdev: https://github.com/staticdev
+.. _#199: https://github.com/pytest-dev/pytest-mock/pull/199
+
 3.2.0 (2020-07-11)
 ------------------
 

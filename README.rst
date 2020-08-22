@@ -90,6 +90,28 @@ the appropriate mock fixture:
 * ``package_mocker``
 * ``session_mocker``
 
+Type Annotations
+----------------
+
+*New in version 3.3.0.*
+
+``pytest-mock`` is fully type annotated, letting users use static type checkers to
+test their code.
+
+The ``mocker`` fixture returns ``pytest_mock.MockerFixture`` which can be used
+to annotate test functions:
+
+.. code-block:: python
+
+    from pytest_mock import MockerFixture
+
+    def test_foo(mocker: MockerFixture) -> None:
+        ...
+
+The type annotations have been checked with ``mypy``, which is the only
+type checker supported at the moment; other type-checkers might work
+but are not currently tested.
+
 Spy
 ---
 

@@ -160,6 +160,8 @@ class MockerFixture:
         etc. We need this indirection to keep the same API of the mock package.
         """
 
+        DEFAULT = object()
+
         def __init__(self, patches, mocks, mock_module):
             self._patches = patches
             self._mocks = mocks
@@ -190,7 +192,7 @@ class MockerFixture:
             self,
             target: object,
             attribute: str,
-            new: object = unittest.mock.DEFAULT,
+            new: object = DEFAULT,
             spec: Optional[object] = None,
             create: bool = False,
             spec_set: Optional[object] = None,
@@ -199,6 +201,8 @@ class MockerFixture:
             **kwargs: Any
         ) -> unittest.mock.MagicMock:
             """API to mock.patch.object"""
+            if new is self.DEFAULT:
+                new = self.mock_module.DEFAULT
             return self._start_patch(
                 self.mock_module.patch.object,
                 target,
@@ -217,7 +221,7 @@ class MockerFixture:
             target: builtins.object,
             spec: Optional[builtins.object] = None,
             create: bool = False,
-            spec_set: Optional[None] = None,
+            spec_set: Optional[builtins.object] = None,
             autospec: Optional[builtins.object] = None,
             new_callable: Optional[builtins.object] = None,
             **kwargs: Any
@@ -253,7 +257,7 @@ class MockerFixture:
         def __call__(
             self,
             target: str,
-            new: builtins.object = unittest.mock.DEFAULT,
+            new: builtins.object = DEFAULT,
             spec: Optional[builtins.object] = None,
             create: bool = False,
             spec_set: Optional[builtins.object] = None,
@@ -262,6 +266,8 @@ class MockerFixture:
             **kwargs: Any
         ) -> unittest.mock.MagicMock:
             """API to mock.patch"""
+            if new is self.DEFAULT:
+                new = self.mock_module.DEFAULT
             return self._start_patch(
                 self.mock_module.patch,
                 target,

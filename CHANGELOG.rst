@@ -10,6 +10,12 @@
 
   Note however that this is just a stop gap measure, and new code should use ``MockerFixture`` for type annotations.
 
+* Improved typing for ``MockerFixture.patch``  (`#201`_). Thanks `@srittau`_ for the PR.
+
+.. _@srittau: https://github.com/srittau
+.. _#201: https://github.com/pytest-dev/pytest-mock/pull/201
+
+
 3.3.0 (2020-08-21)
 ------------------
 

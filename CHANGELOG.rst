@@ -1,3 +1,15 @@
+3.3.1 (2020-08-24)
+------------------
+
+* Introduce ``MockFixture`` as an alias to ``MockerFixture``.
+
+  Before ``3.3.0``, the fixture class was named ``MockFixture``, but was renamed to ``MockerFixture`` to better
+  match the ``mocker`` fixture. While not officially part of the API, it was later discovered that this broke
+  the code of some users which already imported ``pytest_mock.MockFixture`` for type annotations, so we
+  decided to reintroduce the name as an alias.
+
+  Note however that this is just a stop gap measure, and new code should use ``MockerFixture`` for type annotations.
+
 3.3.0 (2020-08-21)
 ------------------
 

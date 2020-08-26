@@ -184,7 +184,7 @@ the method, and uses pytest's own `advanced assertions`_ to return a better
 diff::
 
 
-    mocker = <pytest_mock.MockFixture object at 0x0381E2D0>
+    mocker = <pytest_mock.MockerFixture object at 0x0381E2D0>
 
         def test(mocker):
             m = mocker.Mock()

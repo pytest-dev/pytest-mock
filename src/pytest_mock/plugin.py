@@ -10,7 +10,6 @@ from typing import Optional
 from typing import Union
 
 
-from unittest import mock
 import asyncio
 import functools
 import inspect
@@ -35,8 +34,6 @@ def _get_mock_module(config):
 
             _get_mock_module._module = mock
         else:
-            import unittest.mock
-
             _get_mock_module._module = unittest.mock
 
     return _get_mock_module._module
@@ -91,7 +88,7 @@ class MockerFixture:
 
         :param object obj: An object.
         :param unicode name: A method in object.
-        :rtype: mock.MagicMock
+        :rtype: unittest.mock.MagicMock
         :return: Spy object.
         """
         method = getattr(obj, name)
@@ -150,7 +147,7 @@ class MockerFixture:
         callbacks in tests.
 
         :param name: the constructed stub's name as used in repr
-        :rtype: mock.MagicMock
+        :rtype: unittest.mock.MagicMock
         :return: Stub object.
         """
         return cast(

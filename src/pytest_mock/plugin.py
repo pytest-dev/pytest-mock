@@ -349,11 +349,11 @@ def _mocker(pytestconfig: Any) -> Generator[MockerFixture, None, None]:
     result.stopall()
 
 
-mocker = pytest.yield_fixture()(_mocker)  # default scope is function
-class_mocker = pytest.yield_fixture(scope="class")(_mocker)
-module_mocker = pytest.yield_fixture(scope="module")(_mocker)
-package_mocker = pytest.yield_fixture(scope="package")(_mocker)
-session_mocker = pytest.yield_fixture(scope="session")(_mocker)
+mocker = pytest.fixture()(_mocker)  # default scope is function
+class_mocker = pytest.fixture(scope="class")(_mocker)
+module_mocker = pytest.fixture(scope="module")(_mocker)
+package_mocker = pytest.fixture(scope="package")(_mocker)
+session_mocker = pytest.fixture(scope="session")(_mocker)
 
 
 _mock_module_patches = []  # type: List[Any]

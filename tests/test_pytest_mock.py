@@ -152,6 +152,12 @@ def test_mock_patch_dict_resetall(mocker: MockerFixture) -> None:
         "NonCallableMock",
         "PropertyMock",
         "sentinel",
+        pytest.param(
+            "seal",
+            marks=pytest.mark.skipif(
+                sys.version_info < (3, 7), reason="seal is present on 3.7 and above"
+            ),
+        ),
     ],
 )
 def test_mocker_aliases(name: str, pytestconfig: Any) -> None:

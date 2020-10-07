@@ -81,6 +81,7 @@ Also, as a convenience, these names from the ``mock`` module are accessible dire
 * `call <https://docs.python.org/3/library/unittest.mock.html#call>`_ *(Version 1.1)*
 * `sentinel <https://docs.python.org/3/library/unittest.mock.html#sentinel>`_ *(Version 1.2)*
 * `mock_open <https://docs.python.org/3/library/unittest.mock.html#mock-open>`_
+* `seal <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.seal>`_ *(Version 3.4)*
 
 It is also possible to use mocking functionality from fixtures of other scopes using
 the appropriate mock fixture:

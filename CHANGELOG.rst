@@ -1,3 +1,11 @@
+3.4.0 (UNRELEASED)
+------------------
+
+* Add `mock.seal` alias to the `mocker` fixture (`#211`_). Thanks `@coiax`_ for the PR.
+
+.. _@coiax: https://github.com/coiax
+.. _#211: https://github.com/pytest-dev/pytest-mock/pull/211
+
 3.3.1 (2020-08-24)
 ------------------
 

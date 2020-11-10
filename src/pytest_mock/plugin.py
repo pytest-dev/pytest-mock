@@ -68,8 +68,13 @@ class MockerFixture:
         if hasattr(mock_module, "seal"):
             self.seal = mock_module.seal
 
-    def resetall(self) -> None:
-        """Call reset_mock() on all patchers started by this fixture."""
+    def resetall(self, *, return_value: bool = False, side_effect: bool = False) -> None:
+        """
+        Call reset_mock() on all patchers started by this fixture.
+        
+        :param bool return_value: Reset the return_value of mocks.
+        :param bool side_effect: Reset the side_effect of mocks.
+        """
         for m in self._mocks:
             m.reset_mock()
 

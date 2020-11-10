@@ -170,11 +170,11 @@ def test_mocker_aliases(name: str, pytestconfig: Any) -> None:
 
 
 def test_mocker_resetall(mocker: MockerFixture) -> None:
-    listdir = mocker.patch("os.listdir")
-    open = mocker.patch("os.open")
+    listdir = mocker.patch("os.listdir", return_value="foo")
+    open = mocker.patch("os.open", side_effect=["bar", "baz"])
 
-    listdir("/tmp")
-    open("/tmp/foo.txt")
+    assert listdir("/tmp") == "foo"
+    assert open("/tmp/foo.txt") == "bar"
     listdir.assert_called_once_with("/tmp")
     open.assert_called_once_with("/tmp/foo.txt")
 
@@ -182,6 +182,13 @@ def test_mocker_resetall(mocker: MockerFixture) -> None:
 
     assert not listdir.called
     assert not open.called
+    assert listdir.return_value == "foo"
+    assert open.side_effect == ["bar", "baz"]
+    
+    mocker.resetall(return_value=True, side_effect=True)
+    
+    assert listdir.return_value is None
+    assert open.side_effect is None
 
 
 class TestMockerStub:

@@ -2,7 +2,7 @@ import os
 import platform
 import sys
 from contextlib import contextmanager
-from typing import Callable, Any, Tuple, Generator
+from typing import Callable, Any, Tuple, Generator, Type
 from unittest.mock import MagicMock
 
 import pytest
@@ -235,17 +235,31 @@ def test_instance_method_spy(mocker: MockerFixture) -> None:
     assert spy.spy_return == 20
 
 
-def test_instance_method_spy_exception(mocker: MockerFixture) -> None:
+# Ref: https://docs.python.org/3/library/exceptions.html#exception-hierarchy
+@pytest.mark.parametrize(
+    "exc_cls",
+    (
+        BaseException,
+        Exception,
+        GeneratorExit,  # BaseException
+        KeyboardInterrupt,  # BaseException
+        RuntimeError,  # regular Exception
+        SystemExit,  # BaseException
+    ),
+)
+def test_instance_method_spy_exception(
+    exc_cls: Type[BaseException], mocker: MockerFixture,
+) -> None:
     class Foo:
         def bar(self, arg):
-            raise Exception("Error with {}".format(arg))
+            raise exc_cls("Error with {}".format(arg))
 
     foo = Foo()
     spy = mocker.spy(foo, "bar")
 
     expected_calls = []
     for i, v in enumerate([10, 20]):
-        with pytest.raises(Exception, match="Error with {}".format(v)) as exc_info:
+        with pytest.raises(exc_cls, match="Error with {}".format(v)):
             foo.bar(arg=v)
 
         expected_calls.append(mocker.call(arg=v))

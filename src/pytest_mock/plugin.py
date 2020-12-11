@@ -114,7 +114,7 @@ class MockerFixture:
             spy_obj.spy_exception = None
             try:
                 r = method(*args, **kwargs)
-            except Exception as e:
+            except BaseException as e:
                 spy_obj.spy_exception = e
                 raise
             else:
@@ -126,7 +126,7 @@ class MockerFixture:
             spy_obj.spy_exception = None
             try:
                 r = await method(*args, **kwargs)
-            except Exception as e:
+            except BaseException as e:
                 spy_obj.spy_exception = e
                 raise
             else:

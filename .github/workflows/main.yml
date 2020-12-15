@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.5", "3.6", "3.7", "3.8"]
+        python: ["3.5", "3.6", "3.7", "3.8", "3.9"]
         os: [ubuntu-latest, windows-latest]
         include:
           - python: "3.5"
@@ -21,11 +21,13 @@ jobs:
             tox_env: "py37"
           - python: "3.8"
             tox_env: "py38"
+          - python: "3.9"
+            tox_env: "py39"
 
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python }}
     - name: Install tox

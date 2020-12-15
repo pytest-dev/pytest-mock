@@ -1,4 +1,4 @@
-3.4.0 (UNRELEASED)
+3.4.0 (2020-12-15)
 ------------------
 
 * Add `mock.seal` alias to the `mocker` fixture (`#211`_). Thanks `@coiax`_ for the PR.

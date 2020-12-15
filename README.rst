@@ -267,7 +267,7 @@ function decorators for mocking unnecessary.
 Requirements
 ============
 
-* Python Python 3.5+
+* Python 3.5+
 * pytest
 
 

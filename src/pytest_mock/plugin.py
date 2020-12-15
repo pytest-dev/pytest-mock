@@ -88,9 +88,8 @@ class MockerFixture:
         Create a spy of method. It will run method normally, but it is now
         possible to use `mock` call features with it, like call count.
 
-        :param object obj: An object.
-        :param unicode name: A method in object.
-        :rtype: unittest.mock.MagicMock
+        :param obj: An object.
+        :param name: A method in object.
         :return: Spy object.
         """
         method = getattr(obj, name)
@@ -149,7 +148,6 @@ class MockerFixture:
         callbacks in tests.
 
         :param name: the constructed stub's name as used in repr
-        :rtype: unittest.mock.MagicMock
         :return: Stub object.
         """
         return cast(

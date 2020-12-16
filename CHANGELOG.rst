@@ -8,6 +8,7 @@
   by `@webknjaz`_.
 
   Before the fix, both ``spy_return`` and ``spy_exception``
+  were always assigned to ``None``
   whenever such an exception happened. And after this fix,
   ``spy_exception`` is set to a correct value of an exception
   that has actually happened.
@@ -15,7 +16,7 @@
 .. _@coiax: https://github.com/coiax
 .. _@webknjaz: https://github.com/sponsors/webknjaz
 .. _#211: https://github.com/pytest-dev/pytest-mock/pull/211
-.. _#215: https://github.com/pytest-dev/pytest-mock/pull/215
+.. _#215: https://github.com/pytest-dev/pytest-mock/issues/215
 .. _#216: https://github.com/pytest-dev/pytest-mock/pull/216
 
 3.3.1 (2020-08-24)

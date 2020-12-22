@@ -14,6 +14,7 @@ import asyncio
 import functools
 import inspect
 import warnings
+import sys
 
 import pytest
 
@@ -188,11 +189,15 @@ class MockerFixture:
                 # check if `mocked` is actually a mock object, as depending on autospec or target
                 # parameters `mocked` can be anything
                 if hasattr(mocked, "__enter__"):
+                    if sys.version_info >= (3, 8):
+                        depth = 5
+                    else:
+                        depth = 4
                     mocked.__enter__.side_effect = lambda: warnings.warn(
                         "Using mocker in a with context is not supported. "
                         "https://github.com/pytest-dev/pytest-mock#note-about-usage-as-context-manager",
                         PytestMockWarning,
-                        stacklevel=4,
+                        stacklevel=depth,
                     )
             return mocked
 

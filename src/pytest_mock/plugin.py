@@ -13,6 +13,7 @@ from typing import Union
 import asyncio
 import functools
 import inspect
+import warnings
 
 import pytest
 
@@ -37,6 +38,10 @@ def _get_mock_module(config):
             _get_mock_module._module = unittest.mock
 
     return _get_mock_module._module
+
+
+class PytestMockWarning(UserWarning):
+    """Base class for all warnings emitted by pytest-mock."""
 
 
 class MockerFixture:
@@ -183,9 +188,11 @@ class MockerFixture:
                 # check if `mocked` is actually a mock object, as depending on autospec or target
                 # parameters `mocked` can be anything
                 if hasattr(mocked, "__enter__"):
-                    mocked.__enter__.side_effect = ValueError(
+                    mocked.__enter__.side_effect = lambda: warnings.warn(
                         "Using mocker in a with context is not supported. "
-                        "https://github.com/pytest-dev/pytest-mock#note-about-usage-as-context-manager"
+                        "https://github.com/pytest-dev/pytest-mock#note-about-usage-as-context-manager",
+                        PytestMockWarning,
+                        stacklevel=4,
                     )
             return mocked
 

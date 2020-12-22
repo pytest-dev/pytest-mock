@@ -1,12 +1,13 @@
 import os
 import platform
+import re
 import sys
 from contextlib import contextmanager
 from typing import Callable, Any, Tuple, Generator, Type
 from unittest.mock import MagicMock
 
 import pytest
-from pytest_mock import MockerFixture
+from pytest_mock import MockerFixture, PytestMockWarning
 
 pytest_plugins = "pytester"
 
@@ -806,36 +807,40 @@ def test_plain_stopall(testdir: Any) -> None:
     assert "RuntimeError" not in result.stderr.str()
 
 
-def test_abort_patch_object_context_manager(mocker: MockerFixture) -> None:
+def test_warn_patch_object_context_manager(mocker: MockerFixture) -> None:
     class A:
         def doIt(self):
             return False
 
     a = A()
 
-    with pytest.raises(ValueError) as excinfo:
+    expected_warning_msg = (
+        "Using mocker in a with context is not supported. "
+        "https://github.com/pytest-dev/pytest-mock#note-about-usage-as-context-manager"
+    )
+
+    with pytest.warns(
+        PytestMockWarning, match=re.escape(expected_warning_msg)
+    ) as warn_record:
         with mocker.patch.object(a, "doIt", return_value=True):
             assert a.doIt() is True
 
-    expected_error_msg = (
+    assert warn_record[0].filename == __file__
+
+
+def test_warn_patch_context_manager(mocker: MockerFixture) -> None:
+    expected_warning_msg = (
         "Using mocker in a with context is not supported. "
         "https://github.com/pytest-dev/pytest-mock#note-about-usage-as-context-manager"
     )
 
-    assert str(excinfo.value) == expected_error_msg
-
-
-def test_abort_patch_context_manager(mocker: MockerFixture) -> None:
-    with pytest.raises(ValueError) as excinfo:
+    with pytest.warns(
+        PytestMockWarning, match=re.escape(expected_warning_msg)
+    ) as warn_record:
         with mocker.patch("json.loads"):
             pass
 
-    expected_error_msg = (
-        "Using mocker in a with context is not supported. "
-        "https://github.com/pytest-dev/pytest-mock#note-about-usage-as-context-manager"
-    )
-
-    assert str(excinfo.value) == expected_error_msg
+    assert warn_record[0].filename == __file__
 
 
 def test_context_manager_patch_example(mocker: MockerFixture) -> None:

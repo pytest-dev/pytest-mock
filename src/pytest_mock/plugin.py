@@ -194,7 +194,9 @@ class MockerFixture:
                     else:
                         depth = 4
                     mocked.__enter__.side_effect = lambda: warnings.warn(
-                        "Using mocker in a with context is not supported. "
+                        "Mocks returned by pytest-mock do not need to be used as context managers. "
+                        "The mocker fixture automatically undoes mocking at the end of a test. "
+                        "This warning can be ignored if it was triggered by mocking a context manager. "
                         "https://github.com/pytest-dev/pytest-mock#note-about-usage-as-context-manager",
                         PytestMockWarning,
                         stacklevel=depth,

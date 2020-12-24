@@ -815,7 +815,9 @@ def test_warn_patch_object_context_manager(mocker: MockerFixture) -> None:
     a = A()
 
     expected_warning_msg = (
-        "Using mocker in a with context is not supported. "
+        "Mocks returned by pytest-mock do not need to be used as context managers. "
+        "The mocker fixture automatically undoes mocking at the end of a test. "
+        "This warning can be ignored if it was triggered by mocking a context manager. "
         "https://github.com/pytest-dev/pytest-mock#note-about-usage-as-context-manager"
     )
 
@@ -830,7 +832,9 @@ def test_warn_patch_object_context_manager(mocker: MockerFixture) -> None:
 
 def test_warn_patch_context_manager(mocker: MockerFixture) -> None:
     expected_warning_msg = (
-        "Using mocker in a with context is not supported. "
+        "Mocks returned by pytest-mock do not need to be used as context managers. "
+        "The mocker fixture automatically undoes mocking at the end of a test. "
+        "This warning can be ignored if it was triggered by mocking a context manager. "
         "https://github.com/pytest-dev/pytest-mock#note-about-usage-as-context-manager"
     )
 

@@ -175,7 +175,7 @@ class MockerFixture:
             self.mock_module = mock_module
 
         def _start_patch(
-            self, mock_func: Any, *args: Any, **kwargs: Any
+            self, mock_func: Any, warn_on_mock_enter: bool, *args: Any, **kwargs: Any
         ) -> unittest.mock.MagicMock:
             """Patches something by calling the given function from the mock
             module, registering the patch to stop it later and returns the
@@ -188,7 +188,7 @@ class MockerFixture:
                 self._mocks.append(mocked)
                 # check if `mocked` is actually a mock object, as depending on autospec or target
                 # parameters `mocked` can be anything
-                if hasattr(mocked, "__enter__"):
+                if hasattr(mocked, "__enter__") and warn_on_mock_enter:
                     if sys.version_info >= (3, 8):
                         depth = 5
                     else:
@@ -220,6 +220,37 @@ class MockerFixture:
                 new = self.mock_module.DEFAULT
             return self._start_patch(
                 self.mock_module.patch.object,
+                True,
+                target,
+                attribute,
+                new=new,
+                spec=spec,
+                create=create,
+                spec_set=spec_set,
+                autospec=autospec,
+                new_callable=new_callable,
+                **kwargs
+            )
+
+        def context_manager(
+            self,
+            target: object,
+            attribute: str,
+            new: object = DEFAULT,
+            spec: Optional[object] = None,
+            create: bool = False,
+            spec_set: Optional[object] = None,
+            autospec: Optional[object] = None,
+            new_callable: object = None,
+            **kwargs: Any
+        ) -> unittest.mock.MagicMock:
+            """This is equivalent to mock.patch.object except that the returned mock
+            does not issue a warning when used as a context manager."""
+            if new is self.DEFAULT:
+                new = self.mock_module.DEFAULT
+            return self._start_patch(
+                self.mock_module.patch.object,
+                False,
                 target,
                 attribute,
                 new=new,
@@ -244,6 +275,7 @@ class MockerFixture:
             """API to mock.patch.multiple"""
             return self._start_patch(
                 self.mock_module.patch.multiple,
+                True,
                 target,
                 spec=spec,
                 create=create,
@@ -263,6 +295,7 @@ class MockerFixture:
             """API to mock.patch.dict"""
             return self._start_patch(
                 self.mock_module.patch.dict,
+                True,
                 in_dict,
                 values=values,
                 clear=clear,
@@ -342,6 +375,7 @@ class MockerFixture:
                 new = self.mock_module.DEFAULT
             return self._start_patch(
                 self.mock_module.patch,
+                True,
                 target,
                 new=new,
                 spec=spec,

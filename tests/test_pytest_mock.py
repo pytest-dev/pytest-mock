@@ -867,6 +867,23 @@ def test_context_manager_patch_example(mocker: MockerFixture) -> None:
     assert isinstance(my_func(), mocker.MagicMock)
 
 
+def test_patch_context_manager_with_context_manager(mocker: MockerFixture) -> None:
+    """Test that no warnings are issued when an object patched with
+    patch.context_manager is used as a context manager (#221)"""
+
+    class A:
+        def doIt(self):
+            return False
+
+    a = A()
+
+    with pytest.warns(None) as warn_record:
+        with mocker.patch.context_manager(a, "doIt", return_value=True):
+            assert a.doIt() is True
+
+    assert len(warn_record) == 0
+
+
 def test_abort_patch_context_manager_with_stale_pyc(testdir: Any) -> None:
     """Ensure we don't trigger an error in case the frame where mocker.patch is being
     used doesn't have a 'context' (#169)"""

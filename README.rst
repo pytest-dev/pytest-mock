@@ -261,7 +261,10 @@ fixture:
             assert a.doIt() == True
 
 The purpose of this plugin is to make the use of context managers and
-function decorators for mocking unnecessary.
+function decorators for mocking unnecessary, so it will emit a warning when used as such.
+
+If you really intend to mock a context manager, ``mocker.patch.context_manager`` exists
+which won't issue the above warning.
 
 
 Requirements

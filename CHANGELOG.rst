@@ -1,3 +1,16 @@
+3.5.0 (2021-01-04)
+------------------
+
+* Now all patch functions will emit a warning instead of raising a ``ValueError`` when used
+  as a context-manager. Thanks `@iforapsy`_ for the PR (`#221`_).
+
+* Additionally, ``mocker.patch.context_manager`` is available when the user intends to mock
+  a context manager (for example  ``threading.Lock`` object), which will not emit that
+  warning.
+
+.. _@iforapsy: https://github.com/iforapsy
+.. _#221: https://github.com/pytest-dev/pytest-mock/pull/221
+
 3.4.0 (2020-12-15)
 ------------------
 

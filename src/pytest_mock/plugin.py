@@ -234,14 +234,14 @@ class MockerFixture:
 
         def context_manager(
             self,
-            target: object,
+            target: builtins.object,
             attribute: str,
-            new: object = DEFAULT,
-            spec: Optional[object] = None,
+            new: builtins.object = DEFAULT,
+            spec: Optional[builtins.object] = None,
             create: bool = False,
-            spec_set: Optional[object] = None,
-            autospec: Optional[object] = None,
-            new_callable: object = None,
+            spec_set: Optional[builtins.object] = None,
+            autospec: Optional[builtins.object] = None,
+            new_callable: builtins.object = None,
             **kwargs: Any
         ) -> unittest.mock.MagicMock:
             """This is equivalent to mock.patch.object except that the returned mock

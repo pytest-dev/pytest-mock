@@ -13,6 +13,8 @@ from typing import Union
 import asyncio
 import functools
 import inspect
+import warnings
+import sys
 
 import pytest
 
@@ -37,6 +39,10 @@ def _get_mock_module(config):
             _get_mock_module._module = unittest.mock
 
     return _get_mock_module._module
+
+
+class PytestMockWarning(UserWarning):
+    """Base class for all warnings emitted by pytest-mock."""
 
 
 class MockerFixture:
@@ -169,7 +175,7 @@ class MockerFixture:
             self.mock_module = mock_module
 
         def _start_patch(
-            self, mock_func: Any, *args: Any, **kwargs: Any
+            self, mock_func: Any, warn_on_mock_enter: bool, *args: Any, **kwargs: Any
         ) -> unittest.mock.MagicMock:
             """Patches something by calling the given function from the mock
             module, registering the patch to stop it later and returns the
@@ -182,10 +188,18 @@ class MockerFixture:
                 self._mocks.append(mocked)
                 # check if `mocked` is actually a mock object, as depending on autospec or target
                 # parameters `mocked` can be anything
-                if hasattr(mocked, "__enter__"):
-                    mocked.__enter__.side_effect = ValueError(
-                        "Using mocker in a with context is not supported. "
-                        "https://github.com/pytest-dev/pytest-mock#note-about-usage-as-context-manager"
+                if hasattr(mocked, "__enter__") and warn_on_mock_enter:
+                    if sys.version_info >= (3, 8):
+                        depth = 5
+                    else:
+                        depth = 4
+                    mocked.__enter__.side_effect = lambda: warnings.warn(
+                        "Mocks returned by pytest-mock do not need to be used as context managers. "
+                        "The mocker fixture automatically undoes mocking at the end of a test. "
+                        "This warning can be ignored if it was triggered by mocking a context manager. "
+                        "https://github.com/pytest-dev/pytest-mock#note-about-usage-as-context-manager",
+                        PytestMockWarning,
+                        stacklevel=depth,
                     )
             return mocked
 
@@ -206,6 +220,37 @@ class MockerFixture:
                 new = self.mock_module.DEFAULT
             return self._start_patch(
                 self.mock_module.patch.object,
+                True,
+                target,
+                attribute,
+                new=new,
+                spec=spec,
+                create=create,
+                spec_set=spec_set,
+                autospec=autospec,
+                new_callable=new_callable,
+                **kwargs
+            )
+
+        def context_manager(
+            self,
+            target: builtins.object,
+            attribute: str,
+            new: builtins.object = DEFAULT,
+            spec: Optional[builtins.object] = None,
+            create: bool = False,
+            spec_set: Optional[builtins.object] = None,
+            autospec: Optional[builtins.object] = None,
+            new_callable: builtins.object = None,
+            **kwargs: Any
+        ) -> unittest.mock.MagicMock:
+            """This is equivalent to mock.patch.object except that the returned mock
+            does not issue a warning when used as a context manager."""
+            if new is self.DEFAULT:
+                new = self.mock_module.DEFAULT
+            return self._start_patch(
+                self.mock_module.patch.object,
+                False,
                 target,
                 attribute,
                 new=new,
@@ -230,6 +275,7 @@ class MockerFixture:
             """API to mock.patch.multiple"""
             return self._start_patch(
                 self.mock_module.patch.multiple,
+                True,
                 target,
                 spec=spec,
                 create=create,
@@ -249,6 +295,7 @@ class MockerFixture:
             """API to mock.patch.dict"""
             return self._start_patch(
                 self.mock_module.patch.dict,
+                True,
                 in_dict,
                 values=values,
                 clear=clear,
@@ -328,6 +375,7 @@ class MockerFixture:
                 new = self.mock_module.DEFAULT
             return self._start_patch(
                 self.mock_module.patch,
+                True,
                 target,
                 new=new,
                 spec=spec,

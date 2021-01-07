@@ -99,20 +99,14 @@ class MockerFixture:
         :return: Spy object.
         """
         method = getattr(obj, name)
-
-        autospec = inspect.ismethod(method) or inspect.isfunction(method)
-        # Can't use autospec classmethod or staticmethod objects
-        # see: https://bugs.python.org/issue23078
-        if inspect.isclass(obj):
-            # Bypass class descriptor:
-            # http://stackoverflow.com/questions/14187973/python3-check-if-method-is-static
-            try:
-                value = obj.__getattribute__(obj, name)  # type:ignore
-            except AttributeError:
-                pass
-            else:
-                if isinstance(value, (classmethod, staticmethod)):
-                    autospec = False
+        if inspect.isclass(obj) and isinstance(
+            inspect.getattr_static(obj, name), (classmethod, staticmethod)
+        ):
+            # Can't use autospec classmethod or staticmethod objects before 3.7
+            # see: https://bugs.python.org/issue23078
+            autospec = False
+        else:
+            autospec = inspect.ismethod(method) or inspect.isfunction(method)
 
         def wrapper(*args, **kwargs):
             spy_obj.spy_return = None

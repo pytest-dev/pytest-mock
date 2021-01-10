@@ -249,7 +249,8 @@ def test_instance_method_spy(mocker: MockerFixture) -> None:
     ),
 )
 def test_instance_method_spy_exception(
-    exc_cls: Type[BaseException], mocker: MockerFixture,
+    exc_cls: Type[BaseException],
+    mocker: MockerFixture,
 ) -> None:
     class Foo:
         def bar(self, arg):
@@ -627,12 +628,12 @@ def test_monkeypatch_ini(testdir: Any, mocker: MockerFixture) -> None:
 
 
 def test_parse_ini_boolean() -> None:
-    import pytest_mock
+    from pytest_mock._util import parse_ini_boolean
 
-    assert pytest_mock.parse_ini_boolean("True") is True
-    assert pytest_mock.parse_ini_boolean("false") is False
+    assert parse_ini_boolean("True") is True
+    assert parse_ini_boolean("false") is False
     with pytest.raises(ValueError):
-        pytest_mock.parse_ini_boolean("foo")
+        parse_ini_boolean("foo")
 
 
 def test_patched_method_parameter_name(mocker: MockerFixture) -> None:
@@ -651,8 +652,7 @@ def test_patched_method_parameter_name(mocker: MockerFixture) -> None:
 
 
 def test_monkeypatch_native(testdir: Any) -> None:
-    """Automatically disable monkeypatching when --tb=native.
-    """
+    """Automatically disable monkeypatching when --tb=native."""
     testdir.makepyfile(
         """
         def test_foo(mocker):
@@ -676,8 +676,7 @@ def test_monkeypatch_native(testdir: Any) -> None:
 
 
 def test_monkeypatch_no_terminal(testdir: Any) -> None:
-    """Don't crash without 'terminal' plugin.
-    """
+    """Don't crash without 'terminal' plugin."""
     testdir.makepyfile(
         """
         def test_foo(mocker):
@@ -692,8 +691,7 @@ def test_monkeypatch_no_terminal(testdir: Any) -> None:
 
 
 def test_standalone_mock(testdir: Any) -> None:
-    """Check that the "mock_use_standalone" is being used.
-    """
+    """Check that the "mock_use_standalone" is being used."""
     testdir.makepyfile(
         """
         def test_foo(mocker):
@@ -713,8 +711,7 @@ def test_standalone_mock(testdir: Any) -> None:
 
 @pytest.mark.usefixtures("needs_assert_rewrite")
 def test_detailed_introspection(testdir: Any) -> None:
-    """Check that the "mock_use_standalone" is being used.
-    """
+    """Check that the "mock_use_standalone" is being used."""
     testdir.makepyfile(
         """
         def test(mocker):
@@ -755,8 +752,7 @@ def test_detailed_introspection(testdir: Any) -> None:
 )
 @pytest.mark.usefixtures("needs_assert_rewrite")
 def test_detailed_introspection_async(testdir: Any) -> None:
-    """Check that the "mock_use_standalone" is being used.
-    """
+    """Check that the "mock_use_standalone" is being used."""
     testdir.makepyfile(
         """
         import pytest

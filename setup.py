@@ -8,7 +8,9 @@ setup(
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     platforms="any",
-    package_data={"pytest_mock": ["py.typed"],},
+    package_data={
+        "pytest_mock": ["py.typed"],
+    },
     python_requires=">=3.5",
     install_requires=["pytest>=5.0"],
     use_scm_version={"write_to": "src/pytest_mock/_version.py"},

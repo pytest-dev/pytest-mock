@@ -7,7 +7,7 @@ from typing import Callable, Any, Tuple, Generator, Type
 from unittest.mock import MagicMock
 
 import pytest
-from pytest_mock import MockerFixture, PytestMockWarning  # type: ignore
+from pytest_mock import MockerFixture, PytestMockWarning
 
 pytest_plugins = "pytester"
 
@@ -162,9 +162,9 @@ def test_mock_patch_dict_resetall(mocker: MockerFixture) -> None:
     ],
 )
 def test_mocker_aliases(name: str, pytestconfig: Any) -> None:
-    from pytest_mock.plugin import _get_mock_module  # type: ignore
+    from pytest_mock._util import get_mock_module
 
-    mock_module = _get_mock_module(pytestconfig)
+    mock_module = get_mock_module(pytestconfig)
 
     mocker = MockerFixture(pytestconfig)
     assert getattr(mocker, name) is getattr(mock_module, name)

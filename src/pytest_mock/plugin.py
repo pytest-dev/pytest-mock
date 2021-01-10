@@ -18,27 +18,9 @@ import sys
 
 import pytest
 
+from ._util import get_mock_module, parse_ini_boolean
+
 _T = TypeVar("_T")
-
-
-def _get_mock_module(config):
-    """
-    Import and return the actual "mock" module. By default this is
-    "unittest.mock", but the user can force to always use "mock" using
-    the mock_use_standalone_module ini option.
-    """
-    if not hasattr(_get_mock_module, "_module"):
-        use_standalone_module = parse_ini_boolean(
-            config.getini("mock_use_standalone_module")
-        )
-        if use_standalone_module:
-            import mock
-
-            _get_mock_module._module = mock
-        else:
-            _get_mock_module._module = unittest.mock
-
-    return _get_mock_module._module
 
 
 class PytestMockWarning(UserWarning):
@@ -54,7 +36,7 @@ class MockerFixture:
     def __init__(self, config: Any) -> None:
         self._patches = []  # type: List[Any]
         self._mocks = []  # type: List[Any]
-        self.mock_module = mock_module = _get_mock_module(config)
+        self.mock_module = mock_module = get_mock_module(config)
         self.patch = self._Patcher(
             self._patches, self._mocks, mock_module
         )  # type: MockerFixture._Patcher
@@ -512,7 +494,7 @@ def wrap_assert_methods(config: Any) -> None:
     if _mock_module_originals:
         return
 
-    mock_module = _get_mock_module(config)
+    mock_module = get_mock_module(config)
 
     wrappers = {
         "assert_called": wrap_assert_called,
@@ -586,16 +568,6 @@ def pytest_addoption(parser: Any) -> None:
         "on Python 3",
         default=False,
     )
-
-
-def parse_ini_boolean(value: Union[bool, str]) -> bool:
-    if isinstance(value, bool):
-        return value
-    if value.lower() == "true":
-        return True
-    if value.lower() == "false":
-        return False
-    raise ValueError("unknown string for bool: %r" % value)
 
 
 def pytest_configure(config: Any) -> None:

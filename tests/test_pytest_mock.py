@@ -162,9 +162,9 @@ def test_mock_patch_dict_resetall(mocker: MockerFixture) -> None:
     ],
 )
 def test_mocker_aliases(name: str, pytestconfig: Any) -> None:
-    from pytest_mock.plugin import _get_mock_module
+    from pytest_mock._util import get_mock_module
 
-    mock_module = _get_mock_module(pytestconfig)
+    mock_module = get_mock_module(pytestconfig)
 
     mocker = MockerFixture(pytestconfig)
     assert getattr(mocker, name) is getattr(mock_module, name)
@@ -268,6 +268,19 @@ def test_instance_method_spy_exception(
         assert str(spy.spy_exception) == "Error with {}".format(v)
 
 
+def test_instance_method_spy_autospec_true(mocker: MockerFixture) -> None:
+    class Foo:
+        def bar(self, arg):
+            return arg * 2
+
+    foo = Foo()
+    spy = mocker.spy(foo, "bar")
+    with pytest.raises(
+        AttributeError, match="'function' object has no attribute 'fake_assert_method'"
+    ):
+        spy.fake_assert_method(arg=5)
+
+
 def test_spy_reset(mocker: MockerFixture) -> None:
     class Foo(object):
         def bar(self, x):
@@ -340,6 +353,17 @@ def test_class_method_spy(mocker: MockerFixture) -> None:
     assert Foo.bar.spy_return == 20  # type:ignore[attr-defined]
     spy.assert_called_once_with(arg=10)
     assert spy.spy_return == 20
+
+
+@skip_pypy
+def test_class_method_spy_autospec_false(mocker: MockerFixture) -> None:
+    class Foo:
+        @classmethod
+        def bar(cls, arg):
+            return arg * 2
+
+    spy = mocker.spy(Foo, "bar")
+    spy.fake_assert_method()
 
 
 @skip_pypy

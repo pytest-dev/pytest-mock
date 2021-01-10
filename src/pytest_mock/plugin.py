@@ -1,24 +1,28 @@
-import builtins
-import unittest.mock
-from typing import cast, overload, Generator, Mapping, Iterable, Tuple, TypeVar
-from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import List
-
-from typing import Optional
-from typing import Union
-
-
 import asyncio
+import builtins
 import functools
 import inspect
-import warnings
 import sys
+import unittest.mock
+import warnings
+from typing import Any
+from typing import Callable
+from typing import cast
+from typing import Dict
+from typing import Generator
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import overload
+from typing import Tuple
+from typing import TypeVar
+from typing import Union
 
 import pytest
 
-from ._util import get_mock_module, parse_ini_boolean
+from ._util import get_mock_module
+from ._util import parse_ini_boolean
 
 _T = TypeVar("_T")
 

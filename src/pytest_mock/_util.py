@@ -1,6 +1,6 @@
-from typing import Union, Any
+from typing import Union
 
-_mock_module: Any = None
+_mock_module = None
 
 
 def get_mock_module(config):

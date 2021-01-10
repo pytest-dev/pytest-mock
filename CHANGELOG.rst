@@ -1,3 +1,13 @@
+3.5.1 (2021-01-10)
+------------------
+
+* Use ``inspect.getattr_static`` instead of resorting to ``object.__getattribute__``
+  magic. This should better comply with objects which implement a custom descriptor
+  protocol. Thanks `@yesthesoup`_ for the PR (`#224`_).
+
+.. _@yesthesoup: https://github.com/yesthesoup
+.. _#224: https://github.com/pytest-dev/pytest-mock/pull/224
+
 3.5.0 (2021-01-04)
 ------------------
 

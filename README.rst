@@ -25,7 +25,7 @@ Besides undoing the mocking automatically after the end of the test, it also pro
 nice utilities such as ``spy`` and ``stub``, and uses pytest introspection when
 comparing calls.
 
-|python| |version| |anaconda| |ci| |coverage| |black|
+|python| |version| |anaconda| |ci| |coverage| |black| |pre-commit|
 
 .. |version| image:: http://img.shields.io/pypi/v/pytest-mock.svg
   :target: https://pypi.python.org/pypi/pytest-mock
@@ -44,6 +44,9 @@ comparing calls.
 
 .. |black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
   :target: https://github.com/ambv/black
+
+.. |pre-commit| image:: https://results.pre-commit.ci/badge/github/pytest-dev/pytest-mock/master.svg
+   :target: https://results.pre-commit.ci/latest/github/pytest-dev/pytest-mock/master
 
 `Professionally supported pytest-mock is now available <https://tidelift.com/subscription/pkg/pypi-pytest_mock?utm_source=pypi-pytest-mock&utm_medium=referral&utm_campaign=readme>`_
 

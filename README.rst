@@ -120,11 +120,11 @@ Spy
 ---
 
 The ``mocker.spy`` object acts exactly like the original method in all cases, except the spy
-also tracks method calls, return values and exceptions raised.
+also tracks function/method calls, return values and exceptions raised.
 
 .. code-block:: python
 
-    def test_spy(mocker):
+    def test_spy_method(mocker):
         class Foo(object):
             def bar(self, v):
                 return v * 2
@@ -135,9 +135,18 @@ also tracks method calls, return values and exceptions raised.
 
         spy.assert_called_once_with(21)
         assert spy.spy_return == 42
+        
+    def test_spy_function(mocker):
+        # mymodule declares `myfunction` which just returns 42
+        import mymodule
+        
+        spy = mocker.spy(mymodule, "myfunction")        
+        assert mymodule.myfunction() == 42
+        assert spy.call_count == 1
+        assert spy.spy_return == 42
 
 The object returned by ``mocker.spy`` is a ``MagicMock`` object, so all standard checking functions
-are available (like ``assert_called_once_with`` in the example above).
+are available (like ``assert_called_once_with`` or ``call_count`` in the examples above).
 
 In addition, spy objects contain two extra attributes:
 
@@ -145,7 +154,7 @@ In addition, spy objects contain two extra attributes:
 * ``spy_exception``: contain the last exception value raised by the spied function/method when
   it was last called, or ``None`` if no exception was raised.
 
-``mocker.spy`` also works for class and static methods.
+Besides functions and normal methods, ``mocker.spy`` also works for class and static methods.
 
 As of version 3.0.0, ``mocker.spy`` also works with ``async def`` functions.
 

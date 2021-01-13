@@ -135,12 +135,12 @@ also tracks function/method calls, return values and exceptions raised.
 
         spy.assert_called_once_with(21)
         assert spy.spy_return == 42
-        
+
     def test_spy_function(mocker):
         # mymodule declares `myfunction` which just returns 42
         import mymodule
-        
-        spy = mocker.spy(mymodule, "myfunction")        
+
+        spy = mocker.spy(mymodule, "myfunction")
         assert mymodule.myfunction() == 42
         assert spy.call_count == 1
         assert spy.spy_return == 42

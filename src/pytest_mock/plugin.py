@@ -267,7 +267,7 @@ class MockerFixture:
 
         def dict(
             self,
-            in_dict: Mapping[Any, Any],
+            in_dict: Union[Mapping[Any, Any], str],
             values: Union[Mapping[Any, Any], Iterable[Tuple[Any, Any]]] = (),
             clear: bool = False,
             **kwargs: Any

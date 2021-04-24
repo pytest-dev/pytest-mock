@@ -279,13 +279,6 @@ If you really intend to mock a context manager, ``mocker.patch.context_manager``
 which won't issue the above warning.
 
 
-Requirements
-============
-
-* Python 3.5+
-* pytest
-
-
 Install
 =======
 

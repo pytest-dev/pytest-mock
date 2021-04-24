@@ -1,3 +1,12 @@
+3.5.2 (UNRELEASED)
+------------------
+
+* Correct type annotations for ``mocker.patch.object`` to also include the string form.
+  Thanks `@plannigan`_ for the PR (`#235`_).
+
+.. _@plannigan: https://github.com/plannigan
+.. _#235: https://github.com/pytest-dev/pytest-mock/pull/235
+
 3.5.1 (2021-01-10)
 ------------------
 

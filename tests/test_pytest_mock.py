@@ -191,9 +191,9 @@ def test_mocker_resetall(mocker: MockerFixture) -> None:
     assert not open.called
     assert listdir.return_value == "foo"
     assert list(open.side_effect) == ["baz"]
-    
+
     mocker.resetall(return_value=True, side_effect=True)
-    
+
     assert isinstance(listdir.return_value, mocker.Mock)
     assert open.side_effect is None
 

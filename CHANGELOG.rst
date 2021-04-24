@@ -1,10 +1,16 @@
-3.5.2 (UNRELEASED)
+3.6.0 (2021-04-24)
 ------------------
+
+* pytest-mock no longer supports Python 3.5.
 
 * Correct type annotations for ``mocker.patch.object`` to also include the string form.
   Thanks `@plannigan`_ for the PR (`#235`_).
 
+* ``reset_all`` now supports ``return_value`` and ``side_effect`` keyword arguments. Thanks `@alex-marty`_ for the PR (`#214`_).
+
+.. _@alex-marty: https://github.com/alex-marty
 .. _@plannigan: https://github.com/plannigan
+.. _#214: https://github.com/pytest-dev/pytest-mock/pull/214
 .. _#235: https://github.com/pytest-dev/pytest-mock/pull/235
 
 3.5.1 (2021-01-10)

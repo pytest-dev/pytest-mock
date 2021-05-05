@@ -70,7 +70,12 @@ class MockerFixture:
         :param bool side_effect: Reset the side_effect of mocks.
         """
         for m in self._mocks:
-            m.reset_mock(return_value=return_value, side_effect=side_effect)
+
+            if isinstance(m, self.Mock):
+                m.reset_mock(return_value=return_value, side_effect=side_effect)
+                continue
+
+            m.reset_mock()
 
     def stopall(self) -> None:
         """

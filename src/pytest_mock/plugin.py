@@ -16,6 +16,7 @@ from typing import Mapping
 from typing import Optional
 from typing import overload
 from typing import Tuple
+from typing import Type
 from typing import TypeVar
 from typing import Union
 
@@ -69,8 +70,18 @@ class MockerFixture:
         :param bool return_value: Reset the return_value of mocks.
         :param bool side_effect: Reset the side_effect of mocks.
         """
+        supports_reset_mock_with_args: Tuple[Type[Any], ...]
+        if hasattr(self, "AsyncMock"):
+            supports_reset_mock_with_args = (self.Mock, self.AsyncMock)
+        else:
+            supports_reset_mock_with_args = (self.Mock,)
+
         for m in self._mocks:
-            m.reset_mock(return_value=return_value, side_effect=side_effect)
+            # See issue #237.
+            if isinstance(m, supports_reset_mock_with_args):
+                m.reset_mock(return_value=return_value, side_effect=side_effect)
+            else:
+                m.reset_mock()
 
     def stopall(self) -> None:
         """

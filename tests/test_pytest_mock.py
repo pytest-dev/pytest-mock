@@ -310,6 +310,9 @@ def test_spy_reset(mocker: MockerFixture) -> None:
     assert spy.spy_return == 30
     assert spy.spy_exception is None
 
+    # Testing spy can still be reset (#237).
+    mocker.resetall()
+
     with pytest.raises(ValueError):
         Foo().bar(0)
     assert spy.spy_return is None

@@ -1,3 +1,12 @@
+3.6.1 (UNRELEASED)
+------------------
+
+* Fix ``mocker.resetall()`` when using ``mocker.spy()`` (`#237`_). Thanks `@blaxter`_ for the report and `@shadycuz`_ for the PR.
+
+.. _@blaxter: https://github.com/blaxter
+.. _@shadycuz: https://github.com/shadycuz
+.. _#237: https://github.com/pytest-dev/pytest-mock/issues/237
+
 3.6.0 (2021-04-24)
 ------------------
 

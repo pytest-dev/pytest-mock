@@ -1,4 +1,4 @@
-3.6.1 (UNRELEASED)
+3.6.1 (2021-05-06)
 ------------------
 
 * Fix ``mocker.resetall()`` when using ``mocker.spy()`` (`#237`_). Thanks `@blaxter`_ for the report and `@shadycuz`_ for the PR.

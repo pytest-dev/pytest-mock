@@ -23,7 +23,8 @@ for line in md_text.splitlines():
         if first_heading_found:
             break
         first_heading_found = True
-    output_lines.append(line)
+    else:
+        output_lines.append(line)
 
 output_fn = this_dir / "latest-release-notes.md"
 output_fn.write_text("\n".join(output_lines), encoding="UTF-8")

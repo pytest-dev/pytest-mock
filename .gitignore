@@ -60,3 +60,4 @@ docs/_build/
 .idea
 .vscode
 /src/pytest_mock/_version.py
+scripts/latest-release-notes.md

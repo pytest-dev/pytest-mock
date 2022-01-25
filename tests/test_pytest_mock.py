@@ -211,7 +211,7 @@ class TestMockerStub:
     def test_repr_with_name(self, mocker: MockerFixture) -> None:
         test_name = "funny walk"
         stub = mocker.stub(name=test_name)
-        assert "name={!r}".format(test_name) in repr(stub)
+        assert f"name={test_name!r}" in repr(stub)
 
     def __test_failure_message(self, mocker: MockerFixture, **kwargs: Any) -> None:
         expected_name = kwargs.get("name") or "mock"
@@ -267,19 +267,19 @@ def test_instance_method_spy_exception(
 ) -> None:
     class Foo:
         def bar(self, arg):
-            raise exc_cls("Error with {}".format(arg))
+            raise exc_cls(f"Error with {arg}")
 
     foo = Foo()
     spy = mocker.spy(foo, "bar")
 
     expected_calls = []
     for i, v in enumerate([10, 20]):
-        with pytest.raises(exc_cls, match="Error with {}".format(v)):
+        with pytest.raises(exc_cls, match=f"Error with {v}"):
             foo.bar(arg=v)
 
         expected_calls.append(mocker.call(arg=v))
         assert foo.bar.call_args_list == expected_calls  # type:ignore[attr-defined]
-        assert str(spy.spy_exception) == "Error with {}".format(v)
+        assert str(spy.spy_exception) == f"Error with {v}"
 
 
 def test_instance_method_spy_autospec_true(mocker: MockerFixture) -> None:
@@ -296,7 +296,7 @@ def test_instance_method_spy_autospec_true(mocker: MockerFixture) -> None:
 
 
 def test_spy_reset(mocker: MockerFixture) -> None:
-    class Foo(object):
+    class Foo:
         def bar(self, x):
             if x == 0:
                 raise ValueError("invalid x")

@@ -1,3 +1,9 @@
+3.7.0 (UNRELEASED)
+------------------
+
+* Python 3.10 now officially supported.
+* Dropped support for Python 3.6.
+
 3.6.1 (2021-05-06)
 ------------------
 

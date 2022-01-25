@@ -475,7 +475,6 @@ def test_callable_like_spy(testdir: Any, mocker: MockerFixture) -> None:
     assert spy.spy_return == 20
 
 
-@pytest.mark.asyncio
 async def test_instance_async_method_spy(mocker: MockerFixture) -> None:
     class Foo:
         async def bar(self, arg):
@@ -728,6 +727,12 @@ def test_standalone_mock(testdir: Any) -> None:
 @pytest.mark.usefixtures("needs_assert_rewrite")
 def test_detailed_introspection(testdir: Any) -> None:
     """Check that the "mock_use_standalone" is being used."""
+    testdir.makeini(
+        """
+        [pytest]
+        asyncio_mode=auto
+        """
+    )
     testdir.makepyfile(
         """
         def test(mocker):
@@ -769,11 +774,16 @@ def test_detailed_introspection(testdir: Any) -> None:
 @pytest.mark.usefixtures("needs_assert_rewrite")
 def test_detailed_introspection_async(testdir: Any) -> None:
     """Check that the "mock_use_standalone" is being used."""
+    testdir.makeini(
+        """
+        [pytest]
+        asyncio_mode=auto
+        """
+    )
     testdir.makepyfile(
         """
         import pytest
 
-        @pytest.mark.asyncio
         async def test(mocker):
             m = mocker.AsyncMock()
             await m('fo')
@@ -824,6 +834,12 @@ def test_assert_called_with_unicode_arguments(mocker: MockerFixture) -> None:
 
 def test_plain_stopall(testdir: Any) -> None:
     """patch.stopall() in a test should not cause an error during unconfigure (#137)"""
+    testdir.makeini(
+        """
+        [pytest]
+        asyncio_mode=auto
+        """
+    )
     testdir.makepyfile(
         """
         import random
@@ -958,6 +974,12 @@ def test_abort_patch_context_manager_with_stale_pyc(testdir: Any) -> None:
 
 
 def test_used_with_class_scope(testdir: Any) -> None:
+    testdir.makeini(
+        """
+        [pytest]
+        asyncio_mode=auto
+        """
+    )
     testdir.makepyfile(
         """
         import pytest
@@ -982,6 +1004,12 @@ def test_used_with_class_scope(testdir: Any) -> None:
 
 
 def test_used_with_module_scope(testdir: Any) -> None:
+    testdir.makeini(
+        """
+        [pytest]
+        asyncio_mode=auto
+        """
+    )
     testdir.makepyfile(
         """
         import pytest
@@ -1004,7 +1032,12 @@ def test_used_with_module_scope(testdir: Any) -> None:
 
 
 def test_used_with_package_scope(testdir: Any) -> None:
-    """..."""
+    testdir.makeini(
+        """
+        [pytest]
+        asyncio_mode=auto
+        """
+    )
     testdir.makepyfile(
         """
         import pytest
@@ -1027,7 +1060,12 @@ def test_used_with_package_scope(testdir: Any) -> None:
 
 
 def test_used_with_session_scope(testdir: Any) -> None:
-    """..."""
+    testdir.makeini(
+        """
+        [pytest]
+        asyncio_mode=auto
+        """
+    )
     testdir.makepyfile(
         """
         import pytest

@@ -33,7 +33,7 @@ comparing calls.
 .. |anaconda| image:: https://img.shields.io/conda/vn/conda-forge/pytest-mock.svg
     :target: https://anaconda.org/conda-forge/pytest-mock
 
-.. |ci| image:: https://github.com/pytest-dev/pytest-mock/workflows/build/badge.svg
+.. |ci| image:: https://github.com/pytest-dev/pytest-mock/workflows/test/badge.svg
   :target: https://github.com/pytest-dev/pytest-mock/actions
 
 .. |coverage| image:: https://coveralls.io/repos/github/pytest-dev/pytest-mock/badge.svg?branch=master

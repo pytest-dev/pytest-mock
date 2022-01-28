@@ -31,6 +31,7 @@ jobs:
     - name: Generate release notes
       run: |
         pip install pypandoc
+        sudo apt-get install pandoc
         python scripts/gen-release-notes.py
     - name: GitHub Release
       uses: softprops/action-gh-release@v1

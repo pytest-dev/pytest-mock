@@ -1,4 +1,4 @@
-3.7.0 (UNRELEASED)
+3.7.0 (2022-01-28)
 ------------------
 
 * Python 3.10 now officially supported.

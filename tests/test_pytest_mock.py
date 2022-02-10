@@ -31,7 +31,7 @@ def needs_assert_rewrite(pytestconfig):
     """
     Fixture which skips requesting test if assertion rewrite is disabled (#102)
 
-    Making this a fixture to avoid acessing pytest's config in the global context.
+    Making this a fixture to avoid accessing pytest's config in the global context.
     """
     option = pytestconfig.getoption("assertmode")
     if option != "rewrite":

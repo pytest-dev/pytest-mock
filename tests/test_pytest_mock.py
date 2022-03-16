@@ -2,6 +2,7 @@ import os
 import platform
 import re
 import sys
+import warnings
 from contextlib import contextmanager
 from typing import Any
 from typing import Callable
@@ -758,12 +759,12 @@ def test_detailed_introspection(testdir: Any) -> None:
         "*Args:",
         "*assert ('fo',) == ('',)",
         "*At index 0 diff: 'fo' != ''*",
-        "*Use -v to get the full diff*",
+        "*Use -v to get more diff*",
         "*Kwargs:*",
         "*assert {} == {'bar': 4}*",
         "*Right contains* more item*",
         "*{'bar': 4}*",
-        "*Use -v to get the full diff*",
+        "*Use -v to get more diff*",
     ]
     result.stdout.fnmatch_lines(expected_lines)
 
@@ -799,12 +800,12 @@ def test_detailed_introspection_async(testdir: Any) -> None:
         "*Args:",
         "*assert ('fo',) == ('',)",
         "*At index 0 diff: 'fo' != ''*",
-        "*Use -v to get the full diff*",
+        "*Use -v to get more diff*",
         "*Kwargs:*",
         "*assert {} == {'bar': 4}*",
         "*Right contains* more item*",
         "*{'bar': 4}*",
-        "*Use -v to get the full diff*",
+        "*Use -v to get more diff*",
     ]
     result.stdout.fnmatch_lines(expected_lines)
 
@@ -929,7 +930,7 @@ def test_patch_context_manager_with_context_manager(mocker: MockerFixture) -> No
 
     a = A()
 
-    with pytest.warns(None) as warn_record:
+    with warnings.catch_warnings(record=True) as warn_record:
         with mocker.patch.context_manager(a, "doIt", return_value=True):
             assert a.doIt() is True
 

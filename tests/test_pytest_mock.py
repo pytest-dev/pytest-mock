@@ -708,10 +708,14 @@ def test_monkeypatch_no_terminal(testdir: Any) -> None:
 
 def test_standalone_mock(testdir: Any) -> None:
     """Check that the "mock_use_standalone" is being used."""
+    pytest.importorskip("mock")
+
     testdir.makepyfile(
         """
+        import mock
+
         def test_foo(mocker):
-            pass
+            assert mock.MagicMock is mocker.MagicMock
     """
     )
     testdir.makeini(
@@ -721,8 +725,7 @@ def test_standalone_mock(testdir: Any) -> None:
     """
     )
     result = testdir.runpytest_subprocess()
-    assert result.ret == 3
-    result.stderr.fnmatch_lines(["*No module named 'mock'*"])
+    assert result.ret == 0
 
 
 @pytest.mark.usefixtures("needs_assert_rewrite")

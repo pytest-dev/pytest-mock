@@ -1,3 +1,7 @@
+Releases
+========
+
+
 3.7.0 (2022-01-28)
 ------------------
 
@@ -414,8 +418,7 @@ Breaking Changes
   option.
   Thanks `@asfaltboy`_ for the PR (`#36`_).
 
-* ``mocker.stub()`` now allows passing in the name for the constructed `Mock
-  <https://docs.python.org/3/library/unittest.mock.html#the-mock-class>`_
+* ``mocker.stub()`` now allows passing in the name for the constructed ``Mock``
   object instead of having to set it using the internal ``_mock_name`` attribute
   directly. This is useful for debugging as the name is used in the mock's
   ``repr`` string as well as related assertion failure messages.

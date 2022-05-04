@@ -25,7 +25,7 @@ Besides undoing the mocking automatically after the end of the test, it also pro
 nice utilities such as ``spy`` and ``stub``, and uses pytest introspection when
 comparing calls.
 
-|python| |version| |anaconda| |docs| |ci| |coverage| |black| |pre-commit| 
+|python| |version| |anaconda| |docs| |ci| |coverage| |black| |pre-commit|
 
 .. |version| image:: http://img.shields.io/pypi/v/pytest-mock.svg
   :target: https://pypi.python.org/pypi/pytest-mock

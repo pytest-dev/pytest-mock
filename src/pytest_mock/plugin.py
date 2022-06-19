@@ -159,6 +159,19 @@ class MockerFixture:
             self.mock_module.MagicMock(spec=lambda *args, **kwargs: None, name=name),
         )
 
+    def async_stub(self, name: Optional[str] = None) -> unittest.mock.AsyncMock:
+        """
+        Create a async stub method. It accepts any arguments. Ideal to register to
+        callbacks in tests.
+
+        :param name: the constructed stub's name as used in repr
+        :return: Stub object.
+        """
+        return cast(
+            unittest.mock.AsyncMock,
+            self.mock_module.AsyncMock(spec=lambda *args, **kwargs: None, name=name),
+        )
+
     class _Patcher:
         """
         Object to provide the same interface as mock.patch, mock.patch.object,

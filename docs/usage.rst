@@ -110,3 +110,7 @@ It may receive an optional name that is shown in its ``repr``, useful for debugg
 
         foo(stub)
         stub.assert_called_once_with('foo', 'bar')
+
+.. seealso::
+
+    ``async_stub`` method, which actually the same as ``stub`` but makes async stub.

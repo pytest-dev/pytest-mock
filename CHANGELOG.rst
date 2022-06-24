@@ -2,6 +2,12 @@ Releases
 ========
 
 
+3.8.0 (unreleased)
+------------------
+* Add ``MockerFixture.async_mock`` method. Thanks `@PerchunPak`_ for the PR.
+
+.. _@PerchunPak: https://github.com/PerchunPak
+
 3.7.0 (2022-01-28)
 ------------------
 

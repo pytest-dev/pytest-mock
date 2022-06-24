@@ -159,7 +159,7 @@ class MockerFixture:
             self.mock_module.MagicMock(spec=lambda *args, **kwargs: None, name=name),
         )
 
-    if sys.version_info[:2] >= 3.8:
+    if sys.version_info[:2] >= (3, 8):
         
         def async_stub(self, name: Optional[str] = None) -> unittest.mock.AsyncMock:
             """

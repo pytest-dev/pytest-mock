@@ -232,6 +232,10 @@ class TestMockerStub:
     @pytest.mark.parametrize("name", (None, "", "f", "The Castle of aaarrrrggh"))
     def test_failure_message_with_name(self, mocker: MagicMock, name: str) -> None:
         self.__test_failure_message(mocker, name=name)
+        
+    @pytest.mark.skipif(not hasattr(unittest.mock, "AsyncMock"), reason="This Python version doesn't have `AsyncMock`.")
+    def test_async_stub_type(self) -> None:
+        assert type(mocker.async_stub()) == unittest.mock.AsyncMock
 
 
 def test_instance_method_spy(mocker: MockerFixture) -> None:

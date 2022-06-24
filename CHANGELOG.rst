@@ -2,11 +2,13 @@ Releases
 ========
 
 
-3.8.0 (unreleased)
+3.8.0 (2022-06-24)
 ------------------
-* Add ``MockerFixture.async_mock`` method. Thanks `@PerchunPak`_ for the PR.
+
+* Add ``MockerFixture.async_mock`` method. Thanks `@PerchunPak`_ for the PR (`#296`_).
 
 .. _@PerchunPak: https://github.com/PerchunPak
+.. _#296: https://github.com/pytest-dev/pytest-mock/pull/296
 
 3.7.0 (2022-01-28)
 ------------------

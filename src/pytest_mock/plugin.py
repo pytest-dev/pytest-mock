@@ -30,8 +30,7 @@ _T = TypeVar("_T")
 if sys.version_info[:2] > (3, 7):
     AsyncMockType = unittest.mock.AsyncMock
 else:
-    import mock
-    AsyncMockType = mock.AsyncMock
+    AsyncMockType = Any
 
 
 class PytestMockWarning(UserWarning):

@@ -1,6 +1,12 @@
 Releases
 ========
 
+3.8.1 (2022-06-24)
+------------------
+
+* Fix regression caused by an explicit ``mock`` dependency in the code (`#298`_).
+
+.. _#298: https://github.com/pytest-dev/pytest-mock/issues/298
 
 3.8.0 (2022-06-24)
 ------------------

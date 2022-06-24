@@ -27,6 +27,12 @@ from ._util import parse_ini_boolean
 
 _T = TypeVar("_T")
 
+if sys.version_info[:2] > (3, 7):
+    AsyncMockType = unittest.mock.AsyncMock
+else:
+    import mock
+    AsyncMockType = mock.AsyncMock
+
 
 class PytestMockWarning(UserWarning):
     """Base class for all warnings emitted by pytest-mock."""
@@ -157,6 +163,19 @@ class MockerFixture:
         return cast(
             unittest.mock.MagicMock,
             self.mock_module.MagicMock(spec=lambda *args, **kwargs: None, name=name),
+        )
+
+    def async_stub(self, name: Optional[str] = None) -> AsyncMockType:
+        """
+        Create a async stub method. It accepts any arguments. Ideal to register to
+        callbacks in tests.
+
+        :param name: the constructed stub's name as used in repr
+        :return: Stub object.
+        """
+        return cast(
+            unittest.mock.AsyncMock,
+            self.mock_module.AsyncMock(spec=lambda *args, **kwargs: None, name=name),
         )
 
     class _Patcher:

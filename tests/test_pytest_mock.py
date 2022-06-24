@@ -237,8 +237,8 @@ class TestMockerStub:
         self.__test_failure_message(mocker, name=name)
         
     @pytest.mark.skipif(sys.version_info[:2] < (3, 8), reason="This Python version doesn't have `AsyncMock`.")
-    def test_async_stub_type(self) -> None:
-        assert type(mocker.async_stub()) == AsyncMock
+    def test_async_stub_type(self, mocker: MockerFixture) -> None:
+        assert isinstance(mocker.async_stub(), AsyncMock)
 
 
 def test_instance_method_spy(mocker: MockerFixture) -> None:

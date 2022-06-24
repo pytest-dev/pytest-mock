@@ -26,6 +26,9 @@ skip_pypy = pytest.mark.skipif(
 # Python 3.8 changed the output formatting (bpo-35500), which has been ported to mock 3.0
 NEW_FORMATTING = sys.version_info >= (3, 8)
 
+if sys.version_info[:2] >= (3, 8):
+    from unittest.mock import AsyncMock
+
 
 @pytest.fixture
 def needs_assert_rewrite(pytestconfig):
@@ -233,9 +236,9 @@ class TestMockerStub:
     def test_failure_message_with_name(self, mocker: MagicMock, name: str) -> None:
         self.__test_failure_message(mocker, name=name)
         
-    @pytest.mark.skipif(not hasattr(unittest.mock, "AsyncMock"), reason="This Python version doesn't have `AsyncMock`.")
+    @pytest.mark.skipif(sys.version_info[:2] < (3, 8), reason="This Python version doesn't have `AsyncMock`.")
     def test_async_stub_type(self) -> None:
-        assert type(mocker.async_stub()) == unittest.mock.AsyncMock
+        assert type(mocker.async_stub()) == AsyncMock
 
 
 def test_instance_method_spy(mocker: MockerFixture) -> None:

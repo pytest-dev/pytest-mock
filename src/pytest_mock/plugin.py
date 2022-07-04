@@ -173,7 +173,7 @@ class MockerFixture:
         :return: Stub object.
         """
         return cast(
-            unittest.mock.AsyncMock,
+            AsyncMockType,
             self.mock_module.AsyncMock(spec=lambda *args, **kwargs: None, name=name),
         )
 

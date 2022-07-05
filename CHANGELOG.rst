@@ -4,7 +4,7 @@ Releases
 3.8.2 (2022-07-05)
 ------------------
 
-- Fixed `AsyncMock` support for Python 3.7+ in `mocker.async_stub` (`#302`_).
+- Fixed ``AsyncMock`` support for Python 3.7+ in ``mocker.async_stub`` (`#302`_).
 
 .. _#302: https://github.com/pytest-dev/pytest-mock/pull/302
 

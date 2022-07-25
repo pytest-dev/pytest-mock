@@ -19,12 +19,12 @@ repos:
         language: python
         additional_dependencies: [pygments, restructuredtext_lint]
   - repo: https://github.com/asottile/reorder_python_imports
-    rev: v3.8.1
+    rev: v3.8.2
     hooks:
     - id: reorder-python-imports
       args: ['--application-directories=.:src']
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v0.961  # NOTE: keep this in sync with tox.ini
+    rev: v0.971  # NOTE: keep this in sync with tox.ini
     hooks:
       - id: mypy
         files: ^(src|tests)

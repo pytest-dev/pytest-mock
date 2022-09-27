@@ -54,6 +54,7 @@ class MockerFixture:
         self.Mock = mock_module.Mock
         self.MagicMock = mock_module.MagicMock
         self.NonCallableMock = mock_module.NonCallableMock
+        self.NonCallableMagicMock = mock_module.NonCallableMagicMock
         self.PropertyMock = mock_module.PropertyMock
         if hasattr(mock_module, "AsyncMock"):
             self.AsyncMock = mock_module.AsyncMock

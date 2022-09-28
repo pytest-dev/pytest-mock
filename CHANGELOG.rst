@@ -1,6 +1,13 @@
 Releases
 ========
 
+3.9.0 (2022-09-28)
+------------------
+
+* Expose ``NonCallableMagicMock`` via the ``mocker`` fixture (`#318`_).
+
+.. _#318: https://github.com/pytest-dev/pytest-mock/pull/318
+
 3.8.2 (2022-07-05)
 ------------------
 

@@ -1100,3 +1100,53 @@ def test_used_with_session_scope(testdir: Any) -> None:
     result = testdir.runpytest_subprocess()
     assert "AssertionError" not in result.stderr.str()
     result.stdout.fnmatch_lines("* 1 passed in *")
+
+
+def test_stop_patch(mocker):
+    class UnSpy:
+        def foo(self):
+            return 42
+
+    m = mocker.patch.object(UnSpy, "foo", return_value=0)
+    assert UnSpy().foo() == 0
+    mocker.stop(m)
+    assert UnSpy().foo() == 42
+
+
+def test_stop_instance_patch(mocker):
+    class UnSpy:
+        def foo(self):
+            return 42
+
+    m = mocker.patch.object(UnSpy, "foo", return_value=0)
+    un_spy = UnSpy()
+    assert un_spy.foo() == 0
+    mocker.stop(m)
+    assert un_spy.foo() == 42
+
+
+def test_stop_spy(mocker):
+    class UnSpy:
+        def foo(self):
+            return 42
+
+    spy = mocker.spy(UnSpy, "foo")
+    assert UnSpy().foo() == 42
+    assert spy.call_count == 1
+    mocker.stop(spy)
+    assert UnSpy().foo() == 42
+    assert spy.call_count == 1
+
+
+def test_stop_instance_spy(mocker):
+    class UnSpy:
+        def foo(self):
+            return 42
+
+    spy = mocker.spy(UnSpy, "foo")
+    un_spy = UnSpy()
+    assert un_spy.foo() == 42
+    assert spy.call_count == 1
+    mocker.stop(spy)
+    assert un_spy.foo() == 42
+    assert spy.call_count == 1

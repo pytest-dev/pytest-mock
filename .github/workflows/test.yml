@@ -22,6 +22,8 @@ jobs:
             tox_env: "py39"
           - python: "3.10"
             tox_env: "py310"
+          - python: "3.11-dev"
+            tox_env: "py311"
 
     steps:
     - uses: actions/checkout@v3

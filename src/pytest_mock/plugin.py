@@ -100,6 +100,10 @@ class MockerFixture:
         self._patches_and_mocks.clear()
 
     def stop(self, mock: unittest.mock.MagicMock) -> None:
+        """
+        Stops a previous patch or spy call by passing the ``MagicMock`` object
+        returned by it.
+        """
         for index, (p, m) in enumerate(self._patches_and_mocks):
             if mock is m:
                 p.stop()

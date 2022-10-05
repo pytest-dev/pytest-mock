@@ -1112,6 +1112,9 @@ def test_stop_patch(mocker):
     mocker.stop(m)
     assert UnSpy().foo() == 42
 
+    with pytest.raises(ValueError):
+        mocker.stop(m)
+
 
 def test_stop_instance_patch(mocker):
     class UnSpy:

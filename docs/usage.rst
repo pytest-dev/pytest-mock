@@ -21,6 +21,7 @@ The supported methods are:
 * `mocker.patch.multiple <https://docs.python.org/3/library/unittest.mock.html#patch-multiple>`_
 * `mocker.patch.dict <https://docs.python.org/3/library/unittest.mock.html#patch-dict>`_
 * `mocker.stopall <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.patch.stopall>`_
+* `mocker.stop <https://docs.python.org/3/library/unittest.mock.html#patch-methods-start-and-stop>`_
 * ``mocker.resetall()``: calls `reset_mock() <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock.reset_mock>`_ in all mocked objects up to this point.
 
 Also, as a convenience, these names from the ``mock`` module are accessible directly from ``mocker``:
@@ -93,6 +94,27 @@ As of version 3.0.0, ``mocker.spy`` also works with ``async def`` functions.
     they had to be renamed (see `#175`_ for details).
 
     .. _#175: https://github.com/pytest-dev/pytest-mock/issues/175
+
+As of version 3.10, spying can be also selectively stopped.
+
+.. code-block:: python
+
+    def test_with_unspy(mocker):
+        class Foo:
+            def bar(self):
+                return 42
+
+        spy = mocker.spy(Foo, "bar")
+        foo = Foo()
+        assert foo.bar() == 42
+        assert spy.call_count == 1
+        mocker.stop(spy)
+        assert foo.bar() == 42
+        assert spy.call_count == 1
+
+
+``mocker.stop()`` can also be used by ``mocker.patch`` calls.
+
 
 Stub
 ----

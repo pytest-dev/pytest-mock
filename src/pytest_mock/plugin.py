@@ -44,11 +44,10 @@ class MockerFixture:
     """
 
     def __init__(self, config: Any) -> None:
-        self._patches = []  # type: List[Any]
-        self._mocks = []  # type: List[Any]
+        self._patches_and_mocks: List[Tuple[Any, unittest.mock.MagicMock]] = []
         self.mock_module = mock_module = get_mock_module(config)
         self.patch = self._Patcher(
-            self._patches, self._mocks, mock_module
+            self._patches_and_mocks, mock_module
         )  # type: MockerFixture._Patcher
         # aliases for convenience
         self.Mock = mock_module.Mock
@@ -82,8 +81,10 @@ class MockerFixture:
         else:
             supports_reset_mock_with_args = (self.Mock,)
 
-        for m in self._mocks:
+        for p, m in self._patches_and_mocks:
             # See issue #237.
+            if not hasattr(m, "reset_mock"):
+                continue
             if isinstance(m, supports_reset_mock_with_args):
                 m.reset_mock(return_value=return_value, side_effect=side_effect)
             else:
@@ -94,10 +95,22 @@ class MockerFixture:
         Stop all patchers started by this fixture. Can be safely called multiple
         times.
         """
-        for p in reversed(self._patches):
+        for p, m in reversed(self._patches_and_mocks):
             p.stop()
-        self._patches[:] = []
-        self._mocks[:] = []
+        self._patches_and_mocks.clear()
+
+    def stop(self, mock: unittest.mock.MagicMock) -> None:
+        """
+        Stops a previous patch or spy call by passing the ``MagicMock`` object
+        returned by it.
+        """
+        for index, (p, m) in enumerate(self._patches_and_mocks):
+            if mock is m:
+                p.stop()
+                del self._patches_and_mocks[index]
+                break
+        else:
+            raise ValueError("This mock object is not registered")
 
     def spy(self, obj: object, name: str) -> unittest.mock.MagicMock:
         """
@@ -186,9 +199,8 @@ class MockerFixture:
 
         DEFAULT = object()
 
-        def __init__(self, patches, mocks, mock_module):
-            self._patches = patches
-            self._mocks = mocks
+        def __init__(self, patches_and_mocks, mock_module):
+            self.__patches_and_mocks = patches_and_mocks
             self.mock_module = mock_module
 
         def _start_patch(
@@ -200,9 +212,8 @@ class MockerFixture:
             """
             p = mock_func(*args, **kwargs)
             mocked = p.start()  # type: unittest.mock.MagicMock
-            self._patches.append(p)
+            self.__patches_and_mocks.append((p, mocked))
             if hasattr(mocked, "reset_mock"):
-                self._mocks.append(mocked)
                 # check if `mocked` is actually a mock object, as depending on autospec or target
                 # parameters `mocked` can be anything
                 if hasattr(mocked, "__enter__") and warn_on_mock_enter:

@@ -1,6 +1,13 @@
 Releases
 ========
 
+3.10.0 (2022-10-05)
+-------------------
+
+* Added new ``mocker.stop(m)`` method to stop specific ``mocker.patch`` or ``mocker.spy`` calls (`#319`_).
+
+.. _#319: https://github.com/pytest-dev/pytest-mock/pull/319
+
 3.9.0 (2022-09-28)
 ------------------
 

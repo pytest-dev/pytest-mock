@@ -113,6 +113,9 @@ As of version 3.10, spying can be also selectively stopped.
         assert spy.call_count == 1
 
 
+``mocker.stop()`` can also be used by ``mocker.patch`` calls.
+
+
 Stub
 ----
 

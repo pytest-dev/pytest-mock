@@ -20,6 +20,11 @@ output_lines = []
 first_heading_found = False
 for line in md_text.splitlines():
     if line.startswith("# "):
+        # Skip the first section (normally # Releases).
+        pass
+    elif line.startswith("## "):
+        # First second-level section, note it and skip the text,
+        # as we are only interested in the individual release items.
         if first_heading_found:
             break
         first_heading_found = True

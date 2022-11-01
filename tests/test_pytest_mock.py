@@ -638,7 +638,6 @@ def test_monkeypatch_ini(testdir: Any, mocker: MockerFixture) -> None:
 
     testdir.makepyfile(
         """
-        import py.code
         def test_foo(mocker):
             stub = mocker.stub()
             assert stub.assert_called_with.__module__ == stub.__module__

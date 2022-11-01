@@ -19,7 +19,7 @@ repos:
         language: python
         additional_dependencies: [pygments, restructuredtext_lint]
   - repo: https://github.com/asottile/reorder_python_imports
-    rev: v3.8.5
+    rev: v3.9.0
     hooks:
     - id: reorder-python-imports
       args: ['--application-directories=.:src']

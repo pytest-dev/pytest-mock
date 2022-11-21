@@ -38,9 +38,9 @@ setup(
         "Topic :: Software Development :: Testing",
     ],
     project_urls={
-        'Documentation': 'https://pytest-mock.readthedocs.io/en/latest/',
-        'Changelog': 'https://pytest-mock.readthedocs.io/en/latest/changelog.html',
-        'Source': 'https://github.com/pytest-dev/pytest-mock/',
-        'Tracker': 'https://github.com/pytest-dev/pytest-mock/issues',
+        "Documentation": "https://pytest-mock.readthedocs.io/en/latest/",
+        "Changelog": "https://pytest-mock.readthedocs.io/en/latest/changelog.html",
+        "Source": "https://github.com/pytest-dev/pytest-mock/",
+        "Tracker": "https://github.com/pytest-dev/pytest-mock/issues",
     },
 )

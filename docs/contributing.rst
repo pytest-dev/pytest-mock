@@ -15,7 +15,7 @@ Tests are run with ``tox``, you can run the baseline environments before submitt
 
 .. code-block:: console
 
-    $ tox -e py38,linting
+    $ tox -e py38
 
 Style checks and formatting are done automatically during commit courtesy of
 `pre-commit <https://pre-commit.com>`_.

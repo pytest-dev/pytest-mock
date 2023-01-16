@@ -4,23 +4,19 @@ import re
 import sys
 import warnings
 from contextlib import contextmanager
-from typing import Any
-from typing import Callable
-from typing import Generator
-from typing import Tuple
-from typing import Type
+from typing import Any, Callable, Generator, Tuple, Type
 from unittest.mock import MagicMock
 
 import pytest
 
-from pytest_mock import MockerFixture
-from pytest_mock import PytestMockWarning
+from pytest_mock import MockerFixture, PytestMockWarning
 
 pytest_plugins = "pytester"
 
 # could not make some of the tests work on PyPy, patches are welcome!
 skip_pypy = pytest.mark.skipif(
-    platform.python_implementation() == "PyPy", reason="could not make it work on pypy"
+    platform.python_implementation() == "PyPy",
+    reason="could not make it work on pypy",
 )
 
 # Python 3.8 changed the output formatting (bpo-35500), which has been ported to mock 3.0
@@ -41,7 +37,7 @@ def needs_assert_rewrite(pytestconfig):
     if option != "rewrite":
         pytest.skip(
             "this test needs assertion rewrite to work but current option "
-            'is "{}"'.format(option)
+            f"is '{option}'",
         )
 
 
@@ -62,7 +58,8 @@ class UnixFS:
 
 @pytest.fixture
 def check_unix_fs_mocked(
-    tmpdir: Any, mocker: MockerFixture
+    tmpdir: Any,
+    mocker: MockerFixture,
 ) -> Callable[[Any, Any], None]:
     """
     performs a standard test in a UnixFS, assuming that both `os.remove` and
@@ -107,7 +104,8 @@ def mock_using_patch_multiple(mocker: MockerFixture) -> Tuple[MagicMock, MagicMo
 
 
 @pytest.mark.parametrize(
-    "mock_fs", [mock_using_patch_object, mock_using_patch, mock_using_patch_multiple]
+    "mock_fs",
+    [mock_using_patch_object, mock_using_patch, mock_using_patch_multiple],
 )
 def test_mock_patches(
     mock_fs: Any,
@@ -167,7 +165,8 @@ def test_mock_patch_dict_resetall(mocker: MockerFixture) -> None:
         pytest.param(
             "seal",
             marks=pytest.mark.skipif(
-                sys.version_info < (3, 7), reason="seal is present on 3.7 and above"
+                sys.version_info < (3, 7),
+                reason="seal is present on 3.7 and above",
             ),
         ),
     ],
@@ -285,7 +284,7 @@ def test_instance_method_spy_exception(
     spy = mocker.spy(foo, "bar")
 
     expected_calls = []
-    for i, v in enumerate([10, 20]):
+    for _, v in enumerate([10, 20]):
         with pytest.raises(exc_cls, match=f"Error with {v}"):
             foo.bar(arg=v)
 
@@ -302,7 +301,8 @@ def test_instance_method_spy_autospec_true(mocker: MockerFixture) -> None:
     foo = Foo()
     spy = mocker.spy(foo, "bar")
     with pytest.raises(
-        AttributeError, match="'function' object has no attribute 'fake_assert_method'"
+        AttributeError,
+        match="'function' object has no attribute 'fake_assert_method'",
     ):
         spy.fake_assert_method(arg=5)
 
@@ -475,7 +475,7 @@ def test_callable_like_spy(testdir: Any, mocker: MockerFixture) -> None:
                 return x * 2
 
         call_like = CallLike()
-    """
+    """,
     )
     testdir.syspathinsert()
 
@@ -523,7 +523,7 @@ def assert_argument_introspection(left: Any, right: Any) -> Generator[None, None
         yield
     except AssertionError as e:
         # this may be a bit too assuming, but seems nicer then hard-coding
-        import _pytest.assertion.util as util
+        from _pytest.assertion import util
 
         # NOTE: we assert with either verbose or not, depending on how our own
         #       test was run by examining sys.argv
@@ -641,13 +641,13 @@ def test_monkeypatch_ini(testdir: Any, mocker: MockerFixture) -> None:
         def test_foo(mocker):
             stub = mocker.stub()
             assert stub.assert_called_with.__module__ == stub.__module__
-    """
+    """,
     )
     testdir.makeini(
         """
         [pytest]
         mock_traceback_monkeypatch = false
-    """
+    """,
     )
     result = testdir.runpytest_subprocess()
     assert result.ret == 0
@@ -685,7 +685,7 @@ def test_monkeypatch_native(testdir: Any) -> None:
             stub = mocker.stub()
             stub(1, greet='hello')
             stub.assert_called_once_with(1, greet='hey')
-    """
+    """,
     )
     result = testdir.runpytest_subprocess("--tb=native")
     assert result.ret == 1
@@ -709,7 +709,7 @@ def test_monkeypatch_no_terminal(testdir: Any) -> None:
             stub = mocker.stub()
             stub(1, greet='hello')
             stub.assert_called_once_with(1, greet='hey')
-        """
+        """,
     )
     result = testdir.runpytest_subprocess("-p", "no:terminal", "-s")
     assert result.ret == 1
@@ -726,13 +726,13 @@ def test_standalone_mock(testdir: Any) -> None:
 
         def test_foo(mocker):
             assert mock.MagicMock is mocker.MagicMock
-    """
+    """,
     )
     testdir.makeini(
         """
         [pytest]
         mock_use_standalone_module = true
-    """
+    """,
     )
     result = testdir.runpytest_subprocess()
     assert result.ret == 0
@@ -745,7 +745,7 @@ def test_detailed_introspection(testdir: Any) -> None:
         """
         [pytest]
         asyncio_mode=auto
-        """
+        """,
     )
     testdir.makepyfile(
         """
@@ -753,7 +753,7 @@ def test_detailed_introspection(testdir: Any) -> None:
             m = mocker.Mock()
             m('fo')
             m.assert_called_once_with('', bar=4)
-    """
+    """,
     )
     result = testdir.runpytest("-s")
     if NEW_FORMATTING:
@@ -783,7 +783,8 @@ def test_detailed_introspection(testdir: Any) -> None:
 
 
 @pytest.mark.skipif(
-    sys.version_info < (3, 8), reason="AsyncMock is present on 3.8 and above"
+    sys.version_info < (3, 8),
+    reason="AsyncMock is present on 3.8 and above",
 )
 @pytest.mark.usefixtures("needs_assert_rewrite")
 def test_detailed_introspection_async(testdir: Any) -> None:
@@ -792,7 +793,7 @@ def test_detailed_introspection_async(testdir: Any) -> None:
         """
         [pytest]
         asyncio_mode=auto
-        """
+        """,
     )
     testdir.makepyfile(
         """
@@ -802,7 +803,7 @@ def test_detailed_introspection_async(testdir: Any) -> None:
             m = mocker.AsyncMock()
             await m('fo')
             m.assert_awaited_once_with('', bar=4)
-    """
+    """,
     )
     result = testdir.runpytest("-s")
     expected_lines = [
@@ -831,7 +832,7 @@ def test_missing_introspection(testdir: Any) -> None:
             mock('foo')
             mock('test')
             mock.assert_called_once_with('test')
-    """
+    """,
     )
     result = testdir.runpytest()
     assert "pytest introspection follows:" not in result.stdout.str()
@@ -852,7 +853,7 @@ def test_plain_stopall(testdir: Any) -> None:
         """
         [pytest]
         asyncio_mode=auto
-        """
+        """,
     )
     testdir.makepyfile(
         """
@@ -866,7 +867,7 @@ def test_plain_stopall(testdir: Any) -> None:
             patcher.start()
             assert get_random_number() == 5
             mocker.mock_module.patch.stopall()
-    """
+    """,
     )
     result = testdir.runpytest_subprocess()
     result.stdout.fnmatch_lines("* 1 passed in *")
@@ -888,7 +889,8 @@ def test_warn_patch_object_context_manager(mocker: MockerFixture) -> None:
     )
 
     with pytest.warns(
-        PytestMockWarning, match=re.escape(expected_warning_msg)
+        PytestMockWarning,
+        match=re.escape(expected_warning_msg),
     ) as warn_record:
         with mocker.patch.object(a, "doIt", return_value=True):
             assert a.doIt() is True
@@ -905,7 +907,8 @@ def test_warn_patch_context_manager(mocker: MockerFixture) -> None:
     )
 
     with pytest.warns(
-        PytestMockWarning, match=re.escape(expected_warning_msg)
+        PytestMockWarning,
+        match=re.escape(expected_warning_msg),
     ) as warn_record:
         with mocker.patch("json.loads"):
             pass
@@ -929,7 +932,7 @@ def test_context_manager_patch_example(mocker: MockerFixture) -> None:
         with dummy_module.MyContext() as v:
             return v
 
-    m = mocker.patch.object(dummy_module, "MyContext")
+    _ = mocker.patch.object(dummy_module, "MyContext")
     assert isinstance(my_func(), mocker.MagicMock)
 
 
@@ -963,7 +966,7 @@ def test_abort_patch_context_manager_with_stale_pyc(testdir: Any) -> None:
         def check(mocker):
             mocker.patch.object(C, "x", 2)
             assert C.x == 2
-    """
+    """,
     )
     testdir.syspathinsert()
 
@@ -972,7 +975,7 @@ def test_abort_patch_context_manager_with_stale_pyc(testdir: Any) -> None:
         from c import check
         def test_foo(mocker):
             check(mocker)
-    """
+    """,
     )
     result = testdir.runpytest()
     result.assert_outcomes(passed=1)
@@ -992,7 +995,7 @@ def test_used_with_class_scope(testdir: Any) -> None:
         """
         [pytest]
         asyncio_mode=auto
-        """
+        """,
     )
     testdir.makepyfile(
         """
@@ -1010,7 +1013,7 @@ def test_used_with_class_scope(testdir: Any) -> None:
         class TestGetRandomNumber(unittest.TestCase):
             def test_get_random_number(self):
                 assert get_random_number() == 5
-    """
+    """,
     )
     result = testdir.runpytest_subprocess()
     assert "AssertionError" not in result.stderr.str()
@@ -1022,7 +1025,7 @@ def test_used_with_module_scope(testdir: Any) -> None:
         """
         [pytest]
         asyncio_mode=auto
-        """
+        """,
     )
     testdir.makepyfile(
         """
@@ -1038,7 +1041,7 @@ def test_used_with_module_scope(testdir: Any) -> None:
 
         def test_get_random_number():
             assert get_random_number() == 5
-    """
+    """,
     )
     result = testdir.runpytest_subprocess()
     assert "AssertionError" not in result.stderr.str()
@@ -1050,7 +1053,7 @@ def test_used_with_package_scope(testdir: Any) -> None:
         """
         [pytest]
         asyncio_mode=auto
-        """
+        """,
     )
     testdir.makepyfile(
         """
@@ -1066,7 +1069,7 @@ def test_used_with_package_scope(testdir: Any) -> None:
 
         def test_get_random_number():
             assert get_random_number() == 5
-    """
+    """,
     )
     result = testdir.runpytest_subprocess()
     assert "AssertionError" not in result.stderr.str()
@@ -1078,7 +1081,7 @@ def test_used_with_session_scope(testdir: Any) -> None:
         """
         [pytest]
         asyncio_mode=auto
-        """
+        """,
     )
     testdir.makepyfile(
         """
@@ -1094,7 +1097,7 @@ def test_used_with_session_scope(testdir: Any) -> None:
 
         def test_get_random_number():
             assert get_random_number() == 5
-    """
+    """,
     )
     result = testdir.runpytest_subprocess()
     assert "AssertionError" not in result.stderr.str()

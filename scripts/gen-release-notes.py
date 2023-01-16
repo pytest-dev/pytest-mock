@@ -13,7 +13,10 @@ import pypandoc
 this_dir = Path(__file__).parent
 rst_text = (this_dir.parent / "CHANGELOG.rst").read_text(encoding="UTF-8")
 md_text = pypandoc.convert_text(
-    rst_text, "md", format="rst", extra_args=["--wrap=preserve"]
+    rst_text,
+    "md",
+    format="rst",
+    extra_args=["--wrap=preserve"],
 )
 
 output_lines = []

@@ -5,25 +5,26 @@ import inspect
 import sys
 import unittest.mock
 import warnings
-from typing import Any
-from typing import Callable
-from typing import cast
-from typing import Dict
-from typing import Generator
-from typing import Iterable
-from typing import List
-from typing import Mapping
-from typing import Optional
-from typing import overload
-from typing import Tuple
-from typing import Type
-from typing import TypeVar
-from typing import Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generator,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    cast,
+    overload,
+)
 
 import pytest
 
-from ._util import get_mock_module
-from ._util import parse_ini_boolean
+from ._util import get_mock_module, parse_ini_boolean
 
 _T = TypeVar("_T")
 
@@ -47,7 +48,8 @@ class MockerFixture:
         self._patches_and_mocks: List[Tuple[Any, unittest.mock.MagicMock]] = []
         self.mock_module = mock_module = get_mock_module(config)
         self.patch = self._Patcher(
-            self._patches_and_mocks, mock_module
+            self._patches_and_mocks,
+            mock_module,
         )  # type: MockerFixture._Patcher
         # aliases for convenience
         self.Mock = mock_module.Mock
@@ -67,7 +69,10 @@ class MockerFixture:
             self.seal = mock_module.seal
 
     def resetall(
-        self, *, return_value: bool = False, side_effect: bool = False
+        self,
+        *,
+        return_value: bool = False,
+        side_effect: bool = False,
     ) -> None:
         """
         Call reset_mock() on all patchers started by this fixture.
@@ -81,7 +86,7 @@ class MockerFixture:
         else:
             supports_reset_mock_with_args = (self.Mock,)
 
-        for p, m in self._patches_and_mocks:
+        for _, m in self._patches_and_mocks:
             # See issue #237.
             if not hasattr(m, "reset_mock"):
                 continue
@@ -95,7 +100,7 @@ class MockerFixture:
         Stop all patchers started by this fixture. Can be safely called multiple
         times.
         """
-        for p, m in reversed(self._patches_and_mocks):
+        for p, _ in reversed(self._patches_and_mocks):
             p.stop()
         self._patches_and_mocks.clear()
 
@@ -123,7 +128,8 @@ class MockerFixture:
         """
         method = getattr(obj, name)
         if inspect.isclass(obj) and isinstance(
-            inspect.getattr_static(obj, name), (classmethod, staticmethod)
+            inspect.getattr_static(obj, name),
+            (classmethod, staticmethod),
         ):
             # Can't use autospec classmethod or staticmethod objects before 3.7
             # see: https://bugs.python.org/issue23078
@@ -204,7 +210,11 @@ class MockerFixture:
             self.mock_module = mock_module
 
         def _start_patch(
-            self, mock_func: Any, warn_on_mock_enter: bool, *args: Any, **kwargs: Any
+            self,
+            mock_func: Any,
+            warn_on_mock_enter: bool,
+            *args: Any,
+            **kwargs: Any,
         ) -> unittest.mock.MagicMock:
             """Patches something by calling the given function from the mock
             module, registering the patch to stop it later and returns the
@@ -241,7 +251,7 @@ class MockerFixture:
             spec_set: Optional[object] = None,
             autospec: Optional[object] = None,
             new_callable: object = None,
-            **kwargs: Any
+            **kwargs: Any,
         ) -> unittest.mock.MagicMock:
             """API to mock.patch.object"""
             if new is self.DEFAULT:
@@ -257,7 +267,7 @@ class MockerFixture:
                 spec_set=spec_set,
                 autospec=autospec,
                 new_callable=new_callable,
-                **kwargs
+                **kwargs,
             )
 
         def context_manager(
@@ -270,7 +280,7 @@ class MockerFixture:
             spec_set: Optional[builtins.object] = None,
             autospec: Optional[builtins.object] = None,
             new_callable: builtins.object = None,
-            **kwargs: Any
+            **kwargs: Any,
         ) -> unittest.mock.MagicMock:
             """This is equivalent to mock.patch.object except that the returned mock
             does not issue a warning when used as a context manager."""
@@ -287,7 +297,7 @@ class MockerFixture:
                 spec_set=spec_set,
                 autospec=autospec,
                 new_callable=new_callable,
-                **kwargs
+                **kwargs,
             )
 
         def multiple(
@@ -298,7 +308,7 @@ class MockerFixture:
             spec_set: Optional[builtins.object] = None,
             autospec: Optional[builtins.object] = None,
             new_callable: Optional[builtins.object] = None,
-            **kwargs: Any
+            **kwargs: Any,
         ) -> Dict[str, unittest.mock.MagicMock]:
             """API to mock.patch.multiple"""
             return self._start_patch(
@@ -310,7 +320,7 @@ class MockerFixture:
                 spec_set=spec_set,
                 autospec=autospec,
                 new_callable=new_callable,
-                **kwargs
+                **kwargs,
             )
 
         def dict(
@@ -318,7 +328,7 @@ class MockerFixture:
             in_dict: Union[Mapping[Any, Any], str],
             values: Union[Mapping[Any, Any], Iterable[Tuple[Any, Any]]] = (),
             clear: bool = False,
-            **kwargs: Any
+            **kwargs: Any,
         ) -> Any:
             """API to mock.patch.dict"""
             return self._start_patch(
@@ -327,7 +337,7 @@ class MockerFixture:
                 in_dict,
                 values=values,
                 clear=clear,
-                **kwargs
+                **kwargs,
             )
 
         @overload
@@ -340,7 +350,7 @@ class MockerFixture:
             spec_set: Optional[builtins.object] = ...,
             autospec: Optional[builtins.object] = ...,
             new_callable: None = ...,
-            **kwargs: Any
+            **kwargs: Any,
         ) -> unittest.mock.MagicMock:
             ...
 
@@ -354,7 +364,7 @@ class MockerFixture:
             spec_set: Optional[builtins.object] = ...,
             autospec: Optional[builtins.object] = ...,
             new_callable: None = ...,
-            **kwargs: Any
+            **kwargs: Any,
         ) -> _T:
             ...
 
@@ -368,7 +378,7 @@ class MockerFixture:
             spec_set: Optional[builtins.object],
             autospec: Optional[builtins.object],
             new_callable: Callable[[], _T],
-            **kwargs: Any
+            **kwargs: Any,
         ) -> _T:
             ...
 
@@ -383,7 +393,7 @@ class MockerFixture:
             autospec: Optional[builtins.object] = ...,
             *,
             new_callable: Callable[[], _T],
-            **kwargs: Any
+            **kwargs: Any,
         ) -> _T:
             ...
 
@@ -396,7 +406,7 @@ class MockerFixture:
             spec_set: Optional[builtins.object] = None,
             autospec: Optional[builtins.object] = None,
             new_callable: Optional[Callable[[], Any]] = None,
-            **kwargs: Any
+            **kwargs: Any,
         ) -> Any:
             """API to mock.patch"""
             if new is self.DEFAULT:
@@ -411,7 +421,7 @@ class MockerFixture:
                 spec_set=spec_set,
                 autospec=autospec,
                 new_callable=new_callable,
-                **kwargs
+                **kwargs,
             )
 
 
@@ -437,7 +447,9 @@ _mock_module_originals = {}  # type: Dict[str, Any]
 
 
 def assert_wrapper(
-    __wrapped_mock_method__: Callable[..., Any], *args: Any, **kwargs: Any
+    __wrapped_mock_method__: Callable[..., Any],
+    *args: Any,
+    **kwargs: Any,
 ) -> None:
     __tracebackhide__ = True
     try:

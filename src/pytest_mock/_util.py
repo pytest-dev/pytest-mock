@@ -12,7 +12,7 @@ def get_mock_module(config):
     global _mock_module
     if _mock_module is None:
         use_standalone_module = parse_ini_boolean(
-            config.getini("mock_use_standalone_module")
+            config.getini("mock_use_standalone_module"),
         )
         if use_standalone_module:
             import mock
@@ -33,4 +33,4 @@ def parse_ini_boolean(value: Union[bool, str]) -> bool:
         return True
     if value.lower() == "false":
         return False
-    raise ValueError("unknown string for bool: %r" % value)
+    raise ValueError(f"unknown string for bool: {value!r}")

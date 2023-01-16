@@ -4,12 +4,17 @@ import re
 import sys
 import warnings
 from contextlib import contextmanager
-from typing import Any, Callable, Generator, Tuple, Type
+from typing import Any
+from typing import Callable
+from typing import Generator
+from typing import Tuple
+from typing import Type
 from unittest.mock import MagicMock
 
 import pytest
 
-from pytest_mock import MockerFixture, PytestMockWarning
+from pytest_mock import MockerFixture
+from pytest_mock import PytestMockWarning
 
 pytest_plugins = "pytester"
 

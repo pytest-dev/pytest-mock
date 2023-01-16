@@ -5,26 +5,25 @@ import inspect
 import sys
 import unittest.mock
 import warnings
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Generator,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-    cast,
-    overload,
-)
+from typing import Any
+from typing import Callable
+from typing import cast
+from typing import Dict
+from typing import Generator
+from typing import Iterable
+from typing import List
+from typing import Mapping
+from typing import Optional
+from typing import overload
+from typing import Tuple
+from typing import Type
+from typing import TypeVar
+from typing import Union
 
 import pytest
 
-from ._util import get_mock_module, parse_ini_boolean
+from ._util import get_mock_module
+from ._util import parse_ini_boolean
 
 _T = TypeVar("_T")
 

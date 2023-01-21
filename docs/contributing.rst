@@ -11,11 +11,11 @@ and install ``pytest-mock`` in editable mode with ``dev`` extras:
     $ pip install --editable .[dev]
     $ pre-commit install
 
-Tests are run with ``tox``, you can run the baseline environments before submitting a PR:
+Tests are run with ``nox``, you can run the baseline environments before submitting a PR:
 
 .. code-block:: console
 
-    $ tox -e py38
+    $ nox -e tests-3.10
 
 Style checks and formatting are done automatically during commit courtesy of
 `pre-commit <https://pre-commit.com>`_.

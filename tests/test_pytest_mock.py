@@ -419,7 +419,6 @@ def test_class_method_with_metaclass_spy(mocker: MockerFixture) -> None:
         pass
 
     class Foo:
-
         __metaclass__ = MetaFoo
 
         @classmethod

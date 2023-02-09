@@ -42,5 +42,10 @@ jobs:
     - name: Test
       run: |
         tox -e ${{ matrix.tox_env }}
+        
+  check-package:
+    runs-on: ubuntu-latest  
+    steps:
+    - uses: actions/checkout@v3
     - name: Build and Check Package
       uses: hynek/build-and-inspect-python-package@v1.5

@@ -38,3 +38,5 @@ jobs:
     - name: Test
       run: |
         tox -e ${{ matrix.tox_env }}
+    - name: Build and Check Package
+      uses: hynek/build-and-inspect-python-package@v1.5

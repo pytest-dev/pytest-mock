@@ -16,7 +16,8 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: "3.7"
-    - uses: hynek/build-and-inspect-python-package@v1.5
+    - name: Build and Check Package
+      uses: hynek/build-and-inspect-python-package@v1.5
     - name: Publish package to PyPI
       uses: pypa/gh-action-pypi-publish@master
       with:

@@ -1,6 +1,6 @@
 name: test
 
-on: 
+on:
   push:
     branches:
     - main
@@ -10,7 +10,7 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-jobs:  
+jobs:
 
   check-package:
     runs-on: ubuntu-latest

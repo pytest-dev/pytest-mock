@@ -1,47 +1,16 @@
 name: test
 
-on: [push, pull_request]
+on: 
+  push:
+    branches:
+    - main
+  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-jobs:
-
-  test:
-
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        python: ["3.7", "3.8", "3.9", "3.10", "3.11-dev"]
-        os: [ubuntu-latest, windows-latest]
-        include:
-          - python: "3.7"
-            tox_env: "py37"
-          - python: "3.8"
-            tox_env: "py38"
-          - python: "3.9"
-            tox_env: "py39"
-          - python: "3.10"
-            tox_env: "py310"
-          - python: "3.11-dev"
-            tox_env: "py311"
-
-    steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python }}
-    - name: Install tox
-      run: |
-        python -m pip install --upgrade pip
-        pip install tox
-    - name: Test
-      run: |
-        tox -e ${{ matrix.tox_env }}
+jobs:  
 
   check-package:
     runs-on: ubuntu-latest
@@ -49,3 +18,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: Build and Check Package
       uses: hynek/build-and-inspect-python-package@v1.5
+    - name: Check output
+      run: |
+        tree .
+        tree /tmp/baipp

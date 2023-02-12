@@ -20,6 +20,7 @@ setup(
     author_email="nicoddemus@gmail.com",
     description="Thin-wrapper around the mock package for easier use with pytest",
     long_description=open("README.rst", encoding="utf-8").read(),
+    long_description_content_type="text/x-rst",
     keywords="pytest mock",
     extras_require={"dev": ["pre-commit", "nox", "pytest-asyncio"]},
     classifiers=[

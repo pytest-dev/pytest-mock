@@ -15,6 +15,8 @@ jobs:
     environment: deploy
     permissions:
       id-token: write # For PyPI trusted publishers.
+    env:
+      SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.event.inputs.version }}
 
     steps:
     - uses: actions/checkout@v3

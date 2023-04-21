@@ -9,6 +9,9 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
+    environment: deploy
+    permissions:
+      id-token: write # For PyPI trusted publishers.
 
     steps:
     - uses: actions/checkout@v3
@@ -24,9 +27,6 @@ jobs:
 
     - name: Publish package to PyPI
       uses: pypa/gh-action-pypi-publish@master
-      with:
-        user: __token__
-        password: ${{ secrets.pypi_token }}
 
     - name: Set up Python
       uses: actions/setup-python@v4.5.0

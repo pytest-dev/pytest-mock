@@ -1,9 +1,12 @@
 name: deploy
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version'
+        required: true
+        default: '1.2.3'
 
 jobs:
 
@@ -27,6 +30,10 @@ jobs:
 
     - name: Publish package to PyPI
       uses: pypa/gh-action-pypi-publish@master
+
+    - uses: actions-ecosystem/action-push-tag@v1
+      with:
+        tag: v${{ github.event.inputs.version }}
 
     - name: Set up Python
       uses: actions/setup-python@v4.5.0

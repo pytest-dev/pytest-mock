@@ -31,7 +31,7 @@ jobs:
         path: dist
 
     - name: Publish package to PyPI
-      uses: pypa/gh-action-pypi-publish@master
+      uses: pypa/gh-action-pypi-publish@v1.8.5
       with:
         repository-url: https://test.pypi.org/legacy/
 

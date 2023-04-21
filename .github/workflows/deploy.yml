@@ -1,14 +1,20 @@
 name: deploy
 
 on:
-  push:
-    tags:
-      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version'
+        required: true
+        default: '1.2.3'
 
 jobs:
 
   deploy:
     runs-on: ubuntu-latest
+    environment: deploy
+    permissions:
+      id-token: write # For PyPI trusted publishers.
 
     steps:
     - uses: actions/checkout@v3
@@ -24,9 +30,10 @@ jobs:
 
     - name: Publish package to PyPI
       uses: pypa/gh-action-pypi-publish@master
+
+    - uses: actions-ecosystem/action-push-tag@v1
       with:
-        user: __token__
-        password: ${{ secrets.pypi_token }}
+        tag: v${{ github.event.inputs.version }}
 
     - name: Set up Python
       uses: actions/setup-python@v4.5.0

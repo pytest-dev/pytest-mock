@@ -32,25 +32,23 @@ jobs:
 
     - name: Publish package to PyPI
       uses: pypa/gh-action-pypi-publish@v1.8.5
+
+    - uses: actions-ecosystem/action-push-tag@v1
       with:
-        repository-url: https://test.pypi.org/legacy/
+        tag: v${{ github.event.inputs.version }}
 
-#    - uses: actions-ecosystem/action-push-tag@v1
-#      with:
-#        tag: v${{ github.event.inputs.version }}
+    - name: Set up Python
+      uses: actions/setup-python@v4.5.0
+      with:
+        python-version: "3.10"
 
-#    - name: Set up Python
-#      uses: actions/setup-python@v4.5.0
-#      with:
-#        python-version: "3.10"
-#
-#    - name: Generate release notes
-#      run: |
-#        pip install pypandoc
-#        sudo apt-get install pandoc
-#        python scripts/gen-release-notes.py
-#
-#    - name: GitHub Release
-#      uses: softprops/action-gh-release@v1
-#      with:
-#        body_path: scripts/latest-release-notes.md
+    - name: Generate release notes
+      run: |
+        pip install pypandoc
+        sudo apt-get install pandoc
+        python scripts/gen-release-notes.py
+
+    - name: GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        body_path: scripts/latest-release-notes.md

@@ -486,6 +486,7 @@ def assert_has_calls_wrapper(
                 expect_calls = args[1]
                 introspection = ""
                 from itertools import zip_longest
+
                 for actual_call, expect_call in zip_longest(actual_calls, expect_calls):
                     actual_args, actual_kwargs = actual_call
                     _, expect_args, expect_kwargs = expect_call
@@ -526,7 +527,9 @@ def wrap_assert_called_once_with(*args: Any, **kwargs: Any) -> None:
 
 def wrap_assert_has_calls(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
-    assert_has_calls_wrapper(_mock_module_originals["assert_has_calls"], *args, **kwargs)
+    assert_has_calls_wrapper(
+        _mock_module_originals["assert_has_calls"], *args, **kwargs
+    )
 
 
 def wrap_assert_any_call(*args: Any, **kwargs: Any) -> None:

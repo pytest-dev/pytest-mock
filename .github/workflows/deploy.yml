@@ -14,7 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: deploy
     permissions:
-      id-token: write # For PyPI trusted publishers.
+      id-token: write  # For PyPI trusted publishers.
+      contents: write  # For tag and release notes.
     env:
       SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.event.inputs.version }}
 

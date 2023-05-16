@@ -24,7 +24,7 @@ repos:
     - id: reorder-python-imports
       args: ['--application-directories=.:src']
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.2.0  # NOTE: keep this in sync with tox.ini
+    rev: v1.3.0  # NOTE: keep this in sync with tox.ini
     hooks:
       - id: mypy
         files: ^(src|tests)

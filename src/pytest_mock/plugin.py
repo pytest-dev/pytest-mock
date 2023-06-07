@@ -205,13 +205,15 @@ class MockerFixture:
 
         def _start_patch(
             self, mock_func: Any, warn_on_mock_enter: bool, *args: Any, **kwargs: Any
-        ) -> unittest.mock.MagicMock:
+        ) -> Union[unittest.mock.MagicMock, unittest.mock.AsyncMock]:
             """Patches something by calling the given function from the mock
             module, registering the patch to stop it later and returns the
             mock object resulting from the mock call.
             """
             p = mock_func(*args, **kwargs)
-            mocked = p.start()  # type: unittest.mock.MagicMock
+            mocked = (
+                p.start()
+            )  # type: Union[unittest.mock.MagicMock, unittest.mock.AsyncMock]
             self.__patches_and_mocks.append((p, mocked))
             if hasattr(mocked, "reset_mock"):
                 # check if `mocked` is actually a mock object, as depending on autospec or target

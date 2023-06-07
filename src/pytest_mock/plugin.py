@@ -112,7 +112,9 @@ class MockerFixture:
         else:
             raise ValueError("This mock object is not registered")
 
-    def spy(self, obj: object, name: str) -> unittest.mock.MagicMock:
+    def spy(
+        self, obj: object, name: str
+    ) -> Union[unittest.mock.MagicMock, unittest.mock.AsyncMock]:
         """
         Create a spy of method. It will run method normally, but it is now
         possible to use `mock` call features with it, like call count.
@@ -244,7 +246,7 @@ class MockerFixture:
             autospec: Optional[object] = None,
             new_callable: object = None,
             **kwargs: Any
-        ) -> unittest.mock.MagicMock:
+        ) -> Union[unittest.mock.MagicMock, unittest.mock.AsyncMock]:
             """API to mock.patch.object"""
             if new is self.DEFAULT:
                 new = self.mock_module.DEFAULT
@@ -273,7 +275,7 @@ class MockerFixture:
             autospec: Optional[builtins.object] = None,
             new_callable: builtins.object = None,
             **kwargs: Any
-        ) -> unittest.mock.MagicMock:
+        ) -> Union[unittest.mock.MagicMock, unittest.mock.AsyncMock]:
             """This is equivalent to mock.patch.object except that the returned mock
             does not issue a warning when used as a context manager."""
             if new is self.DEFAULT:
@@ -301,7 +303,7 @@ class MockerFixture:
             autospec: Optional[builtins.object] = None,
             new_callable: Optional[builtins.object] = None,
             **kwargs: Any
-        ) -> Dict[str, unittest.mock.MagicMock]:
+        ) -> Dict[str, Union[unittest.mock.MagicMock, unittest.mock.AsyncMock]]:
             """API to mock.patch.multiple"""
             return self._start_patch(
                 self.mock_module.patch.multiple,
@@ -343,7 +345,7 @@ class MockerFixture:
             autospec: Optional[builtins.object] = ...,
             new_callable: None = ...,
             **kwargs: Any
-        ) -> unittest.mock.MagicMock:
+        ) -> Union[unittest.mock.MagicMock, unittest.mock.AsyncMock]:
             ...
 
         @overload

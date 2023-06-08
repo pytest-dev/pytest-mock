@@ -27,10 +27,16 @@ from ._util import parse_ini_boolean
 
 _T = TypeVar("_T")
 
-if sys.version_info[:2] > (3, 7):
+if sys.version_info >= (3, 8):
     AsyncMockType = unittest.mock.AsyncMock
+    MockType = Union[
+        unittest.mock.MagicMock,
+        unittest.mock.AsyncMock,
+        unittest.mock.NonCallableMagicMock,
+    ]
 else:
     AsyncMockType = Any
+    MockType = Union[unittest.mock.MagicMock, unittest.mock.NonCallableMagicMock]
 
 
 class PytestMockWarning(UserWarning):
@@ -112,9 +118,7 @@ class MockerFixture:
         else:
             raise ValueError("This mock object is not registered")
 
-    def spy(
-        self, obj: object, name: str
-    ) -> Union[unittest.mock.MagicMock, unittest.mock.AsyncMock]:
+    def spy(self, obj: object, name: str) -> MockType:
         """
         Create a spy of method. It will run method normally, but it is now
         possible to use `mock` call features with it, like call count.
@@ -207,15 +211,13 @@ class MockerFixture:
 
         def _start_patch(
             self, mock_func: Any, warn_on_mock_enter: bool, *args: Any, **kwargs: Any
-        ) -> Union[unittest.mock.MagicMock, unittest.mock.AsyncMock]:
+        ) -> MockType:
             """Patches something by calling the given function from the mock
             module, registering the patch to stop it later and returns the
             mock object resulting from the mock call.
             """
             p = mock_func(*args, **kwargs)
-            mocked = (
-                p.start()
-            )  # type: Union[unittest.mock.MagicMock, unittest.mock.AsyncMock]
+            mocked: MockType = p.start()
             self.__patches_and_mocks.append((p, mocked))
             if hasattr(mocked, "reset_mock"):
                 # check if `mocked` is actually a mock object, as depending on autospec or target
@@ -246,7 +248,7 @@ class MockerFixture:
             autospec: Optional[object] = None,
             new_callable: object = None,
             **kwargs: Any
-        ) -> Union[unittest.mock.MagicMock, unittest.mock.AsyncMock]:
+        ) -> MockType:
             """API to mock.patch.object"""
             if new is self.DEFAULT:
                 new = self.mock_module.DEFAULT
@@ -275,7 +277,7 @@ class MockerFixture:
             autospec: Optional[builtins.object] = None,
             new_callable: builtins.object = None,
             **kwargs: Any
-        ) -> Union[unittest.mock.MagicMock, unittest.mock.AsyncMock]:
+        ) -> MockType:
             """This is equivalent to mock.patch.object except that the returned mock
             does not issue a warning when used as a context manager."""
             if new is self.DEFAULT:
@@ -303,7 +305,7 @@ class MockerFixture:
             autospec: Optional[builtins.object] = None,
             new_callable: Optional[builtins.object] = None,
             **kwargs: Any
-        ) -> Dict[str, Union[unittest.mock.MagicMock, unittest.mock.AsyncMock]]:
+        ) -> Dict[str, MockType]:
             """API to mock.patch.multiple"""
             return self._start_patch(
                 self.mock_module.patch.multiple,
@@ -345,7 +347,7 @@ class MockerFixture:
             autospec: Optional[builtins.object] = ...,
             new_callable: None = ...,
             **kwargs: Any
-        ) -> Union[unittest.mock.MagicMock, unittest.mock.AsyncMock]:
+        ) -> MockType:
             ...
 
         @overload

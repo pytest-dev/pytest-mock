@@ -488,8 +488,18 @@ def assert_has_calls_wrapper(
                 from itertools import zip_longest
 
                 for actual_call, expect_call in zip_longest(actual_calls, expect_calls):
-                    actual_args, actual_kwargs = actual_call
-                    _, expect_args, expect_kwargs = expect_call
+                    if actual_call is not None:
+                        actual_args, actual_kwargs = actual_call
+                    else:
+                        actual_args = tuple()
+                        actual_kwargs = {}
+
+                    if expect_call is not None:
+                        _, expect_args, expect_kwargs = expect_call
+                    else:
+                        expect_args = tuple()
+                        expect_kwargs = {}
+
                     try:
                         assert actual_args == expect_args
                     except AssertionError as e_args:

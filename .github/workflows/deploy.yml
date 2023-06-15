@@ -14,7 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: deploy
     permissions:
-      id-token: write # For PyPI trusted publishers.
+      id-token: write  # For PyPI trusted publishers.
+      contents: write  # For tag and release notes.
     env:
       SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.event.inputs.version }}
 
@@ -33,9 +34,10 @@ jobs:
     - name: Publish package to PyPI
       uses: pypa/gh-action-pypi-publish@v1.8.5
 
-    - uses: actions-ecosystem/action-push-tag@v1
-      with:
-        tag: v${{ github.event.inputs.version }}
+    - name: Push tag
+      run: |
+        git tag v${{ github.event.inputs.version }} ${{ github.sha }}
+        git push origin v${{ github.event.inputs.version }}
 
     - name: Set up Python
       uses: actions/setup-python@v4.5.0

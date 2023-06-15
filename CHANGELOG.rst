@@ -6,7 +6,10 @@ UNRELEASED
 
 * Fixed introspection for failed ``assert_has_calls`` (`#365`_).
 
+* Updated type annotations for ``mocker.patch`` and ``mocker.spy`` (`#364`_).
+
 .. _#365: https://github.com/pytest-dev/pytest-mock/pull/365
+.. _#364: https://github.com/pytest-dev/pytest-mock/pull/364
 
 
 3.10.0 (2022-10-05)

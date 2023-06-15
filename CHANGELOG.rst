@@ -1,8 +1,8 @@
 Releases
 ========
 
-UNRELEASED
-----------
+3.11.0 (2023-06-15)
+-------------------
 
 * Fixed introspection for failed ``assert_has_calls`` (`#365`_).
 

@@ -630,6 +630,86 @@ def test_assert_has_calls(mocker: MockerFixture) -> None:
         stub.assert_has_calls([mocker.call("bar")])
 
 
+def test_assert_has_calls_multiple_calls(mocker: MockerFixture) -> None:
+    stub = mocker.stub()
+    stub("foo")
+    stub("bar")
+    stub("baz")
+    stub.assert_has_calls([mocker.call("foo"), mocker.call("bar"), mocker.call("baz")])
+    with assert_traceback():
+        stub.assert_has_calls(
+            [
+                mocker.call("foo"),
+                mocker.call("bar"),
+                mocker.call("baz"),
+                mocker.call("bat"),
+            ]
+        )
+    with assert_traceback():
+        stub.assert_has_calls(
+            [mocker.call("foo"), mocker.call("baz"), mocker.call("bar")]
+        )
+
+
+def test_assert_has_calls_multiple_calls_subset(mocker: MockerFixture) -> None:
+    stub = mocker.stub()
+    stub("foo")
+    stub("bar")
+    stub("baz")
+    stub.assert_has_calls([mocker.call("bar"), mocker.call("baz")])
+    with assert_traceback():
+        stub.assert_has_calls([mocker.call("foo"), mocker.call("baz")])
+    with assert_traceback():
+        stub.assert_has_calls(
+            [mocker.call("foo"), mocker.call("bar"), mocker.call("bat")]
+        )
+    with assert_traceback():
+        stub.assert_has_calls([mocker.call("baz"), mocker.call("bar")])
+
+
+def test_assert_has_calls_multiple_calls_any_order(mocker: MockerFixture) -> None:
+    stub = mocker.stub()
+    stub("foo")
+    stub("bar")
+    stub("baz")
+    stub.assert_has_calls(
+        [mocker.call("foo"), mocker.call("baz"), mocker.call("bar")], any_order=True
+    )
+    with assert_traceback():
+        stub.assert_has_calls(
+            [
+                mocker.call("foo"),
+                mocker.call("baz"),
+                mocker.call("bar"),
+                mocker.call("bat"),
+            ],
+            any_order=True,
+        )
+
+
+def test_assert_has_calls_multiple_calls_any_order_subset(
+    mocker: MockerFixture,
+) -> None:
+    stub = mocker.stub()
+    stub("foo")
+    stub("bar")
+    stub("baz")
+    stub.assert_has_calls([mocker.call("baz"), mocker.call("foo")], any_order=True)
+    with assert_traceback():
+        stub.assert_has_calls(
+            [mocker.call("baz"), mocker.call("foo"), mocker.call("bat")], any_order=True
+        )
+
+
+def test_assert_has_calls_no_calls(
+    mocker: MockerFixture,
+) -> None:
+    stub = mocker.stub()
+    stub.assert_has_calls([])
+    with assert_traceback():
+        stub.assert_has_calls([mocker.call("foo")])
+
+
 def test_monkeypatch_ini(testdir: Any, mocker: MockerFixture) -> None:
     # Make sure the following function actually tests something
     stub = mocker.stub()

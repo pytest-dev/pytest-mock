@@ -64,3 +64,4 @@ jobs:
       with:
         body_path: scripts/latest-release-notes.md
         files: dist/*
+        tag_name: v${{ github.event.inputs.version }}

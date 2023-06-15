@@ -701,6 +701,15 @@ def test_assert_has_calls_multiple_calls_any_order_subset(
         )
 
 
+def test_assert_has_calls_no_calls(
+    mocker: MockerFixture,
+) -> None:
+    stub = mocker.stub()
+    stub.assert_has_calls([])
+    with assert_traceback():
+        stub.assert_has_calls([mocker.call("foo")])
+
+
 def test_monkeypatch_ini(testdir: Any, mocker: MockerFixture) -> None:
     # Make sure the following function actually tests something
     stub = mocker.stub()

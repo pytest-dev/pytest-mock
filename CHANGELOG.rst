@@ -4,6 +4,18 @@ Releases
 3.11.1 (2023-06-15)
 -------------------
 
+(This release source code is identical to ``3.11.0`` except a small internal fix to deployment/CI)
+
+* Fixed introspection for failed ``assert_has_calls`` (`#365`_).
+
+* Updated type annotations for ``mocker.patch`` and ``mocker.spy`` (`#364`_).
+
+.. _#365: https://github.com/pytest-dev/pytest-mock/pull/365
+.. _#364: https://github.com/pytest-dev/pytest-mock/pull/364
+
+3.11.0 (2023-06-15)
+-------------------
+
 * Fixed introspection for failed ``assert_has_calls`` (`#365`_).
 
 * Updated type annotations for ``mocker.patch`` and ``mocker.spy`` (`#364`_).

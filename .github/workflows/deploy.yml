@@ -10,12 +10,8 @@ on:
 
 jobs:
 
-  deploy:
+  package:
     runs-on: ubuntu-latest
-    environment: deploy
-    permissions:
-      id-token: write  # For PyPI trusted publishers.
-      contents: write  # For tag and release notes.
     env:
       SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.event.inputs.version }}
 
@@ -24,6 +20,17 @@ jobs:
 
     - name: Build and Check Package
       uses: hynek/build-and-inspect-python-package@v1.5
+
+  deploy:
+    needs: package
+    runs-on: ubuntu-latest
+    environment: deploy
+    permissions:
+      id-token: write  # For PyPI trusted publishers.
+      contents: write  # For tag and release notes.
+
+    steps:
+    - uses: actions/checkout@v3
 
     - name: Download Package
       uses: actions/download-artifact@v3
@@ -36,7 +43,9 @@ jobs:
 
     - name: Push tag
       run: |
-        git tag v${{ github.event.inputs.version }} ${{ github.sha }}
+        git config user.name "pytest bot"
+        git config user.email "pytestbot@gmail.com"
+        git tag --annotate --message=v${{ github.event.inputs.version }} v${{ github.event.inputs.version }} ${{ github.sha }}
         git push origin v${{ github.event.inputs.version }}
 
     - name: Set up Python
@@ -54,3 +63,5 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         body_path: scripts/latest-release-notes.md
+        files: dist/*
+        tag_name: v${{ github.event.inputs.version }}

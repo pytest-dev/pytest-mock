@@ -1,6 +1,13 @@
 name: test
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+      - "test-me-*"
+
+  pull_request:
+
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -8,7 +15,16 @@ concurrency:
 
 jobs:
 
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build and Check Package
+        uses: hynek/build-and-inspect-python-package@v1.5
+
   test:
+
+    needs: [package]
 
     runs-on: ${{ matrix.os }}
 
@@ -31,21 +47,24 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
+    - name: Download Package
+      uses: actions/download-artifact@v3
+      with:
+        name: Packages
+        path: dist
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python }}
+
     - name: Install tox
       run: |
         python -m pip install --upgrade pip
         pip install tox
-    - name: Test
-      run: |
-        tox -e ${{ matrix.tox_env }}
 
-  check-package:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Build and Check Package
-      uses: hynek/build-and-inspect-python-package@v1.5
+    - name: Test
+      shell: bash
+      run: |
+        tox run -e ${{ matrix.tox_env }} --installpkg `find dist/*.tar.gz`

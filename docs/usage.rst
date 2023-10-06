@@ -157,3 +157,10 @@ function decorators for mocking unnecessary, so it will emit a warning when used
 
 If you really intend to mock a context manager, ``mocker.patch.context_manager`` exists
 which won't issue the above warning.
+
+Where to patch
+--------------
+
+A common issue where mocking appears not to be working is patching in the wrong place.
+
+See this `section in the unittest docs <unittest https://docs.python.org/3/library/unittest.mock.html#where-to-patch>`__ which provides a comprehensive explanation.

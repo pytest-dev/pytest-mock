@@ -164,3 +164,5 @@ Where to patch
 A common issue where mocking appears not to be working is patching in the wrong place.
 
 See this `section in the unittest docs <https://docs.python.org/3/library/unittest.mock.html#where-to-patch>`__ which provides a comprehensive explanation.
+
+Also see this excellent blog post: `Why your mock doesn't work <https://nedbatchelder.com/blog/201908/why_your_mock_doesnt_work.html>`__.

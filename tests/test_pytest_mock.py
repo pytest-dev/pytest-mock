@@ -64,6 +64,7 @@ class TestObject:
     """
     Class that is used for testing create_autospec with child mocks
     """
+
     def run(self) -> str:
         return "not mocked"
 

@@ -165,7 +165,6 @@ def test_mock_patch_dict_resetall(mocker: MockerFixture) -> None:
     [
         "ANY",
         "call",
-        "create_autospec",
         "MagicMock",
         "Mock",
         "mock_open",

@@ -110,7 +110,7 @@ class MockerFixture:
         times.
         """
         for p, m in reversed(self._patches_and_mocks):
-            if p:
+            if p is not None:
                 p.stop()
         self._patches_and_mocks.clear()
 

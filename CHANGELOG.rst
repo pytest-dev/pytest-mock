@@ -1,6 +1,13 @@
 Releases
 ========
 
+3.12.0 (2023-10-19)
+-------------------
+
+* ``mocker.resetall()`` now also resets mocks created by ``mocker.create_autospec`` (`#390`_).
+
+.. _#390: https://github.com/pytest-dev/pytest-mock/pull/390
+
 3.11.1 (2023-06-15)
 -------------------
 

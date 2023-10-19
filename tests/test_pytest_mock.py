@@ -60,6 +60,15 @@ class UnixFS:
         return os.listdir(path)
 
 
+class TestObject:
+    """
+    Class that is used for testing create_autospec with child mocks
+    """
+
+    def run(self) -> str:
+        return "not mocked"
+
+
 @pytest.fixture
 def check_unix_fs_mocked(
     tmpdir: Any, mocker: MockerFixture
@@ -156,7 +165,6 @@ def test_mock_patch_dict_resetall(mocker: MockerFixture) -> None:
     [
         "ANY",
         "call",
-        "create_autospec",
         "MagicMock",
         "Mock",
         "mock_open",
@@ -185,22 +193,34 @@ def test_mocker_resetall(mocker: MockerFixture) -> None:
     listdir = mocker.patch("os.listdir", return_value="foo")
     open = mocker.patch("os.open", side_effect=["bar", "baz"])
 
+    mocked_object = mocker.create_autospec(TestObject)
+    mocked_object.run.return_value = "mocked"
+
     assert listdir("/tmp") == "foo"
     assert open("/tmp/foo.txt") == "bar"
+    assert mocked_object.run() == "mocked"
     listdir.assert_called_once_with("/tmp")
     open.assert_called_once_with("/tmp/foo.txt")
+    mocked_object.run.assert_called_once()
 
     mocker.resetall()
 
     assert not listdir.called
     assert not open.called
+    assert not mocked_object.called
     assert listdir.return_value == "foo"
     assert list(open.side_effect) == ["baz"]
+    assert mocked_object.run.return_value == "mocked"
 
     mocker.resetall(return_value=True, side_effect=True)
 
     assert isinstance(listdir.return_value, mocker.Mock)
     assert open.side_effect is None
+
+    if sys.version_info >= (3, 9):
+        # The reset on child mocks have been implemented in 3.9
+        # https://bugs.python.org/issue38932
+        assert mocked_object.run.return_value != "mocked"
 
 
 class TestMockerStub:

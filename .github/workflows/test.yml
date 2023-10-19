@@ -33,6 +33,14 @@ jobs:
       matrix:
         python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         os: [ubuntu-latest, windows-latest]
+        tox_env: ["py"]
+        include:
+          - python: "3.12"
+            os: ubuntu-latest
+            tox_env: "norewrite"
+          - python: "3.12"
+            os: windows-latest
+            tox_env: "norewrite"
 
     steps:
     - uses: actions/checkout@v3
@@ -56,4 +64,4 @@ jobs:
     - name: Test
       shell: bash
       run: |
-        tox run -e py --installpkg `find dist/*.tar.gz`
+        tox run -e ${{ matrix.tox_env }} --installpkg `find dist/*.tar.gz`

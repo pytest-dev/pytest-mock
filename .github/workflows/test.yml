@@ -31,19 +31,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.7", "3.8", "3.9", "3.10", "3.11"]
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
         os: [ubuntu-latest, windows-latest]
+        tox_env: ["py"]
         include:
-          - python: "3.7"
-            tox_env: "py37"
-          - python: "3.8"
-            tox_env: "py38"
-          - python: "3.9"
-            tox_env: "py39"
-          - python: "3.10"
-            tox_env: "py310"
-          - python: "3.11"
-            tox_env: "py311"
+          - python: "3.12"
+            os: ubuntu-latest
+            tox_env: "norewrite"
+          - python: "3.12"
+            os: windows-latest
+            tox_env: "norewrite"
 
     steps:
     - uses: actions/checkout@v3

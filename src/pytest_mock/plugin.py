@@ -137,14 +137,6 @@ class MockerFixture:
         :return: Spy object.
         """
         method = getattr(obj, name)
-        if inspect.isclass(obj) and isinstance(
-            inspect.getattr_static(obj, name), (classmethod, staticmethod)
-        ):
-            # Can't use autospec classmethod or staticmethod objects before 3.7
-            # see: https://bugs.python.org/issue23078
-            autospec = False
-        else:
-            autospec = inspect.ismethod(method) or inspect.isfunction(method)
 
         def wrapper(*args, **kwargs):
             spy_obj.spy_return = None
@@ -174,6 +166,8 @@ class MockerFixture:
             wrapped = functools.update_wrapper(async_wrapper, method)
         else:
             wrapped = functools.update_wrapper(wrapper, method)
+
+        autospec = inspect.ismethod(method) or inspect.isfunction(method)
 
         spy_obj = self.patch.object(obj, name, side_effect=wrapped, autospec=autospec)
         spy_obj.spy_return = None

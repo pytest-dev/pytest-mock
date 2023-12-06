@@ -342,7 +342,7 @@ def test_instance_class_static_method_spy_autospec_true(mocker: MockerFixture) -
 
     static_method_spy = mocker.spy(Foo, "qux")
     with pytest.raises(
-            AttributeError, match="Mock object has no attribute 'fake_assert_method'"
+        AttributeError, match="Mock object has no attribute 'fake_assert_method'"
     ):
         static_method_spy.fake_assert_method(arg=5)
 

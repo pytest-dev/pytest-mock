@@ -246,7 +246,9 @@ class TestMockerStub:
             msg = "Expected call: {0}()\nNot called"
         expected_message = msg.format(expected_name)
         stub = mocker.stub(**kwargs)
-        with pytest.raises(AssertionError, match=re.escape(expected_message)) as exc_info:
+        with pytest.raises(
+            AssertionError, match=re.escape(expected_message)
+        ) as exc_info:
             stub.assert_called_with()
 
     def test_failure_message_with_no_name(self, mocker: MagicMock) -> None:

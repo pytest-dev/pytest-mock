@@ -25,6 +25,8 @@ skip_pypy = pytest.mark.skipif(
 
 # Python 3.8 changed the output formatting (bpo-35500), which has been ported to mock 3.0
 NEW_FORMATTING = sys.version_info >= (3, 8)
+# Python 3.11.7 changed the output formatting, https://github.com/python/cpython/issues/111019
+NEWEST_FORMATTING = sys.version_info >= (3, 11, 7)
 
 if sys.version_info[:2] >= (3, 8):
     from unittest.mock import AsyncMock
@@ -240,15 +242,18 @@ class TestMockerStub:
 
     def __test_failure_message(self, mocker: MockerFixture, **kwargs: Any) -> None:
         expected_name = kwargs.get("name") or "mock"
-        if NEW_FORMATTING:
+        if NEWEST_FORMATTING:
+            msg = "expected call not found.\nExpected: {0}()\n  Actual: not called."
+        elif NEW_FORMATTING:
             msg = "expected call not found.\nExpected: {0}()\nActual: not called."
         else:
             msg = "Expected call: {0}()\nNot called"
         expected_message = msg.format(expected_name)
         stub = mocker.stub(**kwargs)
-        with pytest.raises(AssertionError) as exc_info:
+        with pytest.raises(
+            AssertionError, match=re.escape(expected_message)
+        ) as exc_info:
             stub.assert_called_with()
-        assert str(exc_info.value) == expected_message
 
     def test_failure_message_with_no_name(self, mocker: MagicMock) -> None:
         self.__test_failure_message(mocker)

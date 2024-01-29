@@ -52,9 +52,7 @@ class MockerFixture:
     def __init__(self, config: Any) -> None:
         self._patches_and_mocks: List[Tuple[Any, unittest.mock.MagicMock]] = []
         self.mock_module = mock_module = get_mock_module(config)
-        self.patch = self._Patcher(
-            self._patches_and_mocks, mock_module
-        )  # type: MockerFixture._Patcher
+        self.patch = self._Patcher(self._patches_and_mocks, mock_module)  # type: MockerFixture._Patcher
         # aliases for convenience
         self.Mock = mock_module.Mock
         self.MagicMock = mock_module.MagicMock
@@ -250,7 +248,7 @@ class MockerFixture:
             spec_set: Optional[object] = None,
             autospec: Optional[object] = None,
             new_callable: object = None,
-            **kwargs: Any
+            **kwargs: Any,
         ) -> MockType:
             """API to mock.patch.object"""
             if new is self.DEFAULT:
@@ -266,7 +264,7 @@ class MockerFixture:
                 spec_set=spec_set,
                 autospec=autospec,
                 new_callable=new_callable,
-                **kwargs
+                **kwargs,
             )
 
         def context_manager(
@@ -279,7 +277,7 @@ class MockerFixture:
             spec_set: Optional[builtins.object] = None,
             autospec: Optional[builtins.object] = None,
             new_callable: builtins.object = None,
-            **kwargs: Any
+            **kwargs: Any,
         ) -> MockType:
             """This is equivalent to mock.patch.object except that the returned mock
             does not issue a warning when used as a context manager."""
@@ -296,7 +294,7 @@ class MockerFixture:
                 spec_set=spec_set,
                 autospec=autospec,
                 new_callable=new_callable,
-                **kwargs
+                **kwargs,
             )
 
         def multiple(
@@ -307,7 +305,7 @@ class MockerFixture:
             spec_set: Optional[builtins.object] = None,
             autospec: Optional[builtins.object] = None,
             new_callable: Optional[builtins.object] = None,
-            **kwargs: Any
+            **kwargs: Any,
         ) -> Dict[str, MockType]:
             """API to mock.patch.multiple"""
             return self._start_patch(
@@ -319,7 +317,7 @@ class MockerFixture:
                 spec_set=spec_set,
                 autospec=autospec,
                 new_callable=new_callable,
-                **kwargs
+                **kwargs,
             )
 
         def dict(
@@ -327,7 +325,7 @@ class MockerFixture:
             in_dict: Union[Mapping[Any, Any], str],
             values: Union[Mapping[Any, Any], Iterable[Tuple[Any, Any]]] = (),
             clear: bool = False,
-            **kwargs: Any
+            **kwargs: Any,
         ) -> Any:
             """API to mock.patch.dict"""
             return self._start_patch(
@@ -336,7 +334,7 @@ class MockerFixture:
                 in_dict,
                 values=values,
                 clear=clear,
-                **kwargs
+                **kwargs,
             )
 
         @overload
@@ -349,7 +347,7 @@ class MockerFixture:
             spec_set: Optional[builtins.object] = ...,
             autospec: Optional[builtins.object] = ...,
             new_callable: None = ...,
-            **kwargs: Any
+            **kwargs: Any,
         ) -> MockType:
             ...
 
@@ -363,7 +361,7 @@ class MockerFixture:
             spec_set: Optional[builtins.object] = ...,
             autospec: Optional[builtins.object] = ...,
             new_callable: None = ...,
-            **kwargs: Any
+            **kwargs: Any,
         ) -> _T:
             ...
 
@@ -377,7 +375,7 @@ class MockerFixture:
             spec_set: Optional[builtins.object],
             autospec: Optional[builtins.object],
             new_callable: Callable[[], _T],
-            **kwargs: Any
+            **kwargs: Any,
         ) -> _T:
             ...
 
@@ -392,7 +390,7 @@ class MockerFixture:
             autospec: Optional[builtins.object] = ...,
             *,
             new_callable: Callable[[], _T],
-            **kwargs: Any
+            **kwargs: Any,
         ) -> _T:
             ...
 
@@ -405,7 +403,7 @@ class MockerFixture:
             spec_set: Optional[builtins.object] = None,
             autospec: Optional[builtins.object] = None,
             new_callable: Optional[Callable[[], Any]] = None,
-            **kwargs: Any
+            **kwargs: Any,
         ) -> Any:
             """API to mock.patch"""
             if new is self.DEFAULT:
@@ -420,7 +418,7 @@ class MockerFixture:
                 spec_set=spec_set,
                 autospec=autospec,
                 new_callable=new_callable,
-                **kwargs
+                **kwargs,
             )
 
 

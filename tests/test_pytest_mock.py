@@ -250,9 +250,7 @@ class TestMockerStub:
             msg = "Expected call: {0}()\nNot called"
         expected_message = msg.format(expected_name)
         stub = mocker.stub(**kwargs)
-        with pytest.raises(
-            AssertionError, match=re.escape(expected_message)
-        ) as exc_info:
+        with pytest.raises(AssertionError, match=re.escape(expected_message)):
             stub.assert_called_with()
 
     def test_failure_message_with_no_name(self, mocker: MagicMock) -> None:
@@ -561,7 +559,12 @@ def assert_argument_introspection(left: Any, right: Any) -> Generator[None, None
         # NOTE: we assert with either verbose or not, depending on how our own
         #       test was run by examining sys.argv
         verbose = any(a.startswith("-v") for a in sys.argv)
-        expected = "\n  ".join(util._compare_eq_iterable(left, right, verbose))
+        if int(pytest.version_tuple[0]) < 8:
+            expected = "\n  ".join(util._compare_eq_iterable(left, right, verbose))  # type:ignore[arg-type]
+        else:
+            expected = "\n  ".join(
+                util._compare_eq_iterable(left, right, lambda t, *_: t, verbose)
+            )
         assert expected in str(e)
     else:
         raise AssertionError("DID NOT RAISE")
@@ -1042,7 +1045,7 @@ def test_context_manager_patch_example(mocker: MockerFixture) -> None:
         with dummy_module.MyContext() as v:
             return v
 
-    m = mocker.patch.object(dummy_module, "MyContext")
+    mocker.patch.object(dummy_module, "MyContext")
     assert isinstance(my_func(), mocker.MagicMock)
 
 

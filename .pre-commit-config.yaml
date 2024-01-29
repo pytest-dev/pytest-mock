@@ -1,7 +1,7 @@
 exclude: '^($|.*\.bin)'
 repos:
   - repo: https://github.com/psf/black
-    rev: 23.11.0
+    rev: 24.1.1
     hooks:
       - id: black
         args: [--safe, --quiet]
@@ -24,7 +24,7 @@ repos:
     - id: reorder-python-imports
       args: ['--application-directories=.:src']
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.7.1
+    rev: v1.8.0
     hooks:
       - id: mypy
         files: ^(src|tests)

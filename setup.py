@@ -11,7 +11,7 @@ setup(
         "pytest_mock": ["py.typed"],
     },
     python_requires=">=3.8",
-    install_requires=["pytest>=5.0"],
+    install_requires=["pytest>=6.2.5"],
     use_scm_version={"write_to": "src/pytest_mock/_version.py"},
     setup_requires=["setuptools_scm"],
     url="https://github.com/pytest-dev/pytest-mock/",

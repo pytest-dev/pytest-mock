@@ -1,6 +1,11 @@
 Releases
 ========
 
+UNRELEASED
+----------
+
+* ``pytest-mock`` now requires ``pytest>=6.2.5``.
+
 3.12.0 (2023-10-19)
 -------------------
 

@@ -559,7 +559,7 @@ def assert_argument_introspection(left: Any, right: Any) -> Generator[None, None
         # NOTE: we assert with either verbose or not, depending on how our own
         #       test was run by examining sys.argv
         verbose = any(a.startswith("-v") for a in sys.argv)
-        if int(pytest.version_tuple[0]) < 8:
+        if int(pytest.__version__.split(".")[0]) < 8:
             expected = "\n  ".join(util._compare_eq_iterable(left, right, verbose))  # type:ignore[arg-type]
         else:
             expected = "\n  ".join(
@@ -888,12 +888,12 @@ def test_detailed_introspection(testdir: Any) -> None:
         "*Args:",
         "*assert ('fo',) == ('',)",
         "*At index 0 diff: 'fo' != ''*",
-        "*Use -v to get more diff*",
+        "*Use -v to*",
         "*Kwargs:*",
         "*assert {} == {'bar': 4}*",
         "*Right contains* more item*",
         "*{'bar': 4}*",
-        "*Use -v to get more diff*",
+        "*Use -v to*",
     ]
     result.stdout.fnmatch_lines(expected_lines)
 
@@ -929,12 +929,12 @@ def test_detailed_introspection_async(testdir: Any) -> None:
         "*Args:",
         "*assert ('fo',) == ('',)",
         "*At index 0 diff: 'fo' != ''*",
-        "*Use -v to get more diff*",
+        "*Use -v to*",
         "*Kwargs:*",
         "*assert {} == {'bar': 4}*",
         "*Right contains* more item*",
         "*{'bar': 4}*",
-        "*Use -v to get more diff*",
+        "*Use -v to*",
     ]
     result.stdout.fnmatch_lines(expected_lines)
 

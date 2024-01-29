@@ -35,6 +35,9 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         tox_env: ["py"]
         include:
+          - python: "3.10"
+            os: ubuntu-latest
+            tox_env: "pytest6"
           - python: "3.12"
             os: ubuntu-latest
             tox_env: "norewrite"

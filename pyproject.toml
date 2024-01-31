@@ -5,4 +5,9 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
-[tool.ruff]
+[tool.ruff.lint]
+extend-select = ["I001"]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+known-third-party = ["src"]

@@ -12,7 +12,6 @@ from typing import Type
 from unittest.mock import MagicMock
 
 import pytest
-
 from pytest_mock import MockerFixture
 from pytest_mock import PytestMockWarning
 

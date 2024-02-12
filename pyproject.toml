@@ -5,6 +5,53 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "pytest-mock"
+version = "0.1.0"
+description = "Thin-wrapper around the mock package for easier use with pytest"
+authors = [
+    {name = "Bruno Oliveira", email = "nicoddemus@gmail.com"},
+]
+dependencies = [
+    "pytest>=6.2.5",
+]
+requires-python = ">=3.8"
+readme = "README.md"
+license = {text = "MIT"}
+keywords = ["pytest mock"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Framework :: Pytest",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Testing",
+]
+
+[project.urls]
+Homepage = "https://github.com/pytest-dev/pytest-mock/"
+Documentation = "https://pytest-mock.readthedocs.io/en/latest/"
+Changelog = "https://pytest-mock.readthedocs.io/en/latest/changelog.html"
+Source = "https://github.com/pytest-dev/pytest-mock/"
+Tracker = "https://github.com/pytest-dev/pytest-mock/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pre-commit",
+    "pytest-asyncio",
+    "tox",
+]
+
+[project.entry-points.pytest11]
+pytest_mock = "pytest_mock"
+
 [tool.ruff.lint]
 extend-select = ["I001"]
 

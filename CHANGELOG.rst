@@ -5,6 +5,9 @@ UNRELEASED
 ----------
 
 * ``pytest-mock`` now requires ``pytest>=6.2.5``.
+* `#410 <https://github.com/pytest-dev/pytest-mock/pull/410>`_: pytest-mock's ``setup.py`` file is removed.
+  If you relied on this file, e.g. to install pytest using ``setup.py install``,
+  please see `Why you shouldn't invoke setup.py directly <https://blog.ganssle.io/articles/2021/10/setup-py-deprecated.html#summary>`_ for alternatives.
 
 3.12.0 (2023-10-19)
 -------------------

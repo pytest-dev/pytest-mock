@@ -18,7 +18,7 @@ dependencies = [
 requires-python = ">=3.8"
 readme = "README.md"
 license = {text = "MIT"}
-keywords = ["pytest mock"]
+keywords = ["pytest", "mock"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Framework :: Pytest",
@@ -51,6 +51,12 @@ dev = [
 
 [project.entry-points.pytest11]
 pytest_mock = "pytest_mock"
+
+[tool.setuptools.package-data]
+"pytest_mock" = ["py.typed"]
+
+[tool.setuptools_scm]
+write_to = "src/pytest_mock/_version.py"
 
 [tool.ruff.lint]
 extend-select = ["I001"]

@@ -7,7 +7,6 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pytest-mock"
-version = "0.1.0"
 description = "Thin-wrapper around the mock package for easier use with pytest"
 authors = [
     {name = "Bruno Oliveira", email = "nicoddemus@gmail.com"},
@@ -15,8 +14,9 @@ authors = [
 dependencies = [
     "pytest>=6.2.5",
 ]
+dynamic = ["version"]
 requires-python = ">=3.8"
-readme = "README.md"
+readme = "README.rst"
 license = {text = "MIT"}
 keywords = ["pytest", "mock"]
 classifiers = [
@@ -53,7 +53,7 @@ dev = [
 pytest_mock = "pytest_mock"
 
 [tool.setuptools.package-data]
-"pytest_mock" = ["py.typed"]
+pytest_mock = ["py.typed"]
 
 [tool.setuptools_scm]
 write_to = "src/pytest_mock/_version.py"

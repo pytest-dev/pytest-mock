@@ -348,8 +348,7 @@ class MockerFixture:
             autospec: Optional[builtins.object] = ...,
             new_callable: None = ...,
             **kwargs: Any,
-        ) -> MockType:
-            ...
+        ) -> MockType: ...
 
         @overload
         def __call__(
@@ -362,8 +361,7 @@ class MockerFixture:
             autospec: Optional[builtins.object] = ...,
             new_callable: None = ...,
             **kwargs: Any,
-        ) -> _T:
-            ...
+        ) -> _T: ...
 
         @overload
         def __call__(
@@ -376,8 +374,7 @@ class MockerFixture:
             autospec: Optional[builtins.object],
             new_callable: Callable[[], _T],
             **kwargs: Any,
-        ) -> _T:
-            ...
+        ) -> _T: ...
 
         @overload
         def __call__(
@@ -391,8 +388,7 @@ class MockerFixture:
             *,
             new_callable: Callable[[], _T],
             **kwargs: Any,
-        ) -> _T:
-            ...
+        ) -> _T: ...
 
         def __call__(
             self,

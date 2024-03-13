@@ -7,12 +7,14 @@ from pytest_mock.plugin import package_mocker
 from pytest_mock.plugin import pytest_addoption
 from pytest_mock.plugin import pytest_configure
 from pytest_mock.plugin import session_mocker
+from pytest_mock.plugin import MockType
 
 MockFixture = MockerFixture  # backward-compatibility only (#204)
 
 __all__ = [
     "MockerFixture",
     "MockFixture",
+    "MockType",
     "PytestMockWarning",
     "pytest_addoption",
     "pytest_configure",

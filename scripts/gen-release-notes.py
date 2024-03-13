@@ -6,6 +6,7 @@ Generates the release notes for the latest release, in Markdown.
 3. Writes to ``scripts/latest-release-notes.md``, which can be
    used with https://github.com/softprops/action-gh-release.
 """
+
 from pathlib import Path
 
 import pypandoc

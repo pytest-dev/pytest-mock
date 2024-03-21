@@ -1264,3 +1264,28 @@ def test_stop_instance_spy(mocker):
     mocker.stop(spy)
     assert un_spy.foo() == 42
     assert spy.call_count == 1
+
+
+def test_stop_multiple_patches(mocker: MockerFixture) -> None:
+    """Regression for #420."""
+
+    class Class1:
+        @staticmethod
+        def get():
+            return 1
+
+    class Class2:
+        @staticmethod
+        def get():
+            return 2
+
+    def handle_get():
+        return 3
+
+    mocker.patch.object(Class1, "get", handle_get)
+    mocker.patch.object(Class2, "get", handle_get)
+
+    mocker.stopall()
+
+    assert Class1.get() == 1
+    assert Class2.get() == 2

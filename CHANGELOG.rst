@@ -6,6 +6,8 @@ UNRELEASED
 
 * `#415 <https://github.com/pytest-dev/pytest-mock/pull/415>`_: ``MockType`` and ``AsyncMockType`` can be imported from ``pytest_mock`` for type annotation purposes.
 
+* `#420 <https://github.com/pytest-dev/pytest-mock/issues/420>`_: Fixed a regression which would cause ``mocker.patch.object`` to not being properly cleared between tests.
+
 
 3.13.0 (2024-03-21)
 -------------------

@@ -60,11 +60,8 @@ class MockCache:
         return the_mock
 
     def add(self, mock: MockType, **kwargs: Any) -> MockCacheItem:
-        try:
-            return self.find(mock)
-        except ValueError:
-            self.cache.append(MockCacheItem(mock=mock, **kwargs))
-            return self.cache[-1]
+        self.cache.append(MockCacheItem(mock=mock, **kwargs))
+        return self.cache[-1]
 
     def remove(self, mock: MockType) -> None:
         mock_item = self.find(mock)

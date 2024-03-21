@@ -2,7 +2,6 @@ import asyncio
 import builtins
 import functools
 import inspect
-import sys
 import unittest.mock
 import warnings
 from dataclasses import dataclass
@@ -30,16 +29,12 @@ from ._util import parse_ini_boolean
 
 _T = TypeVar("_T")
 
-if sys.version_info >= (3, 8):
-    AsyncMockType = unittest.mock.AsyncMock
-    MockType = Union[
-        unittest.mock.MagicMock,
-        unittest.mock.AsyncMock,
-        unittest.mock.NonCallableMagicMock,
-    ]
-else:
-    AsyncMockType = Any
-    MockType = Union[unittest.mock.MagicMock, unittest.mock.NonCallableMagicMock]
+AsyncMockType = unittest.mock.AsyncMock
+MockType = Union[
+    unittest.mock.MagicMock,
+    unittest.mock.AsyncMock,
+    unittest.mock.NonCallableMagicMock,
+]
 
 
 class PytestMockWarning(UserWarning):
@@ -54,35 +49,36 @@ class MockCacheItem:
 
 @dataclass
 class MockCache:
+    """
+    Cache MagicMock and Patcher instances so we can undo them later.
+    """
+
     cache: List[MockCacheItem] = field(default_factory=list)
 
-    def find(self, mock: MockType) -> MockCacheItem:
-        the_mock = next(
-            (mock_item for mock_item in self.cache if mock_item.mock == mock), None
-        )
-        if the_mock is None:
-            raise ValueError("This mock object is not registered")
-        return the_mock
+    def _find(self, mock: MockType) -> MockCacheItem:
+        for mock_item in self.cache:
+            if mock_item.mock is mock:
+                return mock_item
+        raise ValueError("This mock object is not registered")
 
     def add(self, mock: MockType, **kwargs: Any) -> MockCacheItem:
-        try:
-            return self.find(mock)
-        except ValueError:
-            self.cache.append(MockCacheItem(mock=mock, **kwargs))
-            return self.cache[-1]
+        self.cache.append(MockCacheItem(mock=mock, **kwargs))
+        return self.cache[-1]
 
     def remove(self, mock: MockType) -> None:
-        mock_item = self.find(mock)
+        mock_item = self._find(mock)
+        if mock_item.patch:
+            mock_item.patch.stop()
         self.cache.remove(mock_item)
 
     def clear(self) -> None:
+        for mock_item in reversed(self.cache):
+            if mock_item.patch is not None:
+                mock_item.patch.stop()
         self.cache.clear()
 
     def __iter__(self) -> Iterator[MockCacheItem]:
         return iter(self.cache)
-
-    def __reversed__(self) -> Iterator[MockCacheItem]:
-        return reversed(self.cache)
 
 
 class MockerFixture:
@@ -154,9 +150,6 @@ class MockerFixture:
         Stop all patchers started by this fixture. Can be safely called multiple
         times.
         """
-        for mock_item in reversed(self._mock_cache):
-            if mock_item.patch is not None:
-                mock_item.patch.stop()
         self._mock_cache.clear()
 
     def stop(self, mock: unittest.mock.MagicMock) -> None:
@@ -164,9 +157,6 @@ class MockerFixture:
         Stops a previous patch or spy call by passing the ``MagicMock`` object
         returned by it.
         """
-        mock_item = self._mock_cache.find(mock)
-        if mock_item.patch:
-            mock_item.patch.stop()
         self._mock_cache.remove(mock)
 
     def spy(self, obj: object, name: str) -> MockType:
@@ -271,17 +261,13 @@ class MockerFixture:
                 # check if `mocked` is actually a mock object, as depending on autospec or target
                 # parameters `mocked` can be anything
                 if hasattr(mocked, "__enter__") and warn_on_mock_enter:
-                    if sys.version_info >= (3, 8):
-                        depth = 5
-                    else:
-                        depth = 4
                     mocked.__enter__.side_effect = lambda: warnings.warn(
                         "Mocks returned by pytest-mock do not need to be used as context managers. "
                         "The mocker fixture automatically undoes mocking at the end of a test. "
                         "This warning can be ignored if it was triggered by mocking a context manager. "
                         "https://pytest-mock.readthedocs.io/en/latest/remarks.html#usage-as-context-manager",
                         PytestMockWarning,
-                        stacklevel=depth,
+                        stacklevel=5,
                     )
             return mocked
 

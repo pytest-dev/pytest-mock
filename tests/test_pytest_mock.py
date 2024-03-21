@@ -279,8 +279,13 @@ def test_instance_method_spy(mocker: MockerFixture) -> None:
     assert other.bar(arg=10) == 20
     foo.bar.assert_called_once_with(arg=10)  # type:ignore[attr-defined]
     assert foo.bar.spy_return == 20  # type:ignore[attr-defined]
+    assert foo.bar.spy_return_list == [20]  # type:ignore[attr-defined]
     spy.assert_called_once_with(arg=10)
     assert spy.spy_return == 20
+    assert foo.bar(arg=11) == 22
+    assert foo.bar(arg=12) == 24
+    assert spy.spy_return == 24
+    assert spy.spy_return_list == [20, 22, 24]
 
 
 # Ref: https://docs.python.org/3/library/exceptions.html#exception-hierarchy
@@ -358,10 +363,12 @@ def test_spy_reset(mocker: MockerFixture) -> None:
 
     spy = mocker.spy(Foo, "bar")
     assert spy.spy_return is None
+    assert spy.spy_return_list == []
     assert spy.spy_exception is None
 
     Foo().bar(10)
     assert spy.spy_return == 30
+    assert spy.spy_return_list == [30]
     assert spy.spy_exception is None
 
     # Testing spy can still be reset (#237).
@@ -370,10 +377,12 @@ def test_spy_reset(mocker: MockerFixture) -> None:
     with pytest.raises(ValueError):
         Foo().bar(0)
     assert spy.spy_return is None
+    assert spy.spy_return_list == []
     assert str(spy.spy_exception) == "invalid x"
 
     Foo().bar(15)
     assert spy.spy_return == 45
+    assert spy.spy_return_list == [45]
     assert spy.spy_exception is None
 
 
@@ -409,6 +418,7 @@ def test_instance_method_by_subclass_spy(mocker: MockerFixture) -> None:
     calls = [mocker.call(foo, arg=10), mocker.call(other, arg=10)]
     assert spy.call_args_list == calls
     assert spy.spy_return == 20
+    assert spy.spy_return_list == [20, 20]
 
 
 @skip_pypy
@@ -422,8 +432,10 @@ def test_class_method_spy(mocker: MockerFixture) -> None:
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)  # type:ignore[attr-defined]
     assert Foo.bar.spy_return == 20  # type:ignore[attr-defined]
+    assert Foo.bar.spy_return_list == [20]  # type:ignore[attr-defined]
     spy.assert_called_once_with(arg=10)
     assert spy.spy_return == 20
+    assert spy.spy_return_list == [20]
 
 
 @skip_pypy
@@ -440,8 +452,10 @@ def test_class_method_subclass_spy(mocker: MockerFixture) -> None:
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)  # type:ignore[attr-defined]
     assert Foo.bar.spy_return == 20  # type:ignore[attr-defined]
+    assert Foo.bar.spy_return_list == [20]  # type:ignore[attr-defined]
     spy.assert_called_once_with(arg=10)
     assert spy.spy_return == 20
+    assert spy.spy_return_list == [20]
 
 
 @skip_pypy
@@ -460,8 +474,10 @@ def test_class_method_with_metaclass_spy(mocker: MockerFixture) -> None:
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)  # type:ignore[attr-defined]
     assert Foo.bar.spy_return == 20  # type:ignore[attr-defined]
+    assert Foo.bar.spy_return_list == [20]  # type:ignore[attr-defined]
     spy.assert_called_once_with(arg=10)
     assert spy.spy_return == 20
+    assert spy.spy_return_list == [20]
 
 
 @skip_pypy
@@ -475,8 +491,10 @@ def test_static_method_spy(mocker: MockerFixture) -> None:
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)  # type:ignore[attr-defined]
     assert Foo.bar.spy_return == 20  # type:ignore[attr-defined]
+    assert Foo.bar.spy_return_list == [20]  # type:ignore[attr-defined]
     spy.assert_called_once_with(arg=10)
     assert spy.spy_return == 20
+    assert spy.spy_return_list == [20]
 
 
 @skip_pypy
@@ -493,8 +511,10 @@ def test_static_method_subclass_spy(mocker: MockerFixture) -> None:
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)  # type:ignore[attr-defined]
     assert Foo.bar.spy_return == 20  # type:ignore[attr-defined]
+    assert Foo.bar.spy_return_list == [20]  # type:ignore[attr-defined]
     spy.assert_called_once_with(arg=10)
     assert spy.spy_return == 20
+    assert spy.spy_return_list == [20]
 
 
 def test_callable_like_spy(testdir: Any, mocker: MockerFixture) -> None:
@@ -515,6 +535,7 @@ def test_callable_like_spy(testdir: Any, mocker: MockerFixture) -> None:
     uut.call_like(10)
     spy.assert_called_once_with(10)
     assert spy.spy_return == 20
+    assert spy.spy_return_list == [20]
 
 
 async def test_instance_async_method_spy(mocker: MockerFixture) -> None:

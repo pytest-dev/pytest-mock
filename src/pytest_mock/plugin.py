@@ -5,11 +5,14 @@ import inspect
 import sys
 import unittest.mock
 import warnings
+from dataclasses import dataclass
+from dataclasses import field
 from typing import Any
 from typing import Callable
 from typing import Dict
 from typing import Generator
 from typing import Iterable
+from typing import Iterator
 from typing import List
 from typing import Mapping
 from typing import Optional
@@ -43,6 +46,45 @@ class PytestMockWarning(UserWarning):
     """Base class for all warnings emitted by pytest-mock."""
 
 
+@dataclass
+class MockCacheItem:
+    mock: MockType
+    patch: Optional[Any] = None
+
+
+@dataclass
+class MockCache:
+    cache: List[MockCacheItem] = field(default_factory=list)
+
+    def find(self, mock: MockType) -> MockCacheItem:
+        the_mock = next(
+            (mock_item for mock_item in self.cache if mock_item.mock == mock), None
+        )
+        if the_mock is None:
+            raise ValueError("This mock object is not registered")
+        return the_mock
+
+    def add(self, mock: MockType, **kwargs: Any) -> MockCacheItem:
+        try:
+            return self.find(mock)
+        except ValueError:
+            self.cache.append(MockCacheItem(mock=mock, **kwargs))
+            return self.cache[-1]
+
+    def remove(self, mock: MockType) -> None:
+        mock_item = self.find(mock)
+        self.cache.remove(mock_item)
+
+    def clear(self) -> None:
+        self.cache.clear()
+
+    def __iter__(self) -> Iterator[MockCacheItem]:
+        return iter(self.cache)
+
+    def __reversed__(self) -> Iterator[MockCacheItem]:
+        return reversed(self.cache)
+
+
 class MockerFixture:
     """
     Fixture that provides the same interface to functions in the mock module,
@@ -50,9 +92,9 @@ class MockerFixture:
     """
 
     def __init__(self, config: Any) -> None:
-        self._patches_and_mocks: List[Tuple[Any, unittest.mock.MagicMock]] = []
+        self._mock_cache: MockCache = MockCache()
         self.mock_module = mock_module = get_mock_module(config)
-        self.patch = self._Patcher(self._patches_and_mocks, mock_module)  # type: MockerFixture._Patcher
+        self.patch = self._Patcher(self._mock_cache, mock_module)  # type: MockerFixture._Patcher
         # aliases for convenience
         self.Mock = mock_module.Mock
         self.MagicMock = mock_module.MagicMock
@@ -75,7 +117,7 @@ class MockerFixture:
         m: MockType = self.mock_module.create_autospec(
             spec, spec_set, instance, **kwargs
         )
-        self._patches_and_mocks.append((None, m))
+        self._mock_cache.add(m)
         return m
 
     def resetall(
@@ -93,37 +135,39 @@ class MockerFixture:
         else:
             supports_reset_mock_with_args = (self.Mock,)
 
-        for p, m in self._patches_and_mocks:
+        for mock_item in self._mock_cache:
             # See issue #237.
-            if not hasattr(m, "reset_mock"):
+            if not hasattr(mock_item.mock, "reset_mock"):
                 continue
-            if isinstance(m, supports_reset_mock_with_args):
-                m.reset_mock(return_value=return_value, side_effect=side_effect)
+            # NOTE: The mock may be a dictionary
+            if hasattr(mock_item.mock, "spy_return_list"):
+                mock_item.mock.spy_return_list = []
+            if isinstance(mock_item.mock, supports_reset_mock_with_args):
+                mock_item.mock.reset_mock(
+                    return_value=return_value, side_effect=side_effect
+                )
             else:
-                m.reset_mock()
+                mock_item.mock.reset_mock()
 
     def stopall(self) -> None:
         """
         Stop all patchers started by this fixture. Can be safely called multiple
         times.
         """
-        for p, m in reversed(self._patches_and_mocks):
-            if p is not None:
-                p.stop()
-        self._patches_and_mocks.clear()
+        for mock_item in reversed(self._mock_cache):
+            if mock_item.patch is not None:
+                mock_item.patch.stop()
+        self._mock_cache.clear()
 
     def stop(self, mock: unittest.mock.MagicMock) -> None:
         """
         Stops a previous patch or spy call by passing the ``MagicMock`` object
         returned by it.
         """
-        for index, (p, m) in enumerate(self._patches_and_mocks):
-            if mock is m:
-                p.stop()
-                del self._patches_and_mocks[index]
-                break
-        else:
-            raise ValueError("This mock object is not registered")
+        mock_item = self._mock_cache.find(mock)
+        if mock_item.patch:
+            mock_item.patch.stop()
+        self._mock_cache.remove(mock)
 
     def spy(self, obj: object, name: str) -> MockType:
         """
@@ -146,6 +190,7 @@ class MockerFixture:
                 raise
             else:
                 spy_obj.spy_return = r
+                spy_obj.spy_return_list.append(r)
             return r
 
         async def async_wrapper(*args, **kwargs):
@@ -158,6 +203,7 @@ class MockerFixture:
                 raise
             else:
                 spy_obj.spy_return = r
+                spy_obj.spy_return_list.append(r)
             return r
 
         if asyncio.iscoroutinefunction(method):
@@ -169,6 +215,7 @@ class MockerFixture:
 
         spy_obj = self.patch.object(obj, name, side_effect=wrapped, autospec=autospec)
         spy_obj.spy_return = None
+        spy_obj.spy_return_list = []
         spy_obj.spy_exception = None
         return spy_obj
 
@@ -206,8 +253,8 @@ class MockerFixture:
 
         DEFAULT = object()
 
-        def __init__(self, patches_and_mocks, mock_module):
-            self.__patches_and_mocks = patches_and_mocks
+        def __init__(self, mock_cache, mock_module):
+            self.__mock_cache = mock_cache
             self.mock_module = mock_module
 
         def _start_patch(
@@ -219,7 +266,7 @@ class MockerFixture:
             """
             p = mock_func(*args, **kwargs)
             mocked: MockType = p.start()
-            self.__patches_and_mocks.append((p, mocked))
+            self.__mock_cache.add(mock=mocked, patch=p)
             if hasattr(mocked, "reset_mock"):
                 # check if `mocked` is actually a mock object, as depending on autospec or target
                 # parameters `mocked` can be anything

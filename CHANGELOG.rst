@@ -4,6 +4,7 @@ Releases
 UNRELEASED
 ----------
 
+* `#417 <https://github.com/pytest-dev/pytest-mock/pull/417>`_: ``spy`` now has ``spy_return_list``, which is a list containing all the values returned by the spied function.
 * ``pytest-mock`` now requires ``pytest>=6.2.5``.
 * `#410 <https://github.com/pytest-dev/pytest-mock/pull/410>`_: pytest-mock's ``setup.py`` file is removed.
   If you relied on this file, e.g. to install pytest using ``setup.py install``,

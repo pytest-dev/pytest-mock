@@ -9,6 +9,7 @@ from typing import Callable
 from typing import Generator
 from typing import Tuple
 from typing import Type
+from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
 
 import pytest
@@ -22,13 +23,8 @@ skip_pypy = pytest.mark.skipif(
     platform.python_implementation() == "PyPy", reason="could not make it work on pypy"
 )
 
-# Python 3.8 changed the output formatting (bpo-35500), which has been ported to mock 3.0
-NEW_FORMATTING = sys.version_info >= (3, 8)
 # Python 3.11.7 changed the output formatting, https://github.com/python/cpython/issues/111019
 NEWEST_FORMATTING = sys.version_info >= (3, 11, 7)
-
-if sys.version_info[:2] >= (3, 8):
-    from unittest.mock import AsyncMock
 
 
 @pytest.fixture
@@ -173,12 +169,7 @@ def test_mock_patch_dict_resetall(mocker: MockerFixture) -> None:
         "NonCallableMock",
         "PropertyMock",
         "sentinel",
-        pytest.param(
-            "seal",
-            marks=pytest.mark.skipif(
-                sys.version_info < (3, 7), reason="seal is present on 3.7 and above"
-            ),
-        ),
+        "seal",
     ],
 )
 def test_mocker_aliases(name: str, pytestconfig: Any) -> None:
@@ -243,10 +234,8 @@ class TestMockerStub:
         expected_name = kwargs.get("name") or "mock"
         if NEWEST_FORMATTING:
             msg = "expected call not found.\nExpected: {0}()\n  Actual: not called."
-        elif NEW_FORMATTING:
-            msg = "expected call not found.\nExpected: {0}()\nActual: not called."
         else:
-            msg = "Expected call: {0}()\nNot called"
+            msg = "expected call not found.\nExpected: {0}()\nActual: not called."
         expected_message = msg.format(expected_name)
         stub = mocker.stub(**kwargs)
         with pytest.raises(AssertionError, match=re.escape(expected_message)):
@@ -259,10 +248,6 @@ class TestMockerStub:
     def test_failure_message_with_name(self, mocker: MagicMock, name: str) -> None:
         self.__test_failure_message(mocker, name=name)
 
-    @pytest.mark.skipif(
-        sys.version_info[:2] < (3, 8),
-        reason="This Python version doesn't have `AsyncMock`.",
-    )
     def test_async_stub_type(self, mocker: MockerFixture) -> None:
         assert isinstance(mocker.async_stub(), AsyncMock)
 
@@ -892,17 +877,11 @@ def test_detailed_introspection(testdir: Any) -> None:
     """
     )
     result = testdir.runpytest("-s")
-    if NEW_FORMATTING:
-        expected_lines = [
-            "*AssertionError: expected call not found.",
-            "*Expected: mock('', bar=4)",
-            "*Actual: mock('fo')",
-        ]
-    else:
-        expected_lines = [
-            "*AssertionError: Expected call: mock('', bar=4)*",
-            "*Actual call: mock('fo')*",
-        ]
+    expected_lines = [
+        "*AssertionError: expected call not found.",
+        "*Expected: mock('', bar=4)",
+        "*Actual: mock('fo')",
+    ]
     expected_lines += [
         "*pytest introspection follows:*",
         "*Args:",
@@ -918,9 +897,6 @@ def test_detailed_introspection(testdir: Any) -> None:
     result.stdout.fnmatch_lines(expected_lines)
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 8), reason="AsyncMock is present on 3.8 and above"
-)
 @pytest.mark.usefixtures("needs_assert_rewrite")
 def test_detailed_introspection_async(testdir: Any) -> None:
     """Check that the "mock_use_standalone" is being used."""

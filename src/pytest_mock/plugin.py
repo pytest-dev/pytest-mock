@@ -2,7 +2,6 @@ import asyncio
 import builtins
 import functools
 import inspect
-import sys
 import unittest.mock
 import warnings
 from dataclasses import dataclass
@@ -30,16 +29,12 @@ from ._util import parse_ini_boolean
 
 _T = TypeVar("_T")
 
-if sys.version_info >= (3, 8):
-    AsyncMockType = unittest.mock.AsyncMock
-    MockType = Union[
-        unittest.mock.MagicMock,
-        unittest.mock.AsyncMock,
-        unittest.mock.NonCallableMagicMock,
-    ]
-else:
-    AsyncMockType = Any
-    MockType = Union[unittest.mock.MagicMock, unittest.mock.NonCallableMagicMock]
+AsyncMockType = unittest.mock.AsyncMock
+MockType = Union[
+    unittest.mock.MagicMock,
+    unittest.mock.AsyncMock,
+    unittest.mock.NonCallableMagicMock,
+]
 
 
 class PytestMockWarning(UserWarning):
@@ -271,17 +266,13 @@ class MockerFixture:
                 # check if `mocked` is actually a mock object, as depending on autospec or target
                 # parameters `mocked` can be anything
                 if hasattr(mocked, "__enter__") and warn_on_mock_enter:
-                    if sys.version_info >= (3, 8):
-                        depth = 5
-                    else:
-                        depth = 4
                     mocked.__enter__.side_effect = lambda: warnings.warn(
                         "Mocks returned by pytest-mock do not need to be used as context managers. "
                         "The mocker fixture automatically undoes mocking at the end of a test. "
                         "This warning can be ignored if it was triggered by mocking a context manager. "
                         "https://pytest-mock.readthedocs.io/en/latest/remarks.html#usage-as-context-manager",
                         PytestMockWarning,
-                        stacklevel=depth,
+                        stacklevel=5,
                     )
             return mocked
 

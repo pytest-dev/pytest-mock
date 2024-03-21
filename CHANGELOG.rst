@@ -1,8 +1,8 @@
 Releases
 ========
 
-UNRELEASED
-----------
+3.14.0 (2024-03-21)
+-------------------
 
 * `#415 <https://github.com/pytest-dev/pytest-mock/pull/415>`_: ``MockType`` and ``AsyncMockType`` can be imported from ``pytest_mock`` for type annotation purposes.
 

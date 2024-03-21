@@ -284,6 +284,7 @@ def test_instance_method_spy(mocker: MockerFixture) -> None:
     assert spy.spy_return == 20
     assert foo.bar(arg=11) == 22
     assert foo.bar(arg=12) == 24
+    assert spy.spy_return == 24
     assert spy.spy_return_list == [20, 22, 24]
 
 

@@ -49,32 +49,36 @@ class MockCacheItem:
 
 @dataclass
 class MockCache:
+    """
+    Cache MagicMock and Patcher instances so we can undo them later.
+    """
+
     cache: List[MockCacheItem] = field(default_factory=list)
 
-    def find(self, mock: MockType) -> MockCacheItem:
-        the_mock = next(
-            (mock_item for mock_item in self.cache if mock_item.mock == mock), None
-        )
-        if the_mock is None:
-            raise ValueError("This mock object is not registered")
-        return the_mock
+    def _find(self, mock: MockType) -> MockCacheItem:
+        for mock_item in self.cache:
+            if mock_item.mock is mock:
+                return mock_item
+        raise ValueError("This mock object is not registered")
 
     def add(self, mock: MockType, **kwargs: Any) -> MockCacheItem:
         self.cache.append(MockCacheItem(mock=mock, **kwargs))
         return self.cache[-1]
 
     def remove(self, mock: MockType) -> None:
-        mock_item = self.find(mock)
+        mock_item = self._find(mock)
+        if mock_item.patch:
+            mock_item.patch.stop()
         self.cache.remove(mock_item)
 
     def clear(self) -> None:
+        for mock_item in reversed(self.cache):
+            if mock_item.patch is not None:
+                mock_item.patch.stop()
         self.cache.clear()
 
     def __iter__(self) -> Iterator[MockCacheItem]:
         return iter(self.cache)
-
-    def __reversed__(self) -> Iterator[MockCacheItem]:
-        return reversed(self.cache)
 
 
 class MockerFixture:
@@ -146,9 +150,6 @@ class MockerFixture:
         Stop all patchers started by this fixture. Can be safely called multiple
         times.
         """
-        for mock_item in reversed(self._mock_cache):
-            if mock_item.patch is not None:
-                mock_item.patch.stop()
         self._mock_cache.clear()
 
     def stop(self, mock: unittest.mock.MagicMock) -> None:
@@ -156,9 +157,6 @@ class MockerFixture:
         Stops a previous patch or spy call by passing the ``MagicMock`` object
         returned by it.
         """
-        mock_item = self._mock_cache.find(mock)
-        if mock_item.patch:
-            mock_item.patch.stop()
         self._mock_cache.remove(mock)
 
     def spy(self, obj: object, name: str) -> MockType:

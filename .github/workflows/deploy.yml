@@ -20,10 +20,10 @@ jobs:
       SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.event.inputs.version }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Build and Check Package
-      uses: hynek/build-and-inspect-python-package@v1.5
+      uses: hynek/build-and-inspect-python-package@v2.5
       with:
         attest-build-provenance-github: 'true'
 
@@ -37,7 +37,7 @@ jobs:
       contents: write  # For tag and release notes.
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Download Package
       uses: actions/download-artifact@v4
@@ -46,7 +46,7 @@ jobs:
         path: dist
 
     - name: Publish package to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.8.5
+      uses: pypa/gh-action-pypi-publish@v1.8.14
 
     - name: Push tag
       run: |
@@ -56,7 +56,7 @@ jobs:
         git push origin v${{ github.event.inputs.version }}
 
     - name: Set up Python
-      uses: actions/setup-python@v4.5.0
+      uses: actions/setup-python@v5
       with:
         python-version: "3.10"
 
@@ -67,7 +67,7 @@ jobs:
         python scripts/gen-release-notes.py
 
     - name: GitHub Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         body_path: scripts/latest-release-notes.md
         files: dist/*

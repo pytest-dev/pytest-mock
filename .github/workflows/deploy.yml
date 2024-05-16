@@ -12,6 +12,10 @@ jobs:
 
   package:
     runs-on: ubuntu-latest
+    # Required by attest-build-provenance-github.
+    permissions:
+      id-token: write
+      attestations: write
     env:
       SETUPTOOLS_SCM_PRETEND_VERSION: ${{ github.event.inputs.version }}
 
@@ -20,6 +24,9 @@ jobs:
 
     - name: Build and Check Package
       uses: hynek/build-and-inspect-python-package@v1.5
+      with:
+        attest-build-provenance-github: 'true'
+
 
   deploy:
     needs: package

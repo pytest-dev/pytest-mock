@@ -23,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build and Check Package
-        uses: hynek/build-and-inspect-python-package@v1.5
+        uses: hynek/build-and-inspect-python-package@v2.5.0
         with:
           attest-build-provenance-github: 'true'
 

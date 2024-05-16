@@ -21,7 +21,7 @@ jobs:
       id-token: write
       attestations: write
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Build and Check Package
         uses: hynek/build-and-inspect-python-package@v2.5.0
         with:
@@ -51,7 +51,7 @@ jobs:
             tox_env: "norewrite"
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Download Package
       uses: actions/download-artifact@v4
@@ -60,7 +60,7 @@ jobs:
         path: dist
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python }}
 

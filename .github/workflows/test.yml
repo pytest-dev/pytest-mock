@@ -17,10 +17,15 @@ jobs:
 
   package:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@v3
       - name: Build and Check Package
         uses: hynek/build-and-inspect-python-package@v1.5
+        with:
+          attest-build-provenance-github: 'true'
 
   test:
 

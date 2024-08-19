@@ -13,6 +13,7 @@ from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
 
 import pytest
+
 from pytest_mock import MockerFixture
 from pytest_mock import PytestMockWarning
 

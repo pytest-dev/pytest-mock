@@ -1,4 +1,3 @@
-import asyncio
 import builtins
 import functools
 import inspect
@@ -196,7 +195,7 @@ class MockerFixture:
                 spy_obj.spy_return_list.append(r)
             return r
 
-        if asyncio.iscoroutinefunction(method):
+        if inspect.iscoroutinefunction(method):
             wrapped = functools.update_wrapper(async_wrapper, method)
         else:
             wrapped = functools.update_wrapper(wrapper, method)

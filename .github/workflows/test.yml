@@ -25,7 +25,8 @@ jobs:
       - name: Build and Check Package
         uses: hynek/build-and-inspect-python-package@v2.9.0
         with:
-          attest-build-provenance-github: 'true'
+          # Disabling because this is failing currently, see #466.
+          attest-build-provenance-github: 'false'
 
   test:
 

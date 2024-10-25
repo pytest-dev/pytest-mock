@@ -25,7 +25,8 @@ jobs:
       - name: Build and Check Package
         uses: hynek/build-and-inspect-python-package@v2.9.0
         with:
-          attest-build-provenance-github: 'true'
+          # Disabling because this is failing currently, see #466.
+          attest-build-provenance-github: 'false'
 
   test:
 
@@ -36,7 +37,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
         os: [ubuntu-latest, windows-latest]
         tox_env: ["py"]
         include:

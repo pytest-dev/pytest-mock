@@ -29,6 +29,7 @@ Also, as a convenience, these names from the ``mock`` module are accessible dire
 * `Mock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock>`_
 * `MagicMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.MagicMock>`_
 * `PropertyMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.PropertyMock>`_
+* `AsyncMock <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.AsyncMock>`_
 * `ANY <https://docs.python.org/3/library/unittest.mock.html#any>`_
 * `DEFAULT <https://docs.python.org/3/library/unittest.mock.html#default>`_
 * `call <https://docs.python.org/3/library/unittest.mock.html#call>`_

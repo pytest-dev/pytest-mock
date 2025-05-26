@@ -1,8 +1,8 @@
 Releases
 ========
 
-UNRELEASED
-----------
+3.14.1 (2025-08-26)
+-------------------
 
 * `#503 <https://github.com/pytest-dev/pytest-mock/pull/503>`_: Python 3.14 is now officially supported.
 

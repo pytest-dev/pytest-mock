@@ -524,6 +524,7 @@ def test_callable_like_spy(testdir: Any, mocker: MockerFixture) -> None:
     assert spy.spy_return_list == [20]
 
 
+@pytest.mark.asyncio
 async def test_instance_async_method_spy(mocker: MockerFixture) -> None:
     class Foo:
         async def bar(self, arg):

@@ -7,8 +7,11 @@ from contextlib import contextmanager
 from typing import Any
 from typing import Callable
 from typing import Generator
+from typing import Iterable
+from typing import Iterator
 from typing import Tuple
 from typing import Type
+from unittest.mock import ANY
 from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
 
@@ -265,12 +268,14 @@ def test_instance_method_spy(mocker: MockerFixture) -> None:
     assert other.bar(arg=10) == 20
     foo.bar.assert_called_once_with(arg=10)  # type:ignore[attr-defined]
     assert foo.bar.spy_return == 20  # type:ignore[attr-defined]
+    assert foo.bar.spy_return_iter is None  # type:ignore[attr-defined]
     assert foo.bar.spy_return_list == [20]  # type:ignore[attr-defined]
     spy.assert_called_once_with(arg=10)
     assert spy.spy_return == 20
     assert foo.bar(arg=11) == 22
     assert foo.bar(arg=12) == 24
     assert spy.spy_return == 24
+    assert spy.spy_return_iter is None
     assert spy.spy_return_list == [20, 22, 24]
 
 
@@ -349,11 +354,13 @@ def test_spy_reset(mocker: MockerFixture) -> None:
 
     spy = mocker.spy(Foo, "bar")
     assert spy.spy_return is None
+    assert spy.spy_return_iter is None
     assert spy.spy_return_list == []
     assert spy.spy_exception is None
 
     Foo().bar(10)
     assert spy.spy_return == 30
+    assert spy.spy_return_iter is None
     assert spy.spy_return_list == [30]
     assert spy.spy_exception is None
 
@@ -363,11 +370,13 @@ def test_spy_reset(mocker: MockerFixture) -> None:
     with pytest.raises(ValueError):
         Foo().bar(0)
     assert spy.spy_return is None
+    assert spy.spy_return_iter is None
     assert spy.spy_return_list == []
     assert str(spy.spy_exception) == "invalid x"
 
     Foo().bar(15)
     assert spy.spy_return == 45
+    assert spy.spy_return_iter is None
     assert spy.spy_return_list == [45]
     assert spy.spy_exception is None
 
@@ -404,6 +413,7 @@ def test_instance_method_by_subclass_spy(mocker: MockerFixture) -> None:
     calls = [mocker.call(foo, arg=10), mocker.call(other, arg=10)]
     assert spy.call_args_list == calls
     assert spy.spy_return == 20
+    assert spy.spy_return_iter is None
     assert spy.spy_return_list == [20, 20]
 
 
@@ -418,9 +428,11 @@ def test_class_method_spy(mocker: MockerFixture) -> None:
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)  # type:ignore[attr-defined]
     assert Foo.bar.spy_return == 20  # type:ignore[attr-defined]
+    assert Foo.bar.spy_return_iter is None  # type:ignore[attr-defined]
     assert Foo.bar.spy_return_list == [20]  # type:ignore[attr-defined]
     spy.assert_called_once_with(arg=10)
     assert spy.spy_return == 20
+    assert spy.spy_return_iter is None
     assert spy.spy_return_list == [20]
 
 
@@ -438,9 +450,11 @@ def test_class_method_subclass_spy(mocker: MockerFixture) -> None:
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)  # type:ignore[attr-defined]
     assert Foo.bar.spy_return == 20  # type:ignore[attr-defined]
+    assert Foo.bar.spy_return_iter is None  # type:ignore[attr-defined]
     assert Foo.bar.spy_return_list == [20]  # type:ignore[attr-defined]
     spy.assert_called_once_with(arg=10)
     assert spy.spy_return == 20
+    assert spy.spy_return_iter is None
     assert spy.spy_return_list == [20]
 
 
@@ -460,9 +474,11 @@ def test_class_method_with_metaclass_spy(mocker: MockerFixture) -> None:
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)  # type:ignore[attr-defined]
     assert Foo.bar.spy_return == 20  # type:ignore[attr-defined]
+    assert Foo.bar.spy_return_iter is None  # type:ignore[attr-defined]
     assert Foo.bar.spy_return_list == [20]  # type:ignore[attr-defined]
     spy.assert_called_once_with(arg=10)
     assert spy.spy_return == 20
+    assert spy.spy_return_iter is None
     assert spy.spy_return_list == [20]
 
 
@@ -477,9 +493,11 @@ def test_static_method_spy(mocker: MockerFixture) -> None:
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)  # type:ignore[attr-defined]
     assert Foo.bar.spy_return == 20  # type:ignore[attr-defined]
+    assert Foo.bar.spy_return_iter is None  # type:ignore[attr-defined]
     assert Foo.bar.spy_return_list == [20]  # type:ignore[attr-defined]
     spy.assert_called_once_with(arg=10)
     assert spy.spy_return == 20
+    assert spy.spy_return_iter is None
     assert spy.spy_return_list == [20]
 
 
@@ -497,9 +515,11 @@ def test_static_method_subclass_spy(mocker: MockerFixture) -> None:
     assert Foo.bar(arg=10) == 20
     Foo.bar.assert_called_once_with(arg=10)  # type:ignore[attr-defined]
     assert Foo.bar.spy_return == 20  # type:ignore[attr-defined]
+    assert Foo.bar.spy_return_iter is None  # type:ignore[attr-defined]
     assert Foo.bar.spy_return_list == [20]  # type:ignore[attr-defined]
     spy.assert_called_once_with(arg=10)
     assert spy.spy_return == 20
+    assert spy.spy_return_iter is None
     assert spy.spy_return_list == [20]
 
 
@@ -521,7 +541,65 @@ def test_callable_like_spy(testdir: Any, mocker: MockerFixture) -> None:
     uut.call_like(10)
     spy.assert_called_once_with(10)
     assert spy.spy_return == 20
+    assert spy.spy_return_iter is None
     assert spy.spy_return_list == [20]
+
+
+@pytest.mark.parametrize("iterator", [(i for i in range(3)), iter(range(3))])
+def test_spy_return_iter(mocker: MockerFixture, iterator: Iterator[int]) -> None:
+    class Foo:
+        def method(self) -> Iterator[int]:
+            return iterator
+
+    foo = Foo()
+    spy = mocker.spy(foo, "method")
+    result = list(foo.method())
+
+    assert result == [0, 1, 2]
+    assert spy.spy_return is not None
+    assert spy.spy_return_iter is not None
+    assert list(spy.spy_return_iter) == result
+    assert spy.spy_return_list == [ANY]
+
+
+@pytest.mark.parametrize("iterable", [(0, 1, 2), [0, 1, 2], range(3)])
+def test_spy_return_iter_ignore_plain_iterable(
+    mocker: MockerFixture, iterable: Iterable[int]
+) -> None:
+    class Foo:
+        def method(self) -> Iterable[int]:
+            return iterable
+
+    foo = Foo()
+    spy = mocker.spy(foo, "method")
+    result = foo.method()
+
+    assert result == iterable
+    assert spy.spy_return == result
+    assert spy.spy_return_iter is None
+    assert spy.spy_return_list == [result]
+
+
+def test_spy_return_iter_unset_in_last_call(mocker: MockerFixture) -> None:
+    class Foo:
+        iterables = [
+            (i for i in range(3)),
+            [3, 4, 5],
+        ]
+
+        def method(self) -> Iterable[int]:
+            return self.iterables.pop(0)
+
+    foo = Foo()
+    spy = mocker.spy(foo, "method")
+    result_iterator = list(foo.method())
+
+    assert result_iterator == [0, 1, 2]
+    assert list(spy.spy_return_iter) == result_iterator
+
+    result_iterable = foo.method()
+    assert result_iterable == [3, 4, 5]
+    assert spy.spy_return_iter is None
 
 
 @pytest.mark.asyncio

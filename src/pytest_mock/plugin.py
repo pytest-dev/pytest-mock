@@ -1,6 +1,7 @@
 import builtins
 import functools
 import inspect
+import itertools
 import unittest.mock
 import warnings
 from dataclasses import dataclass
@@ -137,6 +138,8 @@ class MockerFixture:
             # NOTE: The mock may be a dictionary
             if hasattr(mock_item.mock, "spy_return_list"):
                 mock_item.mock.spy_return_list = []
+            if hasattr(mock_item.mock, "spy_return_iter"):
+                mock_item.mock.spy_return_iter = None
             if isinstance(mock_item.mock, supports_reset_mock_with_args):
                 mock_item.mock.reset_mock(
                     return_value=return_value, side_effect=side_effect
@@ -178,6 +181,12 @@ class MockerFixture:
                 spy_obj.spy_exception = e
                 raise
             else:
+                if isinstance(r, Iterator):
+                    r, duplicated_iterator = itertools.tee(r, 2)
+                    spy_obj.spy_return_iter = duplicated_iterator
+                else:
+                    spy_obj.spy_return_iter = None
+
                 spy_obj.spy_return = r
                 spy_obj.spy_return_list.append(r)
             return r
@@ -204,6 +213,7 @@ class MockerFixture:
 
         spy_obj = self.patch.object(obj, name, side_effect=wrapped, autospec=autospec)
         spy_obj.spy_return = None
+        spy_obj.spy_return_iter = None
         spy_obj.spy_return_list = []
         spy_obj.spy_exception = None
         return spy_obj

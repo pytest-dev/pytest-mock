@@ -81,6 +81,7 @@ are available (like ``assert_called_once_with`` or ``call_count`` in the example
 In addition, spy objects contain two extra attributes:
 
 * ``spy_return``: contains the last returned value of the spied function.
+* ``spy_return_iter``: contains a duplicate of the last returned value of the spied function if the value was an iterator.
 * ``spy_return_list``: contains a list of all returned values of the spied function (new in ``3.13``).
 * ``spy_exception``: contain the last exception value raised by the spied function/method when
   it was last called, or ``None`` if no exception was raised.

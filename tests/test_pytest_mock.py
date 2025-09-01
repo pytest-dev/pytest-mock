@@ -545,15 +545,15 @@ def test_callable_like_spy(testdir: Any, mocker: MockerFixture) -> None:
     assert spy.spy_return_list == [20]
 
 
-@pytest.mark.parametrize("iterator", [(i for i in range(3)), iter(range(3))])
+@pytest.mark.parametrize("iterator", [(i for i in range(3)), iter([0, 1, 2])])
 def test_spy_return_iter(mocker: MockerFixture, iterator: Iterator[int]) -> None:
     class Foo:
-        def method(self) -> Iterator[int]:
+        def bar(self) -> Iterator[int]:
             return iterator
 
     foo = Foo()
-    spy = mocker.spy(foo, "method")
-    result = list(foo.method())
+    spy = mocker.spy(foo, "bar")
+    result = list(foo.bar())
 
     assert result == [0, 1, 2]
     assert spy.spy_return is not None
@@ -567,12 +567,12 @@ def test_spy_return_iter_ignore_plain_iterable(
     mocker: MockerFixture, iterable: Iterable[int]
 ) -> None:
     class Foo:
-        def method(self) -> Iterable[int]:
+        def bar(self) -> Iterable[int]:
             return iterable
 
     foo = Foo()
-    spy = mocker.spy(foo, "method")
-    result = foo.method()
+    spy = mocker.spy(foo, "bar")
+    result = foo.bar()
 
     assert result == iterable
     assert spy.spy_return == result
@@ -587,17 +587,17 @@ def test_spy_return_iter_unset_in_last_call(mocker: MockerFixture) -> None:
             [3, 4, 5],
         ]
 
-        def method(self) -> Iterable[int]:
+        def bar(self) -> Iterable[int]:
             return self.iterables.pop(0)
 
     foo = Foo()
-    spy = mocker.spy(foo, "method")
-    result_iterator = list(foo.method())
+    spy = mocker.spy(foo, "bar")
+    result_iterator = list(foo.bar())
 
     assert result_iterator == [0, 1, 2]
     assert list(spy.spy_return_iter) == result_iterator
 
-    result_iterable = foo.method()
+    result_iterable = foo.bar()
     assert result_iterable == [3, 4, 5]
     assert spy.spy_return_iter is None
 

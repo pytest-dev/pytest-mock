@@ -11,7 +11,6 @@ from typing import Iterable
 from typing import Iterator
 from typing import Tuple
 from typing import Type
-from unittest.mock import ANY
 from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
 
@@ -559,7 +558,9 @@ def test_spy_return_iter(mocker: MockerFixture, iterator: Iterator[int]) -> None
     assert spy.spy_return is not None
     assert spy.spy_return_iter is not None
     assert list(spy.spy_return_iter) == result
-    assert spy.spy_return_list == [ANY]
+
+    [return_value] = spy.spy_return_list
+    assert isinstance(return_value, Iterator)
 
 
 @pytest.mark.parametrize("iterable", [(0, 1, 2), [0, 1, 2], range(3)])

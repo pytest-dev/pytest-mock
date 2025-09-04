@@ -1,8 +1,10 @@
 Releases
 ========
 
-UNRELEASED
-----------
+3.15.0
+------
+
+*2025-09-04*
 
 * Python 3.8 (EOL) is no longer supported.
 * `#524 <https://github.com/pytest-dev/pytest-mock/pull/524>`_: Added ``spy_return_iter`` to ``mocker.spy``, which contains a duplicate of the return value of the spied method if it is an ``Iterator``.

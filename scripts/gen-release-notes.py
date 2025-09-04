@@ -18,7 +18,7 @@ output_lines = []
 capture = False
 for line in rst_text.splitlines():
     # Only start capturing after the latest release section.
-    if line.startswith("-------"):
+    if line.startswith("----"):
         capture = not capture
         if not capture:
             # We only need to capture the latest release, so stop.

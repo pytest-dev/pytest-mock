@@ -3,14 +3,12 @@ import platform
 import re
 import sys
 import warnings
+from collections.abc import Generator
+from collections.abc import Iterable
+from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import Any
 from typing import Callable
-from typing import Generator
-from typing import Iterable
-from typing import Iterator
-from typing import Tuple
-from typing import Type
 from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
 
@@ -102,15 +100,15 @@ def check_unix_fs_mocked(
     return check
 
 
-def mock_using_patch_object(mocker: MockerFixture) -> Tuple[MagicMock, MagicMock]:
+def mock_using_patch_object(mocker: MockerFixture) -> tuple[MagicMock, MagicMock]:
     return mocker.patch.object(os, "remove"), mocker.patch.object(os, "listdir")
 
 
-def mock_using_patch(mocker: MockerFixture) -> Tuple[MagicMock, MagicMock]:
+def mock_using_patch(mocker: MockerFixture) -> tuple[MagicMock, MagicMock]:
     return mocker.patch("os.remove"), mocker.patch("os.listdir")
 
 
-def mock_using_patch_multiple(mocker: MockerFixture) -> Tuple[MagicMock, MagicMock]:
+def mock_using_patch_multiple(mocker: MockerFixture) -> tuple[MagicMock, MagicMock]:
     r = mocker.patch.multiple("os", remove=mocker.DEFAULT, listdir=mocker.DEFAULT)
     return r["remove"], r["listdir"]
 
@@ -212,10 +210,7 @@ def test_mocker_resetall(mocker: MockerFixture) -> None:
     assert isinstance(listdir.return_value, mocker.Mock)
     assert open.side_effect is None
 
-    if sys.version_info >= (3, 9):
-        # The reset on child mocks have been implemented in 3.9
-        # https://bugs.python.org/issue38932
-        assert mocked_object.run.return_value != "mocked"
+    assert mocked_object.run.return_value != "mocked"
 
 
 class TestMockerStub:
@@ -291,7 +286,7 @@ def test_instance_method_spy(mocker: MockerFixture) -> None:
     ),
 )
 def test_instance_method_spy_exception(
-    exc_cls: Type[BaseException],
+    exc_cls: type[BaseException],
     mocker: MockerFixture,
 ) -> None:
     class Foo:

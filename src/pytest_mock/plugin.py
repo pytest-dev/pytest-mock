@@ -4,19 +4,15 @@ import inspect
 import itertools
 import unittest.mock
 import warnings
+from collections.abc import Generator
+from collections.abc import Iterable
+from collections.abc import Iterator
+from collections.abc import Mapping
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
 from typing import Callable
-from typing import Dict
-from typing import Generator
-from typing import Iterable
-from typing import Iterator
-from typing import List
-from typing import Mapping
 from typing import Optional
-from typing import Tuple
-from typing import Type
 from typing import TypeVar
 from typing import Union
 from typing import cast
@@ -53,7 +49,7 @@ class MockCache:
     Cache MagicMock and Patcher instances so we can undo them later.
     """
 
-    cache: List[MockCacheItem] = field(default_factory=list)
+    cache: list[MockCacheItem] = field(default_factory=list)
 
     def _find(self, mock: MockType) -> MockCacheItem:
         for mock_item in self.cache:
@@ -125,7 +121,7 @@ class MockerFixture:
         :param bool return_value: Reset the return_value of mocks.
         :param bool side_effect: Reset the side_effect of mocks.
         """
-        supports_reset_mock_with_args: Tuple[Type[Any], ...]
+        supports_reset_mock_with_args: tuple[type[Any], ...]
         if hasattr(self, "AsyncMock"):
             supports_reset_mock_with_args = (self.Mock, self.AsyncMock)
         else:
@@ -348,7 +344,7 @@ class MockerFixture:
             autospec: Optional[builtins.object] = None,
             new_callable: Optional[builtins.object] = None,
             **kwargs: Any,
-        ) -> Dict[str, MockType]:
+        ) -> dict[str, MockType]:
             """API to mock.patch.multiple"""
             return self._start_patch(
                 self.mock_module.patch.multiple,
@@ -365,7 +361,7 @@ class MockerFixture:
         def dict(
             self,
             in_dict: Union[Mapping[Any, Any], str],
-            values: Union[Mapping[Any, Any], Iterable[Tuple[Any, Any]]] = (),
+            values: Union[Mapping[Any, Any], Iterable[tuple[Any, Any]]] = (),
             clear: bool = False,
             **kwargs: Any,
         ) -> Any:
@@ -477,8 +473,8 @@ package_mocker = pytest.fixture(scope="package")(_mocker)
 session_mocker = pytest.fixture(scope="session")(_mocker)
 
 
-_mock_module_patches = []  # type: List[Any]
-_mock_module_originals = {}  # type: Dict[str, Any]
+_mock_module_patches: list[Any] = []
+_mock_module_originals: dict[str, Any] = {}
 
 
 def assert_wrapper(

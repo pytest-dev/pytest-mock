@@ -583,7 +583,7 @@ def test_spy_return_iter_ignore_plain_iterable(
 
 def test_spy_return_iter_resets(mocker: MockerFixture) -> None:
     class Foo:
-        iterables: list[Any] = [
+        iterables: Any = [
             (i for i in range(3)),
             99,
         ]

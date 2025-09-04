@@ -581,11 +581,11 @@ def test_spy_return_iter_ignore_plain_iterable(
     assert spy.spy_return_list == [result]
 
 
-def test_spy_return_iter_unset_in_last_call(mocker: MockerFixture) -> None:
+def test_spy_return_iter_resets(mocker: MockerFixture) -> None:
     class Foo:
         iterables = [
             (i for i in range(3)),
-            [3, 4, 5],
+            99,
         ]
 
         def bar(self) -> Iterable[int]:
@@ -598,8 +598,7 @@ def test_spy_return_iter_unset_in_last_call(mocker: MockerFixture) -> None:
     assert result_iterator == [0, 1, 2]
     assert list(spy.spy_return_iter) == result_iterator
 
-    result_iterable = foo.bar()
-    assert result_iterable == [3, 4, 5]
+    assert foo.bar() == 99
     assert spy.spy_return_iter is None
 
 

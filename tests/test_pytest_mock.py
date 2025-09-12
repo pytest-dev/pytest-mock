@@ -643,7 +643,7 @@ def assert_argument_introspection(left: Any, right: Any) -> Generator[None, None
             expected = "\n  ".join(util._compare_eq_iterable(left, right, verbose))  # type:ignore[arg-type]
         else:
             expected = "\n  ".join(
-                util._compare_eq_iterable(left, right, lambda t, *_: t, verbose)
+                util._compare_eq_iterable(left, right, lambda t, *_, **__: t, verbose)  # type:ignore[arg-type]
             )
         assert expected in str(e)
     else:

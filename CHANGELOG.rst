@@ -1,6 +1,13 @@
 Releases
 ========
 
+UNRELEASED
+----------
+
+*UNRELEASED*
+
+* `#529 <https://github.com/pytest-dev/pytest-mock/issues/529>`_: Fixed ``itertools._tee object has no attribute error`` -- now ``duplicate_iterators=True`` must be passed to ``mocker.spy`` to duplicate iterators.
+
 3.15.0
 ------
 

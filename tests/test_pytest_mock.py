@@ -540,13 +540,15 @@ def test_callable_like_spy(testdir: Any, mocker: MockerFixture) -> None:
 
 
 @pytest.mark.parametrize("iterator", [(i for i in range(3)), iter([0, 1, 2])])
-def test_spy_return_iter(mocker: MockerFixture, iterator: Iterator[int]) -> None:
+def test_spy_return_iter_duplicates_iterator_when_enabled(
+    mocker: MockerFixture, iterator: Iterator[int]
+) -> None:
     class Foo:
         def bar(self) -> Iterator[int]:
             return iterator
 
     foo = Foo()
-    spy = mocker.spy(foo, "bar")
+    spy = mocker.spy(foo, "bar", duplicate_iterators=True)
     result = list(foo.bar())
 
     assert result == [0, 1, 2]
@@ -558,8 +560,27 @@ def test_spy_return_iter(mocker: MockerFixture, iterator: Iterator[int]) -> None
     assert isinstance(return_value, Iterator)
 
 
+@pytest.mark.parametrize("iterator", [(i for i in range(3)), iter([0, 1, 2])])
+def test_spy_return_iter_is_not_set_when_disabled(
+    mocker: MockerFixture, iterator: Iterator[int]
+) -> None:
+    class Foo:
+        def bar(self) -> Iterator[int]:
+            return iterator
+
+    foo = Foo()
+    spy = mocker.spy(foo, "bar", duplicate_iterators=False)
+    result = list(foo.bar())
+
+    assert result == [0, 1, 2]
+    assert spy.spy_return is not None
+    assert spy.spy_return_iter is None
+    [return_value] = spy.spy_return_list
+    assert isinstance(return_value, Iterator)
+
+
 @pytest.mark.parametrize("iterable", [(0, 1, 2), [0, 1, 2], range(3)])
-def test_spy_return_iter_ignore_plain_iterable(
+def test_spy_return_iter_ignores_plain_iterable(
     mocker: MockerFixture, iterable: Iterable[int]
 ) -> None:
     class Foo:
@@ -567,7 +588,7 @@ def test_spy_return_iter_ignore_plain_iterable(
             return iterable
 
     foo = Foo()
-    spy = mocker.spy(foo, "bar")
+    spy = mocker.spy(foo, "bar", duplicate_iterators=True)
     result = foo.bar()
 
     assert result == iterable
@@ -587,7 +608,7 @@ def test_spy_return_iter_resets(mocker: MockerFixture) -> None:
             return self.iterables.pop(0)
 
     foo = Foo()
-    spy = mocker.spy(foo, "bar")
+    spy = mocker.spy(foo, "bar", duplicate_iterators=True)
     result_iterator = list(foo.bar())
 
     assert result_iterator == [0, 1, 2]

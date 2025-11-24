@@ -21,7 +21,7 @@ jobs:
       id-token: write
       attestations: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Build and Check Package
         uses: hynek/build-and-inspect-python-package@v2.14.0
         with:
@@ -52,7 +52,7 @@ jobs:
             tox_env: "norewrite"
 
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
 
     - name: Download Package
       uses: actions/download-artifact@v6

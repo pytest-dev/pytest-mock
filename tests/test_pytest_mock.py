@@ -28,6 +28,16 @@ skip_pypy = pytest.mark.skipif(
 NEWEST_FORMATTING = sys.version_info >= (3, 11, 7)
 
 
+def syspath_insert_workaround(request: pytest.FixtureRequest, testdir: Any) -> None:
+    if pytest.__version__.split(".")[0] == "6":
+        # Avoid testdir.syspathinsert() which requires pkg_resources (setuptools) in
+        # pytest 6.2.5; insert directly instead (#169).
+        sys.path.insert(0, str(testdir.tmpdir))
+        request.addfinalizer(lambda: sys.path.remove(str(testdir.tmpdir)))
+    else:
+        testdir.syspathinsert()
+
+
 @pytest.fixture
 def needs_assert_rewrite(pytestconfig):
     """
@@ -517,7 +527,9 @@ def test_static_method_subclass_spy(mocker: MockerFixture) -> None:
     assert spy.spy_return_list == [20]
 
 
-def test_callable_like_spy(testdir: Any, mocker: MockerFixture) -> None:
+def test_callable_like_spy(
+    testdir: Any, mocker: MockerFixture, request: pytest.FixtureRequest
+) -> None:
     testdir.makepyfile(
         uut="""
         class CallLike(object):
@@ -527,7 +539,7 @@ def test_callable_like_spy(testdir: Any, mocker: MockerFixture) -> None:
         call_like = CallLike()
     """
     )
-    testdir.syspathinsert()
+    syspath_insert_workaround(request, testdir)
 
     uut = __import__("uut")
 
@@ -1158,7 +1170,7 @@ def test_patch_context_manager_with_context_manager(mocker: MockerFixture) -> No
     assert len(warn_record) == 0
 
 
-def test_abort_patch_context_manager_with_stale_pyc(testdir: Any) -> None:
+def test_abort_patch_context_manager_with_stale_pyc(testdir: Any, request: Any) -> None:
     """Ensure we don't trigger an error in case the frame where mocker.patch is being
     used doesn't have a 'context' (#169)"""
     import compileall
@@ -1173,7 +1185,7 @@ def test_abort_patch_context_manager_with_stale_pyc(testdir: Any) -> None:
             assert C.x == 2
     """
     )
-    testdir.syspathinsert()
+    syspath_insert_workaround(request, testdir)
 
     testdir.makepyfile(
         """

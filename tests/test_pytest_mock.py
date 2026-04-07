@@ -364,7 +364,7 @@ def test_spy_reset(mocker: MockerFixture) -> None:
 
     Foo().bar(10)
     assert spy.spy_return == 30
-    assert spy.spy_return_iter is None
+    assert spy.spy_return_iter is None  # type:ignore[unreachable]
     assert spy.spy_return_list == [30]
     assert spy.spy_exception is None
 

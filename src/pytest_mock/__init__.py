@@ -2,6 +2,7 @@ from pytest_mock.plugin import AsyncMockType
 from pytest_mock.plugin import MockerFixture
 from pytest_mock.plugin import MockType
 from pytest_mock.plugin import PytestMockWarning
+from pytest_mock.plugin import SpyType
 from pytest_mock.plugin import class_mocker
 from pytest_mock.plugin import mocker
 from pytest_mock.plugin import module_mocker
@@ -18,6 +19,7 @@ __all__ = [
     "MockFixture",
     "MockType",
     "PytestMockWarning",
+    "SpyType",
     "pytest_addoption",
     "pytest_configure",
     "session_mocker",

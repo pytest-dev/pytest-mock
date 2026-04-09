@@ -13,10 +13,13 @@ from dataclasses import field
 from typing import Any
 from typing import Callable
 from typing import Optional
+from typing import Protocol
+from typing import Tuple
 from typing import TypeVar
 from typing import Union
 from typing import cast
 from typing import overload
+from typing import runtime_checkable
 
 import pytest
 
@@ -31,6 +34,85 @@ MockType = Union[
     unittest.mock.AsyncMock,
     unittest.mock.NonCallableMagicMock,
 ]
+
+
+@runtime_checkable
+class SpyType(Protocol):
+    """
+    Protocol for spy objects returned by :meth:`MockerFixture.spy`.
+
+    This protocol defines the spy-specific attributes that are added to mock
+    objects when using the spy functionality. These attributes allow inspection
+    of the spied method's behavior.
+
+    Attributes:
+        spy_return: The return value from the most recent call to the spied method.
+        spy_return_list: A list of all return values from calls to the spied method.
+        spy_return_iter: An iterator copy of the return value (when duplicate_iterators=True).
+        spy_exception: The exception raised by the most recent call, if any.
+        spy_trace: A list of call traces (each trace is a tuple of strings).
+    """
+
+    spy_return: Any
+    spy_return_list: list[Any]
+    spy_return_iter: Optional[Iterator[Any]]
+    spy_exception: Optional[BaseException]
+    spy_trace: list[Tuple[str, ...]]
+
+    # Mock assertion methods (subset of common mock interface)
+    def assert_called(self) -> None:
+        """Assert that the mock was called at least once."""
+        ...
+
+    def assert_called_once(self) -> None:
+        """Assert that the mock was called exactly once."""
+        ...
+
+    def assert_called_with(self, *args: Any, **kwargs: Any) -> None:
+        """Assert that the last call was made with the specified arguments."""
+        ...
+
+    def assert_called_once_with(self, *args: Any, **kwargs: Any) -> None:
+        """Assert that the mock was called exactly once with the specified arguments."""
+        ...
+
+    def assert_any_call(self, *args: Any, **kwargs: Any) -> None:
+        """Assert that the mock was called with the specified arguments at any point."""
+        ...
+
+    def assert_has_calls(
+        self, calls: Any, any_order: bool = False
+    ) -> None:
+        """Assert that the mock has been called with the specified calls."""
+        ...
+
+    def assert_not_called(self) -> None:
+        """Assert that the mock was never called."""
+        ...
+
+    def reset_mock(self, *args: Any, **kwargs: Any) -> None:
+        """Reset the mock to its initial state."""
+        ...
+
+    @property
+    def call_count(self) -> int:
+        """The number of times the mock was called."""
+        ...
+
+    @property
+    def call_args(self) -> Any:
+        """The arguments from the most recent call."""
+        ...
+
+    @property
+    def call_args_list(self) -> Any:
+        """A list of all calls made to the mock."""
+        ...
+
+    @property
+    def called(self) -> bool:
+        """Whether the mock was called at least once."""
+        ...
 
 
 class PytestMockWarning(UserWarning):
@@ -159,7 +241,7 @@ class MockerFixture:
 
     def spy(
         self, obj: object, name: str, duplicate_iterators: bool = False
-    ) -> MockType:
+    ) -> SpyType:
         """
         Create a spy of method. It will run method normally, but it is now
         possible to use `mock` call features with it, like call count.

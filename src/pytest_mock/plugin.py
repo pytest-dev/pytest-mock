@@ -80,9 +80,7 @@ class SpyType(Protocol):
         """Assert that the mock was called with the specified arguments at any point."""
         ...
 
-    def assert_has_calls(
-        self, calls: Any, any_order: bool = False
-    ) -> None:
+    def assert_has_calls(self, calls: Any, any_order: bool = False) -> None:
         """Assert that the mock has been called with the specified calls."""
         ...
 
@@ -239,9 +237,7 @@ class MockerFixture:
         """
         self._mock_cache.remove(mock)
 
-    def spy(
-        self, obj: object, name: str, duplicate_iterators: bool = False
-    ) -> SpyType:
+    def spy(self, obj: object, name: str, duplicate_iterators: bool = False) -> SpyType:
         """
         Create a spy of method. It will run method normally, but it is now
         possible to use `mock` call features with it, like call count.

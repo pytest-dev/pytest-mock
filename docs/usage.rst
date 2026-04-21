@@ -82,7 +82,7 @@ In addition, spy objects contain four extra attributes:
 
 * ``spy_return``: contains the last returned value of the spied function.
 * ``spy_return_iter``: contains a duplicate of the last returned value of the spied function if the value was an iterator and spy was created using ``.spy(..., duplicate_iterators=True)``. Uses `tee <https://docs.python.org/3/library/itertools.html#itertools.tee>`__) to duplicate the iterator.
-* ``spy_return_list``: contains a list of all returned values of the spied function (new in ``3.13``).
+* ``spy_return_list``: contains a list of all returned values of the spied function (new in ``3.13``). If the mock was called multiple times, the list is sorted descendingly: the last value comes first.
 * ``spy_exception``: contain the last exception value raised by the spied function/method when
   it was last called, or ``None`` if no exception was raised.
 

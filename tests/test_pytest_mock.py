@@ -284,6 +284,12 @@ def test_instance_method_spy(mocker: MockerFixture) -> None:
     assert spy.spy_return_list == [20, 22, 24]
 
 
+def assert_spy_has_no_return(spy: SpyType) -> None:
+    assert spy.spy_return is None
+    assert spy.spy_return_iter is None
+    assert spy.spy_return_list == []
+
+
 def test_spy_type(mocker: MockerFixture) -> None:
     class Foo:
         def bar(self) -> str:
@@ -292,10 +298,8 @@ def test_spy_type(mocker: MockerFixture) -> None:
     foo = Foo()
     spy: SpyType = mocker.spy(foo, "bar")
 
-    assert getattr(spy, "spy_return") is None
-    assert getattr(spy, "spy_return_iter") is None
-    assert spy.spy_return_list == []
-    assert getattr(spy, "spy_exception") is None
+    assert_spy_has_no_return(spy)
+    assert spy.spy_exception is None
     spy.assert_not_called()
 
     assert foo.bar() == "ok"
@@ -377,10 +381,8 @@ def test_spy_reset(mocker: MockerFixture) -> None:
             return x * 3
 
     spy = mocker.spy(Foo, "bar")
-    assert getattr(spy, "spy_return") is None
-    assert getattr(spy, "spy_return_iter") is None
-    assert spy.spy_return_list == []
-    assert getattr(spy, "spy_exception") is None
+    assert_spy_has_no_return(spy)
+    assert spy.spy_exception is None
 
     Foo().bar(10)
     assert spy.spy_return == 30
@@ -393,9 +395,7 @@ def test_spy_reset(mocker: MockerFixture) -> None:
 
     with pytest.raises(ValueError):
         Foo().bar(0)
-    assert getattr(spy, "spy_return") is None
-    assert getattr(spy, "spy_return_iter") is None
-    assert spy.spy_return_list == []
+    assert_spy_has_no_return(spy)
     assert str(spy.spy_exception) == "invalid x"
 
     Foo().bar(15)

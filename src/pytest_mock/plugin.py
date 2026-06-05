@@ -34,6 +34,9 @@ MockType = Union[
 
 
 class SpyType(unittest.mock.Mock):
+    """
+    Type stub used to annotate the result of ``mocker.spy``.
+    """
     spy_return: Any
     spy_return_iter: Optional[Iterator[Any]]
     spy_return_list: list[Any]

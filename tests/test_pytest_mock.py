@@ -16,6 +16,7 @@ import pytest
 
 from pytest_mock import MockerFixture
 from pytest_mock import PytestMockWarning
+from pytest_mock import SpyType
 
 pytest_plugins = "pytester"
 
@@ -283,6 +284,29 @@ def test_instance_method_spy(mocker: MockerFixture) -> None:
     assert spy.spy_return_list == [20, 22, 24]
 
 
+def assert_spy_has_no_return(spy: SpyType) -> None:
+    assert spy.spy_return is None
+    assert spy.spy_return_iter is None
+    assert spy.spy_return_list == []
+
+
+def test_spy_type(mocker: MockerFixture) -> None:
+    class Foo:
+        def bar(self) -> str:
+            return "ok"
+
+    foo = Foo()
+    spy: SpyType = mocker.spy(foo, "bar")
+
+    assert_spy_has_no_return(spy)
+    assert spy.spy_exception is None
+    spy.assert_not_called()
+
+    assert foo.bar() == "ok"
+    assert spy.spy_return == "ok"
+    assert spy.spy_return_list == ["ok"]
+
+
 # Ref: https://docs.python.org/3/library/exceptions.html#exception-hierarchy
 @pytest.mark.parametrize(
     "exc_cls",
@@ -357,14 +381,12 @@ def test_spy_reset(mocker: MockerFixture) -> None:
             return x * 3
 
     spy = mocker.spy(Foo, "bar")
-    assert spy.spy_return is None
-    assert spy.spy_return_iter is None
-    assert spy.spy_return_list == []
+    assert_spy_has_no_return(spy)
     assert spy.spy_exception is None
 
     Foo().bar(10)
     assert spy.spy_return == 30
-    assert spy.spy_return_iter is None  # type:ignore[unreachable]
+    assert spy.spy_return_iter is None
     assert spy.spy_return_list == [30]
     assert spy.spy_exception is None
 
@@ -373,9 +395,7 @@ def test_spy_reset(mocker: MockerFixture) -> None:
 
     with pytest.raises(ValueError):
         Foo().bar(0)
-    assert spy.spy_return is None
-    assert spy.spy_return_iter is None
-    assert spy.spy_return_list == []
+    assert_spy_has_no_return(spy)
     assert str(spy.spy_exception) == "invalid x"
 
     Foo().bar(15)
@@ -624,6 +644,7 @@ def test_spy_return_iter_resets(mocker: MockerFixture) -> None:
     result_iterator = list(foo.bar())
 
     assert result_iterator == [0, 1, 2]
+    assert spy.spy_return_iter is not None
     assert list(spy.spy_return_iter) == result_iterator
 
     assert foo.bar() == 99

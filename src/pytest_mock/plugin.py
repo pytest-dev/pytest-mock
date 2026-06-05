@@ -33,6 +33,17 @@ MockType = Union[
 ]
 
 
+class SpyType(unittest.mock.Mock):
+    """
+    Type stub used to annotate the result of ``mocker.spy``.
+    """
+
+    spy_return: Any
+    spy_return_iter: Optional[Iterator[Any]]
+    spy_return_list: list[Any]
+    spy_exception: Optional[BaseException]
+
+
 class PytestMockWarning(UserWarning):
     """Base class for all warnings emitted by pytest-mock."""
 
@@ -157,9 +168,7 @@ class MockerFixture:
         """
         self._mock_cache.remove(mock)
 
-    def spy(
-        self, obj: object, name: str, duplicate_iterators: bool = False
-    ) -> MockType:
+    def spy(self, obj: object, name: str, duplicate_iterators: bool = False) -> SpyType:
         """
         Create a spy of method. It will run method normally, but it is now
         possible to use `mock` call features with it, like call count.
@@ -210,7 +219,10 @@ class MockerFixture:
 
         autospec = inspect.ismethod(method) or inspect.isfunction(method)
 
-        spy_obj = self.patch.object(obj, name, side_effect=wrapped, autospec=autospec)
+        spy_obj = cast(
+            SpyType,
+            self.patch.object(obj, name, side_effect=wrapped, autospec=autospec),
+        )
         spy_obj.spy_return = None
         spy_obj.spy_return_iter = None
         spy_obj.spy_return_list = []

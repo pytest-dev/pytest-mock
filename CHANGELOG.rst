@@ -5,6 +5,7 @@ Unreleased
 ----------
 
 * `#547 <https://github.com/pytest-dev/pytest-mock/issues/547>`_: Added ``SpyType`` for annotating ``mocker.spy`` results.
+* Dropped support for EOL Python 3.9.
 
 3.15.1
 ------

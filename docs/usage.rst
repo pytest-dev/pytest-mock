@@ -75,10 +75,8 @@ also tracks function/method calls, return values and exceptions raised.
         assert spy.call_count == 1
         assert spy.spy_return == 42
 
-The object returned by ``mocker.spy`` is a ``MagicMock`` object, so all standard checking functions
-are available (like ``assert_called_once_with`` or ``call_count`` in the examples above).
-
-In addition, spy objects contain four extra attributes:
+The object returned by ``mocker.spy`` is a ``pytest_mock.SpyType`` object which subclasses ``MagicMock``, so all standard checking functions
+are available (like ``assert_called_once_with`` or ``call_count`` in the examples above), in addition to four extra attributes:
 
 * ``spy_return``: contains the last returned value of the spied function.
 * ``spy_return_iter``: contains a duplicate of the last returned value of the spied function if the value was an iterator and spy was created using ``.spy(..., duplicate_iterators=True)``. Uses `tee <https://docs.python.org/3/library/itertools.html#itertools.tee>`__) to duplicate the iterator.

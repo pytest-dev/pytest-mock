@@ -2,7 +2,7 @@ pytest-mock
 ===========
 
 This `pytest`_ plugin provides a ``mocker`` fixture which is a thin-wrapper around the patching API
-provided by the `mock package <http://pypi.python.org/pypi/mock>`_:
+provided by the `mock package <https://pypi.org/project/mock>`_:
 
 .. code-block:: python
 
@@ -28,7 +28,7 @@ comparing calls.
 Install
 =======
 
-Install using `pip <http://pip-installer.org/>`_:
+Install using `pip <https://pip.pypa.io/>`_:
 
 .. code-block:: console
 

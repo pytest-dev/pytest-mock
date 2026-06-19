@@ -687,17 +687,23 @@ def assert_argument_introspection(left: Any, right: Any) -> Generator[None, None
     try:
         yield
     except AssertionError as e:
-        # this may be a bit too assuming, but seems nicer then hard-coding
-        import _pytest.assertion.util as util
+        version = tuple(int(x) for x in pytest.__version__.split(".")[:3])
+
+        if version[:2] < (9, 1):
+            from _pytest.assertion.util import _compare_eq_iterable  # type:ignore
+        else:
+            from _pytest.assertion._compare_sequence import (  # type:ignore
+                _compare_eq_iterable,
+            )
 
         # NOTE: we assert with either verbose or not, depending on how our own
         #       test was run by examining sys.argv
         verbose = any(a.startswith("-v") for a in sys.argv)
-        if int(pytest.__version__.split(".")[0]) < 8:
-            expected = "\n  ".join(util._compare_eq_iterable(left, right, verbose))  # type:ignore[arg-type]
+        if version[0] < 8:
+            expected = "\n  ".join(_compare_eq_iterable(left, right, verbose))  # type:ignore
         else:
             expected = "\n  ".join(
-                util._compare_eq_iterable(left, right, lambda t, *_, **__: t, verbose)  # type:ignore[arg-type]
+                _compare_eq_iterable(left, right, lambda t, *_, **__: t, verbose)  # type:ignore
             )
         assert expected in str(e)
     else:

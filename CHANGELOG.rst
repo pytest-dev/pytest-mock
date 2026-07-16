@@ -4,6 +4,7 @@ Releases
 Unreleased
 ----------
 
+* `#280 <https://github.com/pytest-dev/pytest-mock/issues/280>`_: ``mocker.spy`` now works on attributes of frozen dataclass instances.
 * `#547 <https://github.com/pytest-dev/pytest-mock/issues/547>`_: Added ``SpyType`` for annotating ``mocker.spy`` results.
 * Dropped support for EOL Python 3.9.
 

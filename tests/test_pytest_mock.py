@@ -7,6 +7,8 @@ from collections.abc import Generator
 from collections.abc import Iterable
 from collections.abc import Iterator
 from contextlib import contextmanager
+from dataclasses import FrozenInstanceError
+from dataclasses import dataclass
 from typing import Any
 from typing import Callable
 from unittest.mock import AsyncMock
@@ -305,6 +307,29 @@ def test_spy_type(mocker: MockerFixture) -> None:
     assert foo.bar() == "ok"
     assert spy.spy_return == "ok"
     assert spy.spy_return_list == ["ok"]
+
+
+def test_spy_on_frozen_dataclass(mocker: MockerFixture) -> None:
+    """`mocker.spy` should work on attributes of frozen dataclass instances (#280)."""
+
+    def noop(*args: Any, **kwargs: Any) -> str:
+        return "ok"
+
+    @dataclass(frozen=True)
+    class Foo:
+        something: Callable[..., str] = noop
+
+    foo = Foo()
+    spy = mocker.spy(foo, "something")
+
+    assert foo.something() == "ok"
+    assert spy.call_count == 1
+    assert spy.spy_return == "ok"
+
+    # the instance should still be frozen once the test/mocker is done with it
+    mocker.stopall()
+    with pytest.raises(FrozenInstanceError):
+        foo.something = noop  # type:ignore[misc]
 
 
 # Ref: https://docs.python.org/3/library/exceptions.html#exception-hierarchy

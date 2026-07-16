@@ -1,4 +1,5 @@
 import builtins
+import contextlib
 import functools
 import inspect
 import itertools
@@ -10,6 +11,7 @@ from collections.abc import Iterator
 from collections.abc import Mapping
 from dataclasses import dataclass
 from dataclasses import field
+from dataclasses import is_dataclass
 from typing import Any
 from typing import Callable
 from typing import Optional
@@ -42,6 +44,37 @@ class SpyType(unittest.mock.Mock):
     spy_return_iter: Optional[Iterator[Any]]
     spy_return_list: list[Any]
     spy_exception: Optional[BaseException]
+
+
+def _is_frozen_dataclass_instance(obj: object) -> bool:
+    """Return True if obj is an instance of a frozen dataclass."""
+    if isinstance(obj, type) or not is_dataclass(obj):
+        return False
+    params = getattr(type(obj), "__dataclass_params__", None)
+    return bool(params is not None and params.frozen)
+
+
+@contextlib.contextmanager
+def _allow_setattr_on_frozen_dataclass(obj: object) -> Generator[None, None, None]:
+    """
+    Temporarily allow attribute assignment/deletion on a frozen dataclass
+    instance, so ``mocker.spy``/``mocker.patch.object`` can install and
+    later restore the mock (see issue #280).
+    """
+    if not _is_frozen_dataclass_instance(obj):
+        yield
+        return
+
+    cls = type(obj)
+    original_setattr = cls.__setattr__
+    original_delattr = cls.__delattr__
+    cls.__setattr__ = object.__setattr__  # type: ignore[method-assign]
+    cls.__delattr__ = object.__delattr__  # type: ignore[method-assign]
+    try:
+        yield
+    finally:
+        cls.__setattr__ = original_setattr  # type: ignore[method-assign]
+        cls.__delattr__ = original_delattr  # type: ignore[method-assign]
 
 
 class PytestMockWarning(UserWarning):
@@ -219,10 +252,30 @@ class MockerFixture:
 
         autospec = inspect.ismethod(method) or inspect.isfunction(method)
 
-        spy_obj = cast(
-            SpyType,
-            self.patch.object(obj, name, side_effect=wrapped, autospec=autospec),
-        )
+        with _allow_setattr_on_frozen_dataclass(obj):
+            spy_obj = cast(
+                SpyType,
+                self.patch.object(obj, name, side_effect=wrapped, autospec=autospec),
+            )
+
+        if _is_frozen_dataclass_instance(obj):
+            # The patch also needs to restore the original attribute value
+            # (and any subsequent patch.stop() calls) with the same
+            # bypass, since frozen dataclasses disallow attribute
+            # assignment/deletion (see issue #280).
+            mock_item = self._mock_cache._find(spy_obj)
+            assert mock_item.patch is not None
+            patch_obj = mock_item.patch
+            original_stop = patch_obj.stop
+
+            def stop_with_frozen_dataclass_bypass(
+                _original_stop: Callable[[], Any] = original_stop,
+            ) -> Any:
+                with _allow_setattr_on_frozen_dataclass(obj):
+                    return _original_stop()
+
+            patch_obj.stop = stop_with_frozen_dataclass_bypass
+
         spy_obj.spy_return = None
         spy_obj.spy_return_iter = None
         spy_obj.spy_return_list = []

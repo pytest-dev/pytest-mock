@@ -46,7 +46,7 @@ jobs:
         path: dist
 
     - name: Publish package to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.14.0
+      uses: pypa/gh-action-pypi-publish@v1.14.1
       with:
         attestations: true
 
@@ -58,7 +58,7 @@ jobs:
         git push origin v${{ github.event.inputs.version }}
 
     - name: Set up Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@v7
       with:
         python-version: "3.10"
 

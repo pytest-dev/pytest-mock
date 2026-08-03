@@ -3,12 +3,12 @@ import platform
 import re
 import sys
 import warnings
+from collections.abc import Callable
 from collections.abc import Generator
 from collections.abc import Iterable
 from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import Any
-from typing import Callable
 from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
 
@@ -50,7 +50,7 @@ def needs_assert_rewrite(pytestconfig):
     if option != "rewrite":
         pytest.skip(
             "this test needs assertion rewrite to work but current option "
-            'is "{}"'.format(option)
+            f'is "{option}"'
         )
 
 
@@ -1134,11 +1134,13 @@ def test_warn_patch_object_context_manager(mocker: MockerFixture) -> None:
         "https://pytest-mock.readthedocs.io/en/latest/usage.html#usage-as-context-manager"
     )
 
-    with pytest.warns(
-        PytestMockWarning, match=re.escape(expected_warning_msg)
-    ) as warn_record:
-        with mocker.patch.object(a, "doIt", return_value=True):
-            assert a.doIt() is True
+    with (
+        pytest.warns(
+            PytestMockWarning, match=re.escape(expected_warning_msg)
+        ) as warn_record,
+        mocker.patch.object(a, "doIt", return_value=True),
+    ):
+        assert a.doIt() is True
 
     assert warn_record[0].filename == __file__
 
@@ -1151,11 +1153,13 @@ def test_warn_patch_context_manager(mocker: MockerFixture) -> None:
         "https://pytest-mock.readthedocs.io/en/latest/usage.html#usage-as-context-manager"
     )
 
-    with pytest.warns(
-        PytestMockWarning, match=re.escape(expected_warning_msg)
-    ) as warn_record:
-        with mocker.patch("json.loads"):
-            pass
+    with (
+        pytest.warns(
+            PytestMockWarning, match=re.escape(expected_warning_msg)
+        ) as warn_record,
+        mocker.patch("json.loads"),
+    ):
+        pass
 
     assert warn_record[0].filename == __file__
 

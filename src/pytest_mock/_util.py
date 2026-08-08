@@ -13,7 +13,7 @@ def get_mock_module(config):
             config.getini("mock_use_standalone_module")
         )
         if use_standalone_module:
-            from unittest import mock
+            import mock  # noqa
 
             _mock_module = mock
         else:

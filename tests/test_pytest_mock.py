@@ -631,7 +631,7 @@ def test_spy_return_iter_ignores_plain_iterable(
 
 def test_spy_return_iter_resets(mocker: MockerFixture) -> None:
     class Foo:
-        iterables: Any = [
+        iterables: Any = [  # noqa:RUF012
             (i for i in range(3)),
             99,
         ]
@@ -778,8 +778,8 @@ def test_assert_called_args_with_introspection(mocker: MockerFixture) -> None:
 def test_assert_called_kwargs_with_introspection(mocker: MockerFixture) -> None:
     stub = mocker.stub()
 
-    complex_kwargs = dict(foo={"bar": 1, "baz": "spam"})
-    wrong_kwargs = dict(foo={"goo": 1, "baz": "bran"})
+    complex_kwargs = {"foo": {"bar": 1, "baz": "spam"}}
+    wrong_kwargs = {"foo": {"goo": 1, "baz": "bran"}}
 
     stub(**complex_kwargs)
     stub.assert_called_with(**complex_kwargs)
@@ -1194,7 +1194,7 @@ def test_patch_context_manager_with_context_manager(mocker: MockerFixture) -> No
 
     a = A()
 
-    with warnings.catch_warnings(record=True) as warn_record:
+    with warnings.catch_warnings(record=True) as warn_record:  # noqa:SIM117
         with mocker.patch.context_manager(a, "doIt", return_value=True):
             assert a.doIt() is True
 

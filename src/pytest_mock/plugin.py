@@ -13,7 +13,6 @@ from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
 from typing import TypeVar
-from typing import Union
 from typing import cast
 from typing import overload
 
@@ -25,11 +24,11 @@ from ._util import parse_ini_boolean
 _T = TypeVar("_T")
 
 AsyncMockType = unittest.mock.AsyncMock
-MockType = Union[
-    unittest.mock.MagicMock,
-    unittest.mock.AsyncMock,
-    unittest.mock.NonCallableMagicMock,
-]
+MockType = (
+    unittest.mock.MagicMock
+    | unittest.mock.AsyncMock
+    | unittest.mock.NonCallableMagicMock
+)
 
 
 class SpyType(unittest.mock.Mock):
@@ -276,7 +275,7 @@ class MockerFixture:
             p = mock_func(*args, **kwargs)
             mocked: MockType = p.start()
             self.__mock_cache.add(mock=mocked, patch=p)
-            if hasattr(mocked, "reset_mock"):
+            if hasattr(mocked, "reset_mock"):  # noqa:SIM102
                 # check if `mocked` is actually a mock object, as depending on autospec or target
                 # parameters `mocked` can be anything
                 if hasattr(mocked, "__enter__") and warn_on_mock_enter:
@@ -519,7 +518,7 @@ def assert_wrapper(
                     msg += "\n\npytest introspection follows:\n" + introspection
         e = AssertionError(msg)
         e._mock_introspection_applied = True  # type:ignore[attr-defined]
-        raise e
+        raise e  # noqa:TRY201
 
 
 def assert_has_calls_wrapper(
@@ -546,13 +545,13 @@ def assert_has_calls_wrapper(
                     if actual_call is not None:
                         actual_args, actual_kwargs = actual_call
                     else:
-                        actual_args = tuple()
+                        actual_args = ()
                         actual_kwargs = {}
 
                     if expect_call is not None:
                         _, expect_args, expect_kwargs = expect_call
                     else:
-                        expect_args = tuple()
+                        expect_args = ()
                         expect_kwargs = {}
 
                     try:
@@ -567,7 +566,7 @@ def assert_has_calls_wrapper(
                     msg += "\n\npytest introspection follows:\n" + introspection
         e = AssertionError(msg)
         e._mock_introspection_applied = True  # type:ignore[attr-defined]
-        raise e
+        raise e  # noqa:TRY201
 
 
 def wrap_assert_not_called(*args: Any, **kwargs: Any) -> None:

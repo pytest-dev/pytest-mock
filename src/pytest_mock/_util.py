@@ -31,4 +31,4 @@ def parse_ini_boolean(value: bool | str) -> bool:
         return True
     if value.lower() == "false":
         return False
-    raise ValueError("unknown string for bool: %r" % value)
+    raise ValueError(f"unknown string for bool: {value!r}")

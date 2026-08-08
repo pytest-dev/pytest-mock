@@ -4,6 +4,7 @@ import inspect
 import itertools
 import unittest.mock
 import warnings
+from collections.abc import Callable
 from collections.abc import Generator
 from collections.abc import Iterable
 from collections.abc import Iterator
@@ -11,10 +12,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
-from typing import Callable
-from typing import Optional
 from typing import TypeVar
-from typing import Union
 from typing import cast
 from typing import overload
 
@@ -26,11 +24,11 @@ from ._util import parse_ini_boolean
 _T = TypeVar("_T")
 
 AsyncMockType = unittest.mock.AsyncMock
-MockType = Union[
-    unittest.mock.MagicMock,
-    unittest.mock.AsyncMock,
-    unittest.mock.NonCallableMagicMock,
-]
+MockType = (
+    unittest.mock.MagicMock
+    | unittest.mock.AsyncMock
+    | unittest.mock.NonCallableMagicMock
+)
 
 
 class SpyType(unittest.mock.Mock):
@@ -39,9 +37,9 @@ class SpyType(unittest.mock.Mock):
     """
 
     spy_return: Any
-    spy_return_iter: Optional[Iterator[Any]]
+    spy_return_iter: Iterator[Any] | None
     spy_return_list: list[Any]
-    spy_exception: Optional[BaseException]
+    spy_exception: BaseException | None
 
 
 class PytestMockWarning(UserWarning):
@@ -51,7 +49,7 @@ class PytestMockWarning(UserWarning):
 @dataclass
 class MockCacheItem:
     mock: MockType
-    patch: Optional[Any] = None
+    patch: Any | None = None
 
 
 @dataclass
@@ -229,7 +227,7 @@ class MockerFixture:
         spy_obj.spy_exception = None
         return spy_obj
 
-    def stub(self, name: Optional[str] = None) -> unittest.mock.MagicMock:
+    def stub(self, name: str | None = None) -> unittest.mock.MagicMock:
         """
         Create a stub method. It accepts any arguments. Ideal to register to
         callbacks in tests.
@@ -242,7 +240,7 @@ class MockerFixture:
             self.mock_module.MagicMock(spec=lambda *args, **kwargs: None, name=name),
         )
 
-    def async_stub(self, name: Optional[str] = None) -> AsyncMockType:
+    def async_stub(self, name: str | None = None) -> AsyncMockType:
         """
         Create a async stub method. It accepts any arguments. Ideal to register to
         callbacks in tests.
@@ -277,7 +275,7 @@ class MockerFixture:
             p = mock_func(*args, **kwargs)
             mocked: MockType = p.start()
             self.__mock_cache.add(mock=mocked, patch=p)
-            if hasattr(mocked, "reset_mock"):
+            if hasattr(mocked, "reset_mock"):  # noqa:SIM102
                 # check if `mocked` is actually a mock object, as depending on autospec or target
                 # parameters `mocked` can be anything
                 if hasattr(mocked, "__enter__") and warn_on_mock_enter:
@@ -296,10 +294,10 @@ class MockerFixture:
             target: object,
             attribute: str,
             new: object = DEFAULT,
-            spec: Optional[object] = None,
+            spec: object | None = None,
             create: bool = False,
-            spec_set: Optional[object] = None,
-            autospec: Optional[object] = None,
+            spec_set: object | None = None,
+            autospec: object | None = None,
             new_callable: object = None,
             **kwargs: Any,
         ) -> MockType:
@@ -325,10 +323,10 @@ class MockerFixture:
             target: builtins.object,
             attribute: str,
             new: builtins.object = DEFAULT,
-            spec: Optional[builtins.object] = None,
+            spec: builtins.object | None = None,
             create: bool = False,
-            spec_set: Optional[builtins.object] = None,
-            autospec: Optional[builtins.object] = None,
+            spec_set: builtins.object | None = None,
+            autospec: builtins.object | None = None,
             new_callable: builtins.object = None,
             **kwargs: Any,
         ) -> MockType:
@@ -353,11 +351,11 @@ class MockerFixture:
         def multiple(
             self,
             target: builtins.object,
-            spec: Optional[builtins.object] = None,
+            spec: builtins.object | None = None,
             create: bool = False,
-            spec_set: Optional[builtins.object] = None,
-            autospec: Optional[builtins.object] = None,
-            new_callable: Optional[builtins.object] = None,
+            spec_set: builtins.object | None = None,
+            autospec: builtins.object | None = None,
+            new_callable: builtins.object | None = None,
             **kwargs: Any,
         ) -> dict[str, MockType]:
             """API to mock.patch.multiple"""
@@ -375,8 +373,8 @@ class MockerFixture:
 
         def dict(
             self,
-            in_dict: Union[Mapping[Any, Any], str],
-            values: Union[Mapping[Any, Any], Iterable[tuple[Any, Any]]] = (),
+            in_dict: Mapping[Any, Any] | str,
+            values: Mapping[Any, Any] | Iterable[tuple[Any, Any]] = (),
             clear: bool = False,
             **kwargs: Any,
         ) -> Any:
@@ -395,10 +393,10 @@ class MockerFixture:
             self,
             target: str,
             new: None = ...,
-            spec: Optional[builtins.object] = ...,
+            spec: builtins.object | None = ...,
             create: bool = ...,
-            spec_set: Optional[builtins.object] = ...,
-            autospec: Optional[builtins.object] = ...,
+            spec_set: builtins.object | None = ...,
+            autospec: builtins.object | None = ...,
             new_callable: None = ...,
             **kwargs: Any,
         ) -> MockType: ...
@@ -408,10 +406,10 @@ class MockerFixture:
             self,
             target: str,
             new: _T,
-            spec: Optional[builtins.object] = ...,
+            spec: builtins.object | None = ...,
             create: bool = ...,
-            spec_set: Optional[builtins.object] = ...,
-            autospec: Optional[builtins.object] = ...,
+            spec_set: builtins.object | None = ...,
+            autospec: builtins.object | None = ...,
             new_callable: None = ...,
             **kwargs: Any,
         ) -> _T: ...
@@ -421,10 +419,10 @@ class MockerFixture:
             self,
             target: str,
             new: None,
-            spec: Optional[builtins.object],
+            spec: builtins.object | None,
             create: bool,
-            spec_set: Optional[builtins.object],
-            autospec: Optional[builtins.object],
+            spec_set: builtins.object | None,
+            autospec: builtins.object | None,
             new_callable: Callable[[], _T],
             **kwargs: Any,
         ) -> _T: ...
@@ -434,10 +432,10 @@ class MockerFixture:
             self,
             target: str,
             new: None = ...,
-            spec: Optional[builtins.object] = ...,
+            spec: builtins.object | None = ...,
             create: bool = ...,
-            spec_set: Optional[builtins.object] = ...,
-            autospec: Optional[builtins.object] = ...,
+            spec_set: builtins.object | None = ...,
+            autospec: builtins.object | None = ...,
             *,
             new_callable: Callable[[], _T],
             **kwargs: Any,
@@ -447,11 +445,11 @@ class MockerFixture:
             self,
             target: str,
             new: builtins.object = DEFAULT,
-            spec: Optional[builtins.object] = None,
+            spec: builtins.object | None = None,
             create: bool = False,
-            spec_set: Optional[builtins.object] = None,
-            autospec: Optional[builtins.object] = None,
-            new_callable: Optional[Callable[[], Any]] = None,
+            spec_set: builtins.object | None = None,
+            autospec: builtins.object | None = None,
+            new_callable: Callable[[], Any] | None = None,
             **kwargs: Any,
         ) -> Any:
             """API to mock.patch"""
@@ -520,7 +518,7 @@ def assert_wrapper(
                     msg += "\n\npytest introspection follows:\n" + introspection
         e = AssertionError(msg)
         e._mock_introspection_applied = True  # type:ignore[attr-defined]
-        raise e
+        raise e  # noqa:TRY201
 
 
 def assert_has_calls_wrapper(
@@ -547,13 +545,13 @@ def assert_has_calls_wrapper(
                     if actual_call is not None:
                         actual_args, actual_kwargs = actual_call
                     else:
-                        actual_args = tuple()
+                        actual_args = ()
                         actual_kwargs = {}
 
                     if expect_call is not None:
                         _, expect_args, expect_kwargs = expect_call
                     else:
-                        expect_args = tuple()
+                        expect_args = ()
                         expect_kwargs = {}
 
                     try:
@@ -568,7 +566,7 @@ def assert_has_calls_wrapper(
                     msg += "\n\npytest introspection follows:\n" + introspection
         e = AssertionError(msg)
         e._mock_introspection_applied = True  # type:ignore[attr-defined]
-        raise e
+        raise e  # noqa:TRY201
 
 
 def wrap_assert_not_called(*args: Any, **kwargs: Any) -> None:

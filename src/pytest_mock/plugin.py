@@ -696,17 +696,7 @@ def wrap_assert_methods(config: Any) -> None:
 
 def unwrap_assert_methods() -> None:
     for patcher in _mock_module_patches:
-        try:
-            patcher.stop()
-        except RuntimeError as e:
-            # a patcher might have been stopped by user code (#137)
-            # so we need to catch this error here and ignore it;
-            # unfortunately there's no public API to check if a patch
-            # has been started, so catching the error it is
-            if str(e) == "stop called on unstarted patcher":
-                pass
-            else:
-                raise
+        patcher.stop()
     _mock_module_patches[:] = []
     _mock_module_originals.clear()
 

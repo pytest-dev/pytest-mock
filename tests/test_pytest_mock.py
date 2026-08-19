@@ -441,6 +441,101 @@ def test_instance_method_by_subclass_spy(mocker: MockerFixture) -> None:
     assert spy.spy_return_list == [20, 20]
 
 
+def test_property_spy(mocker: MockerFixture) -> None:
+    class Foo:
+        def __init__(self, value: int) -> None:
+            self._value = value
+
+        @property
+        def value(self) -> int:
+            return self._value * 2
+
+    foo = Foo(10)
+    spy = mocker.spy(foo, "value")
+
+    # accessing the property returns the real, computed value
+    assert foo.value == 20
+    assert foo.value == 20
+    assert spy.call_count == 2
+    assert spy.spy_return == 20
+    assert spy.spy_return_iter is None
+    assert spy.spy_return_list == [20, 20]
+    assert spy.spy_exception is None
+
+
+def test_property_spy_by_class(mocker: MockerFixture) -> None:
+    class Foo:
+        def __init__(self, value: int) -> None:
+            self._value = value
+
+        @property
+        def value(self) -> int:
+            return self._value * 2
+
+    spy = mocker.spy(Foo, "value")
+
+    # the original getter still receives the correct instance
+    assert Foo(10).value == 20
+    assert Foo(21).value == 42
+    assert spy.call_count == 2
+    assert spy.spy_return == 42
+    assert spy.spy_return_list == [20, 42]
+
+
+def test_property_spy_exception(mocker: MockerFixture) -> None:
+    class Foo:
+        @property
+        def value(self) -> int:
+            raise ValueError("boom")
+
+    foo = Foo()
+    spy = mocker.spy(foo, "value")
+
+    with pytest.raises(ValueError, match="boom"):
+        _ = foo.value
+
+    spy.assert_called_once()
+    assert isinstance(spy.spy_exception, ValueError)
+    assert spy.spy_return is None
+
+
+def test_property_spy_keeps_setter(mocker: MockerFixture) -> None:
+    class Foo:
+        def __init__(self, value: int) -> None:
+            self._value = value
+
+        @property
+        def value(self) -> int:
+            return self._value
+
+        @value.setter
+        def value(self, new_value: int) -> None:
+            self._value = new_value
+
+    foo = Foo(1)
+    spy = mocker.spy(foo, "value")
+
+    # the setter is left untouched, so assignment keeps working
+    foo.value = 5
+    assert foo.value == 5
+    spy.assert_called_once()
+    assert spy.spy_return == 5
+
+
+def test_property_spy_undone(mocker: MockerFixture) -> None:
+    class Foo:
+        @property
+        def value(self) -> int:
+            return 42
+
+    original = Foo.__dict__["value"]
+    foo = Foo()
+    mocker.spy(foo, "value")
+    assert Foo.__dict__["value"] is not original
+    mocker.stopall()
+    assert Foo.__dict__["value"] is original
+
+
 @skip_pypy
 def test_class_method_spy(mocker: MockerFixture) -> None:
     class Foo:

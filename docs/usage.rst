@@ -86,6 +86,26 @@ are available (like ``assert_called_once_with`` or ``call_count`` in the example
 
 Besides functions and normal methods, ``mocker.spy`` also works for class and static methods.
 
+``mocker.spy`` also works on properties: pass the property name and the getter is spied on
+while the real value is still returned on access.
+
+.. code-block:: python
+
+    def test_spy_property(mocker):
+        class Foo:
+            @property
+            def bar(self):
+                return 42
+
+        foo = Foo()
+        spy = mocker.spy(foo, "bar")
+        assert foo.bar == 42
+        assert spy.call_count == 1
+        assert spy.spy_return == 42
+
+Note that a property is defined on the class, so spying on it affects every instance of the
+class until the spy is undone. The setter and deleter, if any, are left untouched.
+
 As of version 3.0.0, ``mocker.spy`` also works with ``async def`` functions.
 
 .. note::

@@ -171,11 +171,19 @@ class MockerFixture:
         Create a spy of method. It will run method normally, but it is now
         possible to use `mock` call features with it, like call count.
 
+        If ``name`` refers to a ``property``, the property's getter is spied on
+        instead. The real value is still returned on attribute access, and the
+        returned spy records each access.
+
         :param obj: An object.
-        :param name: A method in object.
+        :param name: A method or property in object.
         :param duplicate_iterators: Whether to keep a copy of the returned iterator in `spy_return_iter`.
         :return: Spy object.
         """
+        static_attr = inspect.getattr_static(obj, name, None)
+        if isinstance(static_attr, property):
+            return self._spy_on_property(obj, name, static_attr, duplicate_iterators)
+
         method = getattr(obj, name)
 
         def wrapper(*args, **kwargs):
@@ -221,6 +229,48 @@ class MockerFixture:
             SpyType,
             self.patch.object(obj, name, side_effect=wrapped, autospec=autospec),
         )
+        spy_obj.spy_return = None
+        spy_obj.spy_return_iter = None
+        spy_obj.spy_return_list = []
+        spy_obj.spy_exception = None
+        return spy_obj
+
+    def _spy_on_property(
+        self,
+        obj: object,
+        name: str,
+        prop: property,
+        duplicate_iterators: bool,
+    ) -> SpyType:
+        """Spy on a property getter. See :meth:`spy`."""
+        owner = obj if inspect.isclass(obj) else type(obj)
+        spy_obj = cast(SpyType, self.mock_module.PropertyMock())
+
+        def getter(instance: object) -> Any:
+            spy_obj.spy_return = None
+            spy_obj.spy_exception = None
+            spy_obj()
+            try:
+                r = prop.fget(instance)  # type: ignore[misc]
+            except BaseException as e:
+                spy_obj.spy_exception = e
+                raise
+            else:
+                if duplicate_iterators and isinstance(r, Iterator):
+                    r, duplicated_iterator = itertools.tee(r, 2)
+                    spy_obj.spy_return_iter = duplicated_iterator
+                else:
+                    spy_obj.spy_return_iter = None
+
+                spy_obj.spy_return = r
+                spy_obj.spy_return_list.append(r)
+            return r
+
+        # Replace the property on the class with one that keeps the original
+        # setter/deleter but funnels reads through the spy. patch.object also
+        # registers the patcher so it is undone at the end of the test.
+        self.patch.object(owner, name, property(getter, prop.fset, prop.fdel))
+
         spy_obj.spy_return = None
         spy_obj.spy_return_iter = None
         spy_obj.spy_return_list = []

@@ -4,6 +4,7 @@ Releases
 Unreleased
 ----------
 
+* `#35 <https://github.com/pytest-dev/pytest-mock/issues/35>`_: ``mocker.spy`` now works on properties, spying on the getter while still returning the real value.
 * `#547 <https://github.com/pytest-dev/pytest-mock/issues/547>`_: Added ``SpyType`` for annotating ``mocker.spy`` results.
 * Dropped support for EOL Python 3.9.
 * `#147 <https://github.com/pytest-dev/pytest-mock/issues/147>`_: Removed handling of ``RuntimeError: stop called on unstarted patcher``, which can no longer occur in the supported Python versions.

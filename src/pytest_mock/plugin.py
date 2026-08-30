@@ -206,6 +206,12 @@ class MockerFixture:
                 spy_obj.spy_exception = e
                 raise
             else:
+                if duplicate_iterators and isinstance(r, Iterator):
+                    r, duplicated_iterator = itertools.tee(r, 2)
+                    spy_obj.spy_return_iter = duplicated_iterator
+                else:
+                    spy_obj.spy_return_iter = None
+
                 spy_obj.spy_return = r
                 spy_obj.spy_return_list.append(r)
             return r

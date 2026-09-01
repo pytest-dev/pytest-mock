@@ -666,6 +666,27 @@ async def test_instance_async_method_spy(mocker: MockerFixture) -> None:
     assert result == 20
 
 
+@pytest.mark.asyncio
+async def test_async_spy_return_iter_duplicates_iterator_when_enabled(
+    mocker: MockerFixture,
+) -> None:
+    class Foo:
+        async def bar(self) -> Iterator[int]:
+            return iter([0, 1, 2])
+
+    foo = Foo()
+    spy = mocker.spy(foo, "bar", duplicate_iterators=True)
+    result = await foo.bar()
+
+    assert list(result) == [0, 1, 2]
+    assert spy.spy_return is not None
+    assert spy.spy_return_iter is not None
+    assert list(spy.spy_return_iter) == [0, 1, 2]
+
+    [return_value] = spy.spy_return_list
+    assert isinstance(return_value, Iterator)
+
+
 @contextmanager
 def assert_traceback() -> Generator[None, None, None]:
     """

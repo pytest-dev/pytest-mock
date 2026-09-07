@@ -235,10 +235,10 @@ class MockerFixture:
         :param name: the constructed stub's name as used in repr
         :return: Stub object.
         """
-        return cast(
-            unittest.mock.MagicMock,
-            self.mock_module.MagicMock(spec=lambda *args, **kwargs: None, name=name),
-        )
+        fn = lambda *args, **kwargs: None
+        stub = self.mock_module.MagicMock(spec=fn, name=name)
+        stub.__code__ = fn.__code__
+        return cast(unittest.mock.MagicMock, stub)
 
     def async_stub(self, name: str | None = None) -> AsyncMockType:
         """

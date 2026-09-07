@@ -260,6 +260,18 @@ class TestMockerStub:
     def test_async_stub_type(self, mocker: MockerFixture) -> None:
         assert isinstance(mocker.async_stub(), AsyncMock)
 
+    def test_not_coroutine_function(self, mocker: MockerFixture) -> None:
+        import inspect
+
+        stub = mocker.stub()
+        assert not inspect.iscoroutinefunction(stub)
+
+    def test_async_stub_is_coroutine_function(self, mocker: MockerFixture) -> None:
+        import inspect
+
+        async_stub = mocker.async_stub()
+        assert inspect.iscoroutinefunction(async_stub)
+
 
 def test_instance_method_spy(mocker: MockerFixture) -> None:
     class Foo:

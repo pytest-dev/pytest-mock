@@ -4,6 +4,8 @@ Releases
 Unreleased
 ----------
 
+* Preserve assertion failures when ``assert_has_calls`` receives ``calls`` as a keyword.
+
 * `#547 <https://github.com/pytest-dev/pytest-mock/issues/547>`_: Added ``SpyType`` for annotating ``mocker.spy`` results.
 * Dropped support for EOL Python 3.9.
 * `#147 <https://github.com/pytest-dev/pytest-mock/issues/147>`_: Removed handling of ``RuntimeError: stop called on unstarted patcher``, which can no longer occur in the supported Python versions.

@@ -1428,3 +1428,10 @@ def test_stop_multiple_patches(mocker: MockerFixture) -> None:
 
     assert Class1.get() == 1
     assert Class2.get() == 2
+
+
+def test_assert_has_calls_keyword(mocker: MockerFixture) -> None:
+    stub = mocker.stub()
+    stub("actual")
+    with pytest.raises(AssertionError):
+        stub.assert_has_calls(calls=[mocker.call("expected")])

@@ -537,7 +537,7 @@ def assert_has_calls_wrapper(
             msg = str(e)
             if __mock_self.call_args_list is not None:
                 actual_calls = list(__mock_self.call_args_list)
-                expect_calls = args[1]
+                expect_calls = args[1] if len(args) > 1 else kwargs["calls"]
                 introspection = ""
                 from itertools import zip_longest
 

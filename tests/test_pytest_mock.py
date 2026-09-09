@@ -224,6 +224,19 @@ def test_mocker_resetall(mocker: MockerFixture) -> None:
     assert mocked_object.run.return_value != "mocked"
 
 
+def test_mocker_resetall_non_callable_mock(mocker: MockerFixture) -> None:
+    """``resetall`` must honour its arguments for non-callable mocks too (#389)."""
+    mocked_object = mocker.create_autospec(TestObject, instance=True)
+    assert not isinstance(mocked_object, mocker.Mock)
+    mocked_object.run.return_value = "mocked"
+    mocked_object.run.side_effect = ValueError
+
+    mocker.resetall(return_value=True, side_effect=True)
+
+    assert mocked_object.run.return_value != "mocked"
+    assert mocked_object.run.side_effect is None
+
+
 class TestMockerStub:
     def test_call(self, mocker: MockerFixture) -> None:
         stub = mocker.stub()

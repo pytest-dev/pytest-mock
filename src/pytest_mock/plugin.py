@@ -130,12 +130,6 @@ class MockerFixture:
         :param bool return_value: Reset the return_value of mocks.
         :param bool side_effect: Reset the side_effect of mocks.
         """
-        supports_reset_mock_with_args: tuple[type[Any], ...]
-        if hasattr(self, "AsyncMock"):
-            supports_reset_mock_with_args = (self.Mock, self.AsyncMock)
-        else:
-            supports_reset_mock_with_args = (self.Mock,)
-
         for mock_item in self._mock_cache:
             # See issue #237.
             if not hasattr(mock_item.mock, "reset_mock"):
@@ -145,7 +139,11 @@ class MockerFixture:
                 mock_item.mock.spy_return_list = []
             if hasattr(mock_item.mock, "spy_return_iter"):
                 mock_item.mock.spy_return_iter = None
-            if isinstance(mock_item.mock, supports_reset_mock_with_args):
+            # ``reset_mock`` is defined on ``NonCallableMock``, which is the base
+            # of every mock class. Autospecced *functions* are plain functions
+            # carrying a no-argument ``reset_mock`` closure, so they take the
+            # ``else`` branch.
+            if isinstance(mock_item.mock, self.NonCallableMock):
                 mock_item.mock.reset_mock(
                     return_value=return_value, side_effect=side_effect
                 )

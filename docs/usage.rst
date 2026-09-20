@@ -8,6 +8,9 @@ supporting the same arguments:
 
 .. code-block:: python
 
+    import os
+
+
     def test_foo(mocker):
         # all valid calls
         mocker.patch('os.remove')

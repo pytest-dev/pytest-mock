@@ -4,6 +4,7 @@ Releases
 Unreleased
 ----------
 
+* Fixed ``duplicate_iterators=True`` for async functions spied with ``mocker.spy``.
 * `#606 <https://github.com/pytest-dev/pytest-mock/pull/606>`_: ``mocker.resetall(return_value=True, side_effect=True)`` now also applies to non-callable mocks, such as those returned by ``mocker.create_autospec(SomeClass, instance=True)``. Previously both arguments were silently ignored for them.
 * `#547 <https://github.com/pytest-dev/pytest-mock/issues/547>`_: Added ``SpyType`` for annotating ``mocker.spy`` results.
 * Dropped support for EOL Python 3.9.

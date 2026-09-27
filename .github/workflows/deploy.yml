@@ -35,6 +35,7 @@ jobs:
     permissions:
       id-token: write  # For PyPI trusted publishers.
       contents: write  # For tag and release notes.
+      pull-requests: write  # For merging the release PR.
 
     steps:
     - uses: actions/checkout@v7
@@ -74,3 +75,8 @@ jobs:
         body_path: scripts/latest-release-notes.md
         files: dist/*
         tag_name: v${{ github.event.inputs.version }}
+
+    - name: Merge release PR
+      run: gh pr merge ${{ github.ref_name }} --merge
+      env:
+        GH_TOKEN: ${{ github.token }}

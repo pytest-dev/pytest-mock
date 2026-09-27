@@ -7,4 +7,4 @@ Here are the steps on how to make a new release.
 
     gh workflow run deploy.yml --repo pytest-dev/pytest-mock --ref release-VERSION -f version=VERSION
 
-5. Merge the PR.
+The workflow merges the release PR automatically at the end.

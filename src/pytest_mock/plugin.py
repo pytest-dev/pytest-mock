@@ -501,8 +501,13 @@ def assert_wrapper(
         else:
             __mock_self = args[0]
             msg = str(e)
-            if __mock_self.call_args is not None:
-                actual_args, actual_kwargs = __mock_self.call_args
+            call_args = (
+                __mock_self.await_args
+                if "await" in __wrapped_mock_method__.__name__
+                else __mock_self.call_args
+            )
+            if call_args is not None:
+                actual_args, actual_kwargs = call_args
                 introspection = ""
                 try:
                     assert actual_args == args[1:]

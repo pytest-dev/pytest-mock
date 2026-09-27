@@ -1,8 +1,10 @@
 Releases
 ========
 
-Unreleased
-----------
+3.16.0
+------
+
+*2026-09-27*
 
 * `#604 <https://github.com/pytest-dev/pytest-mock/pull/604>`_: Fixed ``duplicate_iterators=True`` for async functions spied with ``mocker.spy``.
 * `#611 <https://github.com/pytest-dev/pytest-mock/pull/611>`_: Fixed async mock assertion introspection to use awaited arguments instead of the latest call's arguments.

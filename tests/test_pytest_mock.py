@@ -956,6 +956,22 @@ def test_assert_has_calls_no_calls(
         stub.assert_has_calls([mocker.call("foo")])
 
 
+@pytest.mark.usefixtures("needs_assert_rewrite")
+def test_assert_has_calls_two_tuple_calls(mocker: MockerFixture) -> None:
+    """Expected calls given as ``(args, kwargs)`` pairs, such as the entries of
+    another mock's ``call_args_list``, must raise ``AssertionError`` on mismatch."""
+    expected = mocker.stub()
+    expected("foo", key="expected")
+    stub = mocker.stub()
+    stub("foo", key="actual")
+
+    with pytest.raises(AssertionError) as exc_info:
+        stub.assert_has_calls(expected.call_args_list)
+    introspection = str(exc_info.value).split("pytest introspection follows:")[1]
+    assert "'expected'" in introspection
+    assert "'actual'" in introspection
+
+
 def test_monkeypatch_ini(testdir: Any, mocker: MockerFixture) -> None:
     # Make sure the following function actually tests something
     stub = mocker.stub()

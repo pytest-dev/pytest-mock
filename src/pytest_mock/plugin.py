@@ -558,7 +558,10 @@ def assert_has_calls_wrapper(
                         actual_kwargs = {}
 
                     if expect_call is not None:
-                        _, expect_args, expect_kwargs = expect_call
+                        # Expected calls can be ``(name, args, kwargs)``, like
+                        # ``call(...)``, or ``(args, kwargs)``, like the entries
+                        # of another mock's ``call_args_list``.
+                        expect_args, expect_kwargs = expect_call[-2:]
                     else:
                         expect_args = ()
                         expect_kwargs = {}

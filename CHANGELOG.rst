@@ -4,7 +4,7 @@ Releases
 UNRELEASED
 ----------
 
-* Fixed ``assert_has_calls`` raising ``ValueError`` instead of ``AssertionError`` when the expected calls are ``(args, kwargs)`` tuples, such as the entries of another mock's ``call_args_list``.
+* `#617 <https://github.com/pytest-dev/pytest-mock/pull/617>`_: Fixed ``assert_has_calls`` raising ``ValueError`` instead of ``AssertionError`` when the expected calls are ``(args, kwargs)`` tuples, such as the entries of another mock's ``call_args_list``.
 
 3.16.0
 ------

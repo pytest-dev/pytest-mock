@@ -1,0 +1,10 @@
+# Commits listed here are skipped by `git blame`, crediting their lines to earlier commits.
+# GitHub uses this file automatically; locally, run once:
+#
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# Only list commits that move or reformat code without changing it, and make sure
+# they are merged with a merge commit, as squashing or rebasing changes their hashes.
+
+# Group tests into classes
+8ac2b87bcbfd8a26d4aa7f2fd26e790a8c974ca4

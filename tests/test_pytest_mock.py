@@ -972,6 +972,50 @@ def test_assert_has_calls_two_tuple_calls(mocker: MockerFixture) -> None:
     assert "'actual'" in introspection
 
 
+@pytest.mark.parametrize(
+    "expected_call",
+    [
+        pytest.param(((2,),), id="args-only"),
+        pytest.param(({"a": 2},), id="kwargs-only"),
+    ],
+)
+def test_assert_has_calls_one_tuple_calls(
+    mocker: MockerFixture, expected_call: tuple[Any, ...]
+) -> None:
+    """Expected calls given as ``(args,)`` or ``(kwargs,)`` must raise
+    ``AssertionError`` on mismatch."""
+    stub = mocker.MagicMock()
+    stub(1)
+    with pytest.raises(AssertionError, match="Calls not found"):
+        stub.assert_has_calls([expected_call])
+
+
+@pytest.mark.usefixtures("needs_assert_rewrite")
+def test_assert_has_calls_named_two_tuple_calls(mocker: MockerFixture) -> None:
+    """Expected calls given as ``(name, args)`` must be introspected using
+    ``args``, not the name."""
+    stub = mocker.MagicMock()
+    stub("actual")
+    with pytest.raises(AssertionError) as exc_info:
+        stub.assert_has_calls([("", ("expected",))])
+    introspection = str(exc_info.value).split("pytest introspection follows:")[1]
+    assert "'expected'" in introspection
+    assert "Kwargs" not in introspection
+
+
+@pytest.mark.usefixtures("needs_assert_rewrite")
+def test_assert_has_calls_named_kwargs_two_tuple_calls(mocker: MockerFixture) -> None:
+    """Expected calls given as ``(name, kwargs)`` must be introspected using
+    ``kwargs``, not the name."""
+    stub = mocker.MagicMock()
+    stub(key="actual")
+    with pytest.raises(AssertionError) as exc_info:
+        stub.assert_has_calls([("", {"key": "expected"})])
+    introspection = str(exc_info.value).split("pytest introspection follows:")[1]
+    assert "'expected'" in introspection
+    assert "Args" not in introspection
+
+
 def test_monkeypatch_ini(testdir: Any, mocker: MockerFixture) -> None:
     # Make sure the following function actually tests something
     stub = mocker.stub()

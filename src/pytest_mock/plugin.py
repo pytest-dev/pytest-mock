@@ -530,6 +530,32 @@ def assert_wrapper(
         raise e  # noqa:TRY201
 
 
+def _unpack_expected_call(expect_call: Any) -> tuple[Any, Any] | None:
+    """
+    Return the ``(args, kwargs)`` of an expected call, or ``None``
+    if its shape is not recognized.
+    """
+    match expect_call:
+        case ():
+            return (), {}
+        case (_, args, kwargs):
+            return args, kwargs
+        case (tuple() as args,):
+            return args, {}
+        case (str(),):
+            return (), {}
+        case (kwargs,):
+            return (), kwargs
+        case (str(), tuple() as args):
+            return args, {}
+        case (str(), kwargs):
+            return (), kwargs
+        case (args, kwargs):
+            return args, kwargs
+        case _:
+            return None
+
+
 def assert_has_calls_wrapper(
     __wrapped_mock_method__: Callable[..., Any], *args: Any, **kwargs: Any
 ) -> None:
@@ -558,7 +584,10 @@ def assert_has_calls_wrapper(
                         actual_kwargs = {}
 
                     if expect_call is not None:
-                        _, expect_args, expect_kwargs = expect_call
+                        unpacked = _unpack_expected_call(expect_call)
+                        if unpacked is None:
+                            continue
+                        expect_args, expect_kwargs = unpacked
                     else:
                         expect_args = ()
                         expect_kwargs = {}

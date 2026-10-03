@@ -5,7 +5,7 @@ Here are the steps on how to make a new release.
 
 2. Create a ``release-VERSION`` branch from ``upstream/main``.
 
-3. Update ``CHANGELOG.rst``: rename the ``Unreleased`` heading to the version (adjusting the
+3. Update ``CHANGELOG.rst``: rename the ``UNRELEASED`` heading to the version (adjusting the
    underline length), and add the release date below it, for example::
 
     3.16.0

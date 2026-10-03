@@ -71,65 +71,13 @@ class UnixFS:
         return os.listdir(path)
 
 
-class TestObject:
+class AutospecTarget:
     """
     Class that is used for testing create_autospec with child mocks
     """
 
     def run(self) -> str:
         return "not mocked"
-
-
-@pytest.fixture
-def check_unix_fs_mocked(
-    tmpdir: Any, mocker: MockerFixture
-) -> Callable[[Any, Any], None]:
-    """
-    performs a standard test in a UnixFS, assuming that both `os.remove` and
-    `os.listdir` have been mocked previously.
-    """
-
-    def check(mocked_rm, mocked_ls):
-        assert mocked_rm is os.remove
-        assert mocked_ls is os.listdir
-
-        file_name = tmpdir / "foo.txt"
-        file_name.ensure()
-
-        UnixFS.rm(str(file_name))
-        mocked_rm.assert_called_once_with(str(file_name))
-        assert os.path.isfile(str(file_name))
-
-        mocked_ls.return_value = ["bar.txt"]
-        assert UnixFS.ls(str(tmpdir)) == ["bar.txt"]
-        mocked_ls.assert_called_once_with(str(tmpdir))
-
-        mocker.stopall()
-
-        assert UnixFS.ls(str(tmpdir)) == ["foo.txt"]
-        UnixFS.rm(str(file_name))
-        assert not os.path.isfile(str(file_name))
-
-    return check
-
-
-def mock_using_patch_object(mocker: MockerFixture) -> tuple[MagicMock, MagicMock]:
-    return mocker.patch.object(os, "remove"), mocker.patch.object(os, "listdir")
-
-
-def mock_using_patch(mocker: MockerFixture) -> tuple[MagicMock, MagicMock]:
-    return mocker.patch("os.remove"), mocker.patch("os.listdir")
-
-
-def mock_using_patch_multiple(mocker: MockerFixture) -> tuple[MagicMock, MagicMock]:
-    r = mocker.patch.multiple("os", remove=mocker.DEFAULT, listdir=mocker.DEFAULT)
-    return r["remove"], r["listdir"]
-
-
-def assert_spy_has_no_return(spy: SpyType) -> None:
-    assert spy.spy_return is None
-    assert spy.spy_return_iter is None
-    assert spy.spy_return_list == []
 
 
 @contextmanager
@@ -145,38 +93,56 @@ def assert_traceback() -> Generator[None, None, None]:
         raise AssertionError("DID NOT RAISE")
 
 
-@contextmanager
-def assert_argument_introspection(left: Any, right: Any) -> Generator[None, None, None]:
-    """
-    Assert detailed argument introspection is used
-    """
-    try:
-        yield
-    except AssertionError as e:
-        version = tuple(int(x) for x in pytest.__version__.split(".")[:3])
-
-        if version[:2] < (9, 1):
-            from _pytest.assertion.util import _compare_eq_iterable  # type:ignore
-        else:
-            from _pytest.assertion._compare_sequence import (  # type:ignore
-                _compare_eq_iterable,
-            )
-
-        # NOTE: we assert with either verbose or not, depending on how our own
-        #       test was run by examining sys.argv
-        verbose = any(a.startswith("-v") for a in sys.argv)
-        if version[0] < 8:
-            expected = "\n  ".join(_compare_eq_iterable(left, right, verbose))  # type:ignore
-        else:
-            expected = "\n  ".join(
-                _compare_eq_iterable(left, right, lambda t, *_, **__: t, verbose)  # type:ignore
-            )
-        assert expected in str(e)
-    else:
-        raise AssertionError("DID NOT RAISE")
-
-
 class TestPatch:
+    """Patching with ``mocker.patch`` and its variants."""
+
+    @pytest.fixture
+    def check_unix_fs_mocked(
+        self, tmpdir: Any, mocker: MockerFixture
+    ) -> Callable[[Any, Any], None]:
+        """
+        performs a standard test in a UnixFS, assuming that both `os.remove` and
+        `os.listdir` have been mocked previously.
+        """
+
+        def check(mocked_rm, mocked_ls):
+            assert mocked_rm is os.remove
+            assert mocked_ls is os.listdir
+
+            file_name = tmpdir / "foo.txt"
+            file_name.ensure()
+
+            UnixFS.rm(str(file_name))
+            mocked_rm.assert_called_once_with(str(file_name))
+            assert os.path.isfile(str(file_name))
+
+            mocked_ls.return_value = ["bar.txt"]
+            assert UnixFS.ls(str(tmpdir)) == ["bar.txt"]
+            mocked_ls.assert_called_once_with(str(tmpdir))
+
+            mocker.stopall()
+
+            assert UnixFS.ls(str(tmpdir)) == ["foo.txt"]
+            UnixFS.rm(str(file_name))
+            assert not os.path.isfile(str(file_name))
+
+        return check
+
+    @staticmethod
+    def mock_using_patch_object(mocker: MockerFixture) -> tuple[MagicMock, MagicMock]:
+        return mocker.patch.object(os, "remove"), mocker.patch.object(os, "listdir")
+
+    @staticmethod
+    def mock_using_patch(mocker: MockerFixture) -> tuple[MagicMock, MagicMock]:
+        return mocker.patch("os.remove"), mocker.patch("os.listdir")
+
+    @staticmethod
+    def mock_using_patch_multiple(
+        mocker: MockerFixture,
+    ) -> tuple[MagicMock, MagicMock]:
+        r = mocker.patch.multiple("os", remove=mocker.DEFAULT, listdir=mocker.DEFAULT)
+        return r["remove"], r["listdir"]
+
     @pytest.mark.parametrize(
         "mock_fs",
         [mock_using_patch_object, mock_using_patch, mock_using_patch_multiple],
@@ -226,6 +192,8 @@ class TestPatch:
 
 
 class TestMockerAttributes:
+    """Mock helpers re-exported as ``mocker`` attributes."""
+
     @pytest.mark.parametrize(
         "name",
         [
@@ -251,11 +219,13 @@ class TestMockerAttributes:
 
 
 class TestResetAll:
+    """``mocker.resetall``."""
+
     def test_basic(self, mocker: MockerFixture) -> None:
         listdir = mocker.patch("os.listdir", return_value="foo")
         open = mocker.patch("os.open", side_effect=["bar", "baz"])
 
-        mocked_object = mocker.create_autospec(TestObject)
+        mocked_object = mocker.create_autospec(AutospecTarget)
         mocked_object.run.return_value = "mocked"
 
         assert listdir("/tmp") == "foo"
@@ -283,7 +253,7 @@ class TestResetAll:
 
     def test_non_callable_mock(self, mocker: MockerFixture) -> None:
         """``resetall`` must honour its arguments for non-callable mocks too (#389)."""
-        mocked_object = mocker.create_autospec(TestObject, instance=True)
+        mocked_object = mocker.create_autospec(AutospecTarget, instance=True)
         assert not isinstance(mocked_object, mocker.Mock)
         mocked_object.run.return_value = "mocked"
         mocked_object.run.side_effect = ValueError
@@ -343,6 +313,14 @@ class TestMockerStub:
 
 
 class TestSpy:
+    """``mocker.spy``."""
+
+    @staticmethod
+    def assert_spy_has_no_return(spy: SpyType) -> None:
+        assert spy.spy_return is None
+        assert spy.spy_return_iter is None
+        assert spy.spy_return_list == []
+
     def test_instance_method(self, mocker: MockerFixture) -> None:
         class Foo:
             def bar(self, arg):
@@ -373,7 +351,7 @@ class TestSpy:
         foo = Foo()
         spy: SpyType = mocker.spy(foo, "bar")
 
-        assert_spy_has_no_return(spy)
+        self.assert_spy_has_no_return(spy)
         assert spy.spy_exception is None
         spy.assert_not_called()
 
@@ -457,7 +435,7 @@ class TestSpy:
                 return x * 3
 
         spy = mocker.spy(Foo, "bar")
-        assert_spy_has_no_return(spy)
+        self.assert_spy_has_no_return(spy)
         assert spy.spy_exception is None
 
         Foo().bar(10)
@@ -471,7 +449,7 @@ class TestSpy:
 
         with pytest.raises(ValueError):
             Foo().bar(0)
-        assert_spy_has_no_return(spy)
+        self.assert_spy_has_no_return(spy)
         assert str(spy.spy_exception) == "invalid x"
 
         Foo().bar(15)
@@ -517,8 +495,10 @@ class TestSpy:
         spy.assert_called_once_with(10)
         assert result == 20
 
+    @skip_pypy
     class TestOnClass:
-        @skip_pypy
+        """Spies installed on a class rather than on an instance."""
+
         def test_instance_method(self, mocker: MockerFixture) -> None:
             class Foo:
                 def bar(self, arg):
@@ -532,7 +512,6 @@ class TestSpy:
             calls = [mocker.call(foo, arg=10), mocker.call(other, arg=10)]
             assert spy.call_args_list == calls
 
-        @skip_pypy
         def test_instance_method_subclass(self, mocker: MockerFixture) -> None:
             class Base:
                 def bar(self, arg):
@@ -552,7 +531,6 @@ class TestSpy:
             assert spy.spy_return_iter is None
             assert spy.spy_return_list == [20, 20]
 
-        @skip_pypy
         def test_class_method(self, mocker: MockerFixture) -> None:
             class Foo:
                 @classmethod
@@ -570,7 +548,6 @@ class TestSpy:
             assert spy.spy_return_iter is None
             assert spy.spy_return_list == [20]
 
-        @skip_pypy
         def test_class_method_subclass(self, mocker: MockerFixture) -> None:
             class Base:
                 @classmethod
@@ -591,7 +568,6 @@ class TestSpy:
             assert spy.spy_return_iter is None
             assert spy.spy_return_list == [20]
 
-        @skip_pypy
         def test_class_method_with_metaclass(self, mocker: MockerFixture) -> None:
             class MetaFoo(type):
                 pass
@@ -614,7 +590,6 @@ class TestSpy:
             assert spy.spy_return_iter is None
             assert spy.spy_return_list == [20]
 
-        @skip_pypy
         def test_static_method(self, mocker: MockerFixture) -> None:
             class Foo:
                 @staticmethod
@@ -632,7 +607,6 @@ class TestSpy:
             assert spy.spy_return_iter is None
             assert spy.spy_return_list == [20]
 
-        @skip_pypy
         def test_static_method_subclass(self, mocker: MockerFixture) -> None:
             class Base:
                 @staticmethod
@@ -655,6 +629,8 @@ class TestSpy:
 
 
 class TestSpyReturnIter:
+    """``spy_return_iter``, enabled with ``duplicate_iterators=True``."""
+
     @pytest.mark.parametrize("iterator", [(i for i in range(3)), iter([0, 1, 2])])
     def test_duplicates_iterator_when_enabled(
         self, mocker: MockerFixture, iterator: Iterator[int]
@@ -754,6 +730,10 @@ class TestSpyReturnIter:
 
 
 class TestAssertWrappers:
+    """
+    Mock assertion methods are wrapped to hide pytest-mock frames from tracebacks.
+    """
+
     def test_not_called(self, mocker: MockerFixture) -> None:
         stub = mocker.stub()
         stub.assert_not_called()
@@ -828,6 +808,8 @@ class TestAssertWrappers:
 
 
 class TestAssertHasCalls:
+    """``assert_has_calls``, including the shapes accepted as expected calls."""
+
     def test_basic(self, mocker: MockerFixture) -> None:
         stub = mocker.stub()
         stub("foo")
@@ -972,8 +954,10 @@ class TestAssertHasCalls:
         assert "Args" not in introspection
 
 
+@pytest.mark.usefixtures("needs_assert_rewrite")
 class TestAsyncAssertions:
-    @pytest.mark.usefixtures("needs_assert_rewrite")
+    """Assertions on ``AsyncMock`` introspect awaits, not calls."""
+
     @pytest.mark.parametrize(
         "assertion",
         ["assert_awaited_with", "assert_awaited_once_with", "assert_any_await"],
@@ -999,7 +983,6 @@ class TestAsyncAssertions:
         assert "'called'" in introspection
         assert "'awaited'" not in introspection
 
-    @pytest.mark.usefixtures("needs_assert_rewrite")
     def test_without_await(self, mocker: MockerFixture) -> None:
         stub = mocker.AsyncMock()
         stub("called").close()
@@ -1008,8 +991,43 @@ class TestAsyncAssertions:
         assert "pytest introspection follows:" not in str(exc_info.value)
 
 
+@pytest.mark.usefixtures("needs_assert_rewrite")
 class TestIntrospection:
-    @pytest.mark.usefixtures("needs_assert_rewrite")
+    """pytest's assertion introspection added to failed mock assertions."""
+
+    @staticmethod
+    @contextmanager
+    def assert_argument_introspection(
+        left: Any, right: Any
+    ) -> Generator[None, None, None]:
+        """
+        Assert detailed argument introspection is used
+        """
+        try:
+            yield
+        except AssertionError as e:
+            version = tuple(int(x) for x in pytest.__version__.split(".")[:3])
+
+            if version[:2] < (9, 1):
+                from _pytest.assertion.util import _compare_eq_iterable  # type:ignore
+            else:
+                from _pytest.assertion._compare_sequence import (  # type:ignore
+                    _compare_eq_iterable,
+                )
+
+            # NOTE: we assert with either verbose or not, depending on how our own
+            #       test was run by examining sys.argv
+            verbose = any(a.startswith("-v") for a in sys.argv)
+            if version[0] < 8:
+                expected = "\n  ".join(_compare_eq_iterable(left, right, verbose))  # type:ignore
+            else:
+                expected = "\n  ".join(
+                    _compare_eq_iterable(left, right, lambda t, *_, **__: t, verbose)  # type:ignore
+                )
+            assert expected in str(e)
+        else:
+            raise AssertionError("DID NOT RAISE")
+
     def test_called_args(self, mocker: MockerFixture) -> None:
         stub = mocker.stub()
 
@@ -1020,11 +1038,10 @@ class TestIntrospection:
         stub.assert_called_with(*complex_args)
         stub.assert_called_once_with(*complex_args)
 
-        with assert_argument_introspection(complex_args, wrong_args):
+        with self.assert_argument_introspection(complex_args, wrong_args):
             stub.assert_called_with(*wrong_args)
             stub.assert_called_once_with(*wrong_args)
 
-    @pytest.mark.usefixtures("needs_assert_rewrite")
     def test_called_kwargs(self, mocker: MockerFixture) -> None:
         stub = mocker.stub()
 
@@ -1035,11 +1052,10 @@ class TestIntrospection:
         stub.assert_called_with(**complex_kwargs)
         stub.assert_called_once_with(**complex_kwargs)
 
-        with assert_argument_introspection(complex_kwargs, wrong_kwargs):
+        with self.assert_argument_introspection(complex_kwargs, wrong_kwargs):
             stub.assert_called_with(**wrong_kwargs)
             stub.assert_called_once_with(**wrong_kwargs)
 
-    @pytest.mark.usefixtures("needs_assert_rewrite")
     def test_detailed(self, testdir: Any) -> None:
         """Check that the "mock_use_standalone" is being used."""
         testdir.makeini(
@@ -1076,7 +1092,6 @@ class TestIntrospection:
         ]
         result.stdout.fnmatch_lines(expected_lines)
 
-    @pytest.mark.usefixtures("needs_assert_rewrite")
     def test_detailed_async(self, testdir: Any) -> None:
         """Check that the "mock_use_standalone" is being used."""
         testdir.makeini(
@@ -1115,6 +1130,8 @@ class TestIntrospection:
 
 
 class TestConfiguration:
+    """Ini options and command-line flags that change pytest-mock's behavior."""
+
     def test_monkeypatch_ini(self, testdir: Any, mocker: MockerFixture) -> None:
         # Make sure the following function actually tests something
         stub = mocker.stub()
@@ -1204,6 +1221,8 @@ class TestConfiguration:
 
 
 class TestStop:
+    """``mocker.stop`` and ``mocker.stopall``."""
+
     def test_plain_stopall(self, testdir: Any) -> None:
         """patch.stopall() in a test should not cause an error during unconfigure (#137)"""
         testdir.makeini(
@@ -1305,6 +1324,8 @@ class TestStop:
 
 
 class TestContextManagerWarnings:
+    """Warnings when patches are misused as context managers."""
+
     def test_patch_object(self, mocker: MockerFixture) -> None:
         class A:
             def doIt(self):
@@ -1420,6 +1441,11 @@ class TestContextManagerWarnings:
 
 
 class TestFixtureScopes:
+    """
+    The ``class_mocker``, ``module_mocker``, ``package_mocker`` and
+    ``session_mocker`` fixtures.
+    """
+
     def test_class(self, testdir: Any) -> None:
         testdir.makeini(
             """
@@ -1449,7 +1475,8 @@ class TestFixtureScopes:
         assert "AssertionError" not in result.stderr.str()
         result.stdout.fnmatch_lines("* 1 passed in *")
 
-    def test_module(self, testdir: Any) -> None:
+    @pytest.mark.parametrize("scope", ["module", "package", "session"])
+    def test_scope(self, testdir: Any, scope: str) -> None:
         testdir.makeini(
             """
             [pytest]
@@ -1457,70 +1484,16 @@ class TestFixtureScopes:
             """
         )
         testdir.makepyfile(
-            """
+            f"""
             import pytest
             import random
 
             def get_random_number():
                 return random.randint(0, 1)
 
-            @pytest.fixture(autouse=True, scope="module")
-            def randint_mock(module_mocker):
-                return module_mocker.patch("random.randint", lambda x, y: 5)
-
-            def test_get_random_number():
-                assert get_random_number() == 5
-        """
-        )
-        result = testdir.runpytest_subprocess()
-        assert "AssertionError" not in result.stderr.str()
-        result.stdout.fnmatch_lines("* 1 passed in *")
-
-    def test_package(self, testdir: Any) -> None:
-        testdir.makeini(
-            """
-            [pytest]
-            asyncio_mode=auto
-            """
-        )
-        testdir.makepyfile(
-            """
-            import pytest
-            import random
-
-            def get_random_number():
-                return random.randint(0, 1)
-
-            @pytest.fixture(autouse=True, scope="package")
-            def randint_mock(package_mocker):
-                return package_mocker.patch("random.randint", lambda x, y: 5)
-
-            def test_get_random_number():
-                assert get_random_number() == 5
-        """
-        )
-        result = testdir.runpytest_subprocess()
-        assert "AssertionError" not in result.stderr.str()
-        result.stdout.fnmatch_lines("* 1 passed in *")
-
-    def test_session(self, testdir: Any) -> None:
-        testdir.makeini(
-            """
-            [pytest]
-            asyncio_mode=auto
-            """
-        )
-        testdir.makepyfile(
-            """
-            import pytest
-            import random
-
-            def get_random_number():
-                return random.randint(0, 1)
-
-            @pytest.fixture(autouse=True, scope="session")
-            def randint_mock(session_mocker):
-                return session_mocker.patch("random.randint", lambda x, y: 5)
+            @pytest.fixture(autouse=True, scope="{scope}")
+            def randint_mock({scope}_mocker):
+                return {scope}_mocker.patch("random.randint", lambda x, y: 5)
 
             def test_get_random_number():
                 assert get_random_number() == 5

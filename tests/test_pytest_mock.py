@@ -708,13 +708,15 @@ class TestSpyReturnIter:
         assert spy.spy_return_iter is None
 
     @pytest.mark.asyncio
+    @pytest.mark.parametrize("iterator", [(i for i in range(3)), iter([0, 1, 2])])
     async def test_async_duplicates_iterator_when_enabled(
         self,
         mocker: MockerFixture,
+        iterator: Iterator[int],
     ) -> None:
         class Foo:
             async def bar(self) -> Iterator[int]:
-                return iter([0, 1, 2])
+                return iterator
 
         foo = Foo()
         spy = mocker.spy(foo, "bar", duplicate_iterators=True)
@@ -727,6 +729,64 @@ class TestSpyReturnIter:
 
         [return_value] = spy.spy_return_list
         assert isinstance(return_value, Iterator)
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("iterator", [(i for i in range(3)), iter([0, 1, 2])])
+    async def test_async_is_not_set_when_disabled(
+        self, mocker: MockerFixture, iterator: Iterator[int]
+    ) -> None:
+        class Foo:
+            async def bar(self) -> Iterator[int]:
+                return iterator
+
+        foo = Foo()
+        spy = mocker.spy(foo, "bar", duplicate_iterators=False)
+        result = await foo.bar()
+
+        assert result is iterator
+        assert list(result) == [0, 1, 2]
+        assert spy.spy_return is result
+        assert spy.spy_return_iter is None
+        assert spy.spy_return_list == [result]
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize("iterable", [(0, 1, 2), [0, 1, 2], range(3)])
+    async def test_async_ignores_plain_iterable(
+        self, mocker: MockerFixture, iterable: Iterable[int]
+    ) -> None:
+        class Foo:
+            async def bar(self) -> Iterable[int]:
+                return iterable
+
+        foo = Foo()
+        spy = mocker.spy(foo, "bar", duplicate_iterators=True)
+        result = await foo.bar()
+
+        assert result is iterable
+        assert spy.spy_return is result
+        assert spy.spy_return_iter is None
+        assert spy.spy_return_list == [result]
+
+    @pytest.mark.asyncio
+    async def test_async_resets(self, mocker: MockerFixture) -> None:
+        class Foo:
+            async def bar(self, value: Any) -> Any:
+                return value
+
+        foo = Foo()
+        spy = mocker.spy(foo, "bar", duplicate_iterators=True)
+
+        for start in (0, 3):
+            result = await foo.bar(iter(range(start, start + 3)))
+            assert list(result) == list(range(start, start + 3))
+            assert spy.spy_return_iter is not None
+            assert list(spy.spy_return_iter) == list(range(start, start + 3))
+
+        assert await foo.bar(99) == 99
+        assert spy.spy_return == 99
+        assert spy.spy_return_iter is None
+        assert spy.spy_return_list[-1] == 99
+        assert len(spy.spy_return_list) == 3
 
 
 class TestAssertWrappers:

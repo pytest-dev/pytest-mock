@@ -46,7 +46,7 @@ class PytestMockWarning(UserWarning):
     """Base class for all warnings emitted by pytest-mock."""
 
 
-@dataclass
+@dataclass(eq=False)
 class MockCacheItem:
     mock: MockType
     patch: Any | None = None

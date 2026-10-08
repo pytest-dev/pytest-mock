@@ -221,10 +221,22 @@ class MockerFixture:
 
         autospec = inspect.ismethod(method) or inspect.isfunction(method)
 
-        spy_obj = cast(
-            SpyType,
-            self.patch.object(obj, name, side_effect=wrapped, autospec=autospec),
-        )
+        if inspect.iscoroutinefunction(method):
+            # An autospecced coroutine function only records the call once the
+            # returned coroutine is awaited, because unittest.mock generates an
+            # ``async def`` delegate whose body (including the recording) does
+            # not run until then (see python/cpython#137594). Use a specced
+            # AsyncMock instead so the call is recorded when the spy is
+            # called (see #519).
+            spy_obj = cast(
+                SpyType,
+                self.patch.object(obj, name, side_effect=wrapped, spec=method),
+            )
+        else:
+            spy_obj = cast(
+                SpyType,
+                self.patch.object(obj, name, side_effect=wrapped, autospec=autospec),
+            )
         spy_obj.spy_return = None
         spy_obj.spy_return_iter = None
         spy_obj.spy_return_list = []

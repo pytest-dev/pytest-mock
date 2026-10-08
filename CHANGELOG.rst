@@ -4,6 +4,7 @@ Releases
 UNRELEASED
 ----------
 
+* `#519 <https://github.com/pytest-dev/pytest-mock/issues/519>`_: Fixed ``mocker.spy`` not recording calls to async functions until the returned coroutine is awaited; the call is now recorded when the spy is called.
 * `#617 <https://github.com/pytest-dev/pytest-mock/pull/617>`_: Fixed ``assert_has_calls`` raising ``ValueError`` instead of ``AssertionError`` (or showing misleading introspection) when the expected calls are plain tuples rather than ``call(...)`` objects, such as ``(args, kwargs)`` entries of another mock's ``call_args_list``, ``(args,)``, ``(kwargs,)``, ``(name, args)`` or ``(name, kwargs)``.
 
 3.16.0

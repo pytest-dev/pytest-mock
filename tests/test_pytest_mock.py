@@ -495,6 +495,27 @@ class TestSpy:
         spy.assert_called_once_with(10)
         assert result == 20
 
+    @pytest.mark.asyncio
+    async def test_async_spy_records_call_before_await(
+        self, mocker: MockerFixture
+    ) -> None:
+        class Foo:
+            @staticmethod
+            async def bar(arg):
+                return arg * 2
+
+        spy = mocker.spy(Foo, "bar")
+
+        result = Foo.bar(10)
+
+        assert spy.called
+        spy.assert_called_once_with(10)
+
+        assert await result == 20
+        assert spy.spy_return == 20
+        assert spy.spy_return_list == [20]
+        assert spy.spy_exception is None
+
     @skip_pypy
     class TestOnClass:
         """Spies installed on a class rather than on an instance."""

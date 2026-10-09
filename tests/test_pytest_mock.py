@@ -500,13 +500,13 @@ class TestSpy:
         self, mocker: MockerFixture
     ) -> None:
         class Foo:
-            @staticmethod
-            async def bar(arg):
+            async def bar(self, arg):
                 return arg * 2
 
-        spy = mocker.spy(Foo, "bar")
+        foo = Foo()
+        spy = mocker.spy(foo, "bar")
 
-        result = Foo.bar(10)
+        result = foo.bar(10)
 
         assert spy.called
         spy.assert_called_once_with(10)

@@ -983,6 +983,25 @@ class TestAsyncAssertions:
         assert "'called'" in introspection
         assert "'awaited'" not in introspection
 
+    @pytest.mark.asyncio
+    async def test_has_awaits(self, mocker: MockerFixture) -> None:
+        stub = mocker.AsyncMock()
+        await stub("awaited", source="awaited")
+        stub("called", source="called").close()
+
+        stub.assert_has_awaits([mocker.call("awaited", source="awaited")])
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_has_awaits([mocker.call("wrong", source="wrong")])
+        introspection = str(exc_info.value).split("pytest introspection follows:")[1]
+        assert "'awaited'" in introspection
+        assert "'wrong'" in introspection
+        assert "'called'" not in introspection
+        assert "call(" not in introspection
+
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_has_awaits([mocker.call("wrong")], any_order=True)
+        assert "pytest introspection follows:" not in str(exc_info.value)
+
     def test_without_await(self, mocker: MockerFixture) -> None:
         stub = mocker.AsyncMock()
         stub("called").close()

@@ -570,8 +570,13 @@ def assert_has_calls_wrapper(
         else:
             __mock_self = args[0]
             msg = str(e)
-            if __mock_self.call_args_list is not None:
-                actual_calls = list(__mock_self.call_args_list)
+            call_args_list = (
+                __mock_self.await_args_list
+                if "await" in __wrapped_mock_method__.__name__
+                else __mock_self.call_args_list
+            )
+            if call_args_list is not None:
+                actual_calls = list(call_args_list)
                 expect_calls = args[1]
                 introspection = ""
                 from itertools import zip_longest
@@ -666,7 +671,9 @@ def wrap_assert_awaited_once_with(*args: Any, **kwargs: Any) -> None:
 
 def wrap_assert_has_awaits(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
-    assert_wrapper(_mock_module_originals["assert_has_awaits"], *args, **kwargs)
+    assert_has_calls_wrapper(
+        _mock_module_originals["assert_has_awaits"], *args, **kwargs
+    )
 
 
 def wrap_assert_any_await(*args: Any, **kwargs: Any) -> None:

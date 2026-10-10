@@ -5,6 +5,7 @@ UNRELEASED
 ----------
 
 * `#617 <https://github.com/pytest-dev/pytest-mock/pull/617>`_: Fixed ``assert_has_calls`` raising ``ValueError`` instead of ``AssertionError`` (or showing misleading introspection) when the expected calls are plain tuples rather than ``call(...)`` objects, such as ``(args, kwargs)`` entries of another mock's ``call_args_list``, ``(args,)``, ``(kwargs,)``, ``(name, args)`` or ``(name, kwargs)``.
+* `#623 <https://github.com/pytest-dev/pytest-mock/pull/623>`_: Fixed ``assert_has_awaits`` introspection comparing the latest await with the whole list of expected calls. It now compares each await with its expected call, like ``assert_has_calls``.
 
 3.16.0
 ------

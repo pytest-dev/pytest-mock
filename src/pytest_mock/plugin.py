@@ -589,7 +589,10 @@ def assert_has_calls_wrapper(
                 actual_calls, expect_calls
             ):
                 if actual_call is not None:
-                    actual_args, actual_kwargs = actual_call
+                    unpacked = _unpack_expected_call(actual_call)
+                    if unpacked is None:
+                        continue
+                    actual_args, actual_kwargs = unpacked
                 else:
                     actual_args = ()
                     actual_kwargs = {}
@@ -649,7 +652,7 @@ def wrap_assert_called_once_with(*args: Any, **kwargs: Any) -> None:
 def wrap_assert_has_calls(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
     assert_has_calls_wrapper(
-        _mock_module_originals["assert_has_calls"], "call_args_list", *args, **kwargs
+        _mock_module_originals["assert_has_calls"], "mock_calls", *args, **kwargs
     )
 
 

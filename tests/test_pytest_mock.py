@@ -971,6 +971,22 @@ class TestAssertHasCalls:
             stub.assert_has_calls([mocker.call("expected")], True)
         assert "pytest introspection follows:" not in str(exc_info.value)
 
+    @pytest.mark.parametrize("keyword", [False, True])
+    @pytest.mark.usefixtures("needs_assert_rewrite")
+    def test_nested_call_arguments(self, mocker: MockerFixture, keyword: bool) -> None:
+        stub = mocker.MagicMock()
+        if keyword:
+            stub.child(value="actual")
+            expected = mocker.call.child(value="expected")
+        else:
+            stub.child("actual")
+            expected = mocker.call.child("expected")
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_has_calls([expected])
+        introspection = str(exc_info.value).split("pytest introspection follows:")[1]
+        assert "'actual'" in introspection
+        assert "'expected'" in introspection
+
 
 @pytest.mark.usefixtures("needs_assert_rewrite")
 class TestAsyncAssertions:

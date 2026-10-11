@@ -181,6 +181,19 @@ class MockerFixture:
             mock.reset_mock(return_value=return_value, side_effect=side_effect)
         else:
             mock.reset_mock()
+            underlying_mock = getattr(mock, "mock", None)
+            if (
+                isinstance(underlying_mock, self.NonCallableMock)
+                and underlying_mock._mock_delegate is mock
+            ):
+                # Autospecced functions keep these values on their delegate,
+                # and their reset_mock() closure accepts no arguments.
+                if return_value:
+                    mock.return_value = self.DEFAULT
+                    # Reading the property creates a new child on the delegate.
+                    _ = underlying_mock.return_value
+                if side_effect:
+                    mock.side_effect = None
 
     def stopall(self) -> None:
         """

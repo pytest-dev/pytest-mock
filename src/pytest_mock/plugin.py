@@ -181,6 +181,7 @@ class MockerFixture:
 
         def wrapper(*args, **kwargs):
             spy_obj.spy_return = None
+            spy_obj.spy_return_iter = None
             spy_obj.spy_exception = None
             try:
                 r = method(*args, **kwargs)
@@ -200,6 +201,7 @@ class MockerFixture:
 
         async def async_wrapper(*args, **kwargs):
             spy_obj.spy_return = None
+            spy_obj.spy_return_iter = None
             spy_obj.spy_exception = None
             try:
                 r = await method(*args, **kwargs)

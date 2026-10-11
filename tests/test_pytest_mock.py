@@ -728,6 +728,43 @@ class TestSpyReturnIter:
         [return_value] = spy.spy_return_list
         assert isinstance(return_value, Iterator)
 
+    def test_clears_iterator_on_exception(self, mocker: MockerFixture) -> None:
+        class Foo:
+            def bar(self, fail: bool = False) -> Iterator[int]:
+                if fail:
+                    raise ValueError("failed")
+                return iter([1, 2])
+
+        foo = Foo()
+        spy = mocker.spy(foo, "bar", duplicate_iterators=True)
+        assert list(foo.bar()) == [1, 2]
+        assert spy.spy_return_iter is not None
+        with pytest.raises(ValueError, match="failed"):
+            foo.bar(fail=True)
+        assert spy.spy_return is None
+        assert spy.spy_exception is not None
+        assert spy.spy_return_iter is None
+
+    @pytest.mark.asyncio
+    async def test_async_clears_iterator_on_exception(
+        self, mocker: MockerFixture
+    ) -> None:
+        class Foo:
+            async def bar(self, fail: bool = False) -> Iterator[int]:
+                if fail:
+                    raise ValueError("failed")
+                return iter([1, 2])
+
+        foo = Foo()
+        spy = mocker.spy(foo, "bar", duplicate_iterators=True)
+        assert list(await foo.bar()) == [1, 2]
+        assert spy.spy_return_iter is not None
+        with pytest.raises(ValueError, match="failed"):
+            await foo.bar(fail=True)
+        assert spy.spy_return is None
+        assert spy.spy_exception is not None
+        assert spy.spy_return_iter is None
+
 
 class TestAssertWrappers:
     """

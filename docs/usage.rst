@@ -137,9 +137,35 @@ It may receive an optional name that is shown in its ``repr``, useful for debugg
         foo(stub)
         stub.assert_called_once_with('foo', 'bar')
 
-.. seealso::
+Async stub
+~~~~~~~~~~
 
-    ``async_stub`` method, which actually the same as ``stub`` but makes async stub.
+Use ``mocker.async_stub()`` for an asynchronous callback. It returns an
+``AsyncMock``, so calling it creates an awaitable. Call assertions such as
+``assert_called_once_with`` record that invocation, even when the awaitable
+has not been awaited. Use ``assert_awaited_once_with`` to verify that the
+callback was awaited with the expected arguments.
+
+For example, with `pytest-asyncio <https://pytest-asyncio.readthedocs.io/>`_:
+
+.. code-block:: python
+
+    import pytest
+
+    @pytest.mark.asyncio
+    async def test_async_stub(mocker):
+        stub = mocker.async_stub(name="on_something_stub")
+
+        pending = stub("foo", "bar")
+        stub.assert_called_once_with("foo", "bar")
+        stub.assert_not_awaited()
+
+        await pending
+        stub.assert_awaited_once_with("foo", "bar")
+
+Do not use ``called`` or ``call_count`` alone to check that an asynchronous
+callback was awaited. ``await_count`` and the ``assert_awaited*`` methods
+track awaits separately.
 
 
 Usage as context manager

@@ -1011,9 +1011,7 @@ class TestIntrospection:
             if version[:2] < (9, 1):
                 from _pytest.assertion.util import _compare_eq_iterable  # type:ignore
             else:
-                from _pytest.assertion._compare_sequence import (  # type:ignore
-                    _compare_eq_iterable,
-                )
+                from _pytest.assertion._compare_sequence import _compare_eq_iterable  # type:ignore
 
             # NOTE: we assert with either verbose or not, depending on how our own
             #       test was run by examining sys.argv

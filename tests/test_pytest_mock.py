@@ -221,6 +221,48 @@ class TestMockerAttributes:
 class TestResetAll:
     """``mocker.resetall``."""
 
+    @pytest.mark.parametrize("return_value", [False, True])
+    @pytest.mark.parametrize("side_effect", [False, True])
+    def test_patch_multiple(
+        self, mocker: MockerFixture, return_value: bool, side_effect: bool
+    ) -> None:
+        original_rm, original_ls = UnixFS.rm, UnixFS.ls
+        mocks = mocker.patch.multiple(UnixFS, rm=mocker.DEFAULT, ls=mocker.DEFAULT)
+        mocks["rm"].return_value = "removed"
+        mocks["ls"].side_effect = ["first", "second"]
+        assert UnixFS.rm("file") == "removed"
+        assert UnixFS.ls("directory") == "first"
+
+        mocker.resetall(return_value=return_value, side_effect=side_effect)
+
+        for mock in mocks.values():
+            mock.assert_not_called()
+        if return_value:
+            assert isinstance(mocks["rm"].return_value, mocker.Mock)
+        else:
+            assert UnixFS.rm("file") == "removed"
+        if side_effect:
+            assert mocks["ls"].side_effect is None
+        else:
+            assert UnixFS.ls("directory") == "second"
+        assert UnixFS.rm is mocks["rm"]
+        assert UnixFS.ls is mocks["ls"]
+
+        mocker.stopall()
+        assert UnixFS.rm == original_rm
+        assert UnixFS.ls == original_ls
+
+    def test_patch_multiple_autospec(self, mocker: MockerFixture) -> None:
+        mocks = mocker.patch.multiple(AutospecTarget, run=mocker.DEFAULT, autospec=True)
+        target = AutospecTarget()
+        target.run()
+
+        mocker.resetall()
+
+        mocks["run"].assert_not_called()
+        with pytest.raises(TypeError):
+            target.run("extra")  # type: ignore[call-arg]
+
     def test_basic(self, mocker: MockerFixture) -> None:
         listdir = mocker.patch("os.listdir", return_value="foo")
         open = mocker.patch("os.open", side_effect=["bar", "baz"])
@@ -397,6 +439,17 @@ class TestResetAll:
         assert x == {"new": 10}
         mocker.resetall()
         assert x == {"new": 10}
+
+    def test_patch_dict_does_not_reset_values(self, mocker: MockerFixture) -> None:
+        value = mocker.Mock()
+        value("called")
+        target: dict[str, Any] = {}
+        mocker.patch.dict(target, value=value)
+
+        mocker.resetall()
+
+        value.assert_called_once_with("called")
+        assert target["value"] is value
 
 
 class TestMockerStub:

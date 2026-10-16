@@ -4,6 +4,7 @@ Releases
 UNRELEASED
 ----------
 
+* `#630 <https://github.com/pytest-dev/pytest-mock/pull/630>`_: ``mocker.resetall()`` now also resets ``spy_return`` and ``spy_exception`` of spies, like it already did for ``spy_return_list`` and ``spy_return_iter``.
 * `#617 <https://github.com/pytest-dev/pytest-mock/pull/617>`_: Fixed ``assert_has_calls`` raising ``ValueError`` instead of ``AssertionError`` (or showing misleading introspection) when the expected calls are plain tuples rather than ``call(...)`` objects, such as ``(args, kwargs)`` entries of another mock's ``call_args_list``, ``(args,)``, ``(kwargs,)``, ``(name, args)`` or ``(name, kwargs)``.
 * `#621 <https://github.com/pytest-dev/pytest-mock/pull/621>`_: Fixed ``mocker.stop()`` sometimes stopping the wrong mock, for example with mocks from ``mocker.create_autospec``.
 * `#621 <https://github.com/pytest-dev/pytest-mock/pull/621>`_: ``mocker.stop()`` now undoes the most recent patch first when the same object is used in several patches.

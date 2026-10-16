@@ -654,6 +654,12 @@ class TestSpy:
 
         # Testing spy can still be reset (#237).
         mocker.resetall()
+        self.assert_spy_has_no_return(spy)
+
+        with pytest.raises(ValueError):
+            Foo().bar(0)
+        mocker.resetall()
+        assert spy.spy_exception is None
 
         with pytest.raises(ValueError):
             Foo().bar(0)
@@ -665,6 +671,33 @@ class TestSpy:
         assert spy.spy_return_iter is None
         assert spy.spy_return_list == [45]
         assert spy.spy_exception is None
+
+    @pytest.mark.asyncio
+    async def test_reset_async(self, mocker: MockerFixture) -> None:
+        class Foo:
+            async def bar(self, x):
+                if x == 0:
+                    raise ValueError("invalid x")
+                return x * 3
+
+        spy = mocker.spy(Foo, "bar")
+
+        assert await Foo().bar(10) == 30
+        assert spy.spy_return == 30
+        mocker.resetall()
+        self.assert_spy_has_no_return(spy)
+        assert spy.await_count == 0
+
+        with pytest.raises(ValueError):
+            await Foo().bar(0)
+        assert str(spy.spy_exception) == "invalid x"
+        mocker.resetall()
+        assert spy.spy_exception is None
+
+        assert await Foo().bar(15) == 45
+        assert spy.spy_return == 45
+        assert spy.spy_return_list == [45]
+        assert spy.await_count == 1
 
     def test_callable_like(
         self, testdir: Any, mocker: MockerFixture, request: pytest.FixtureRequest

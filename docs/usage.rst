@@ -25,7 +25,7 @@ The supported methods are:
 * `mocker.patch.dict <https://docs.python.org/3/library/unittest.mock.html#patch-dict>`_
 * `mocker.stopall <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.patch.stopall>`_
 * `mocker.stop <https://docs.python.org/3/library/unittest.mock.html#patch-methods-start-and-stop>`_
-* ``mocker.resetall()``: calls `reset_mock() <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock.reset_mock>`_ in all mocked objects up to this point.
+* ``mocker.resetall()``: calls `reset_mock() <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock.reset_mock>`_ in all mocked objects up to this point. With ``side_effect=True``, spies go back to calling the spied code instead of having their ``side_effect`` set to ``None``.
 
 Also, as a convenience, these names from the ``mock`` module are accessible directly from ``mocker``:
 

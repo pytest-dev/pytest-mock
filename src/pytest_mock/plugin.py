@@ -136,7 +136,8 @@ class MockerFixture:
         Call reset_mock() on all patchers started by this fixture.
 
         :param bool return_value: Reset the return_value of mocks.
-        :param bool side_effect: Reset the side_effect of mocks.
+        :param bool side_effect: Reset the side_effect of mocks. Spies go back to
+            calling the spied code.
         """
         for mock_item in self._mock_cache:
             # See issue #237.

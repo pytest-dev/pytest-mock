@@ -460,6 +460,27 @@ class TestResetAll:
         assert call() == 4
         assert spy.spy_return == 4
 
+    def test_mock_spy_attributes(self, mocker: MockerFixture) -> None:
+        """Attributes named like the spy attributes on mocks that are not spies
+        are reset like any other attribute, not replaced."""
+        mocked = mocker.patch("os.getcwd")
+        mocked.spy_return.method(1)
+        spy_attributes = {
+            name: getattr(mocked, name)
+            for name in (
+                "spy_return",
+                "spy_return_iter",
+                "spy_return_list",
+                "spy_exception",
+            )
+        }
+
+        mocker.resetall()
+
+        for name, attribute in spy_attributes.items():
+            assert getattr(mocked, name) is attribute
+        mocked.spy_return.method.assert_not_called()
+
     def test_patch_dict(self, mocker: MockerFixture) -> None:
         """
         We can call resetall after patching a dict.
@@ -658,6 +679,7 @@ class TestSpy:
 
         with pytest.raises(ValueError):
             Foo().bar(0)
+        assert str(spy.spy_exception) == "invalid x"
         mocker.resetall()
         assert spy.spy_exception is None
 

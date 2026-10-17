@@ -4,13 +4,13 @@ Releases
 UNRELEASED
 ----------
 
-* `#630 <https://github.com/pytest-dev/pytest-mock/pull/630>`_: ``mocker.resetall()`` now also resets ``spy_return`` and ``spy_exception`` of spies, like it already did for ``spy_return_list`` and ``spy_return_iter``.
 * `#617 <https://github.com/pytest-dev/pytest-mock/pull/617>`_: Fixed ``assert_has_calls`` raising ``ValueError`` instead of ``AssertionError`` (or showing misleading introspection) when the expected calls are plain tuples rather than ``call(...)`` objects, such as ``(args, kwargs)`` entries of another mock's ``call_args_list``, ``(args,)``, ``(kwargs,)``, ``(name, args)`` or ``(name, kwargs)``.
 * `#621 <https://github.com/pytest-dev/pytest-mock/pull/621>`_: Fixed ``mocker.stop()`` sometimes stopping the wrong mock, for example with mocks from ``mocker.create_autospec``.
 * `#621 <https://github.com/pytest-dev/pytest-mock/pull/621>`_: ``mocker.stop()`` now undoes the most recent patch first when the same object is used in several patches.
 * `#623 <https://github.com/pytest-dev/pytest-mock/pull/623>`_: Fixed misleading introspection in ``assert_has_awaits`` failures, and ``assert_has_calls``/``assert_has_awaits`` raising ``IndexError`` instead of ``AssertionError`` when ``calls`` is passed by keyword.
 * `#624 <https://github.com/pytest-dev/pytest-mock/pull/624>`_: Clear ``spy_return_iter`` after a spied synchronous or asynchronous function raises, matching ``spy_return``.
 * `#629 <https://github.com/pytest-dev/pytest-mock/pull/629>`_: Fixed ``mocker.resetall()`` skipping the mocks patched with ``mocker.patch.multiple()``, both the ones it creates and the ones passed explicitly.
+* `#630 <https://github.com/pytest-dev/pytest-mock/pull/630>`_: ``mocker.resetall()`` now also resets ``spy_return`` and ``spy_exception`` of spies, like it already did for ``spy_return_list`` and ``spy_return_iter``, and no longer overwrites attributes with these names on mocks that are not spies.
 * `#633 <https://github.com/pytest-dev/pytest-mock/pull/633>`_: Fixed spies on ``classmethod``, ``staticmethod``, builtins and classes returning a ``MagicMock`` instead of calling the spied code after ``mocker.resetall(side_effect=True)``. Resetting a spy's ``side_effect`` now goes back to calling the spied code, also clearing any ``side_effect`` set on the spy.
 
 3.16.0

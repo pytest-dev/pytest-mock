@@ -52,6 +52,8 @@ class PytestMockWarning(UserWarning):
 class MockCacheItem:
     mock: MockType
     patch: Any | None = None
+    # Whether ``mock`` was created by ``mocker.spy``.
+    is_spy: bool = False
     # The ``side_effect`` a spy uses to call the spied code, restored by ``resetall``.
     spy_side_effect: Callable[..., Any] | None = None
     # The objects ``resetall`` resets instead of ``mock``, for patches such as
@@ -95,6 +97,14 @@ class MockCache:
 
     def __iter__(self) -> Iterator[MockCacheItem]:
         return iter(self.cache)
+
+
+def _reset_spy(spy_obj: SpyType) -> None:
+    """Set the attributes recording a spy's calls to their initial values."""
+    spy_obj.spy_return = None
+    spy_obj.spy_return_iter = None
+    spy_obj.spy_return_list = []
+    spy_obj.spy_exception = None
 
 
 class MockerFixture:
@@ -150,6 +160,10 @@ class MockerFixture:
                 self._reset_mock(
                     mock, return_value=return_value, side_effect=side_effect
                 )
+            # Spies are flagged when created: checking the spy attributes with
+            # ``hasattr`` would also match any ``MagicMock``.
+            if mock_item.is_spy:
+                _reset_spy(cast(SpyType, mock_item.mock))
             # A spy's ``side_effect`` is what calls the spied code, so resetting
             # it means going back to that, not to ``None``.
             if side_effect and mock_item.spy_side_effect is not None:
@@ -159,15 +173,6 @@ class MockerFixture:
         # See issue #237.
         if not hasattr(mock, "reset_mock"):
             return
-        # NOTE: The mock may be a dictionary
-        if hasattr(mock, "spy_return_list"):
-            mock.spy_return_list = []
-        if hasattr(mock, "spy_return_iter"):
-            mock.spy_return_iter = None
-        if hasattr(mock, "spy_return"):
-            mock.spy_return = None
-        if hasattr(mock, "spy_exception"):
-            mock.spy_exception = None
         # ``reset_mock`` is defined on ``NonCallableMock``, which is the base
         # of every mock class. Autospecced *functions* are plain functions
         # carrying a no-argument ``reset_mock`` closure, so they take the
@@ -203,7 +208,7 @@ class MockerFixture:
         """
         method = getattr(obj, name)
 
-        def reset_spy_state():
+        def reset_last_call():
             spy_obj.spy_return = None
             spy_obj.spy_return_iter = None
             spy_obj.spy_exception = None
@@ -217,7 +222,7 @@ class MockerFixture:
             return r
 
         def wrapper(*args, **kwargs):
-            reset_spy_state()
+            reset_last_call()
             try:
                 r = method(*args, **kwargs)
             except BaseException as e:
@@ -226,7 +231,7 @@ class MockerFixture:
             return record_return(r)
 
         async def async_wrapper(*args, **kwargs):
-            reset_spy_state()
+            reset_last_call()
             try:
                 r = await method(*args, **kwargs)
             except BaseException as e:
@@ -245,11 +250,10 @@ class MockerFixture:
             SpyType,
             self.patch.object(obj, name, side_effect=wrapped, autospec=autospec),
         )
-        self._mock_cache.find(spy_obj).spy_side_effect = wrapped
-        spy_obj.spy_return = None
-        spy_obj.spy_return_iter = None
-        spy_obj.spy_return_list = []
-        spy_obj.spy_exception = None
+        mock_item = self._mock_cache.find(spy_obj)
+        mock_item.is_spy = True
+        mock_item.spy_side_effect = wrapped
+        _reset_spy(spy_obj)
         return spy_obj
 
     def stub(self, name: str | None = None) -> unittest.mock.MagicMock:

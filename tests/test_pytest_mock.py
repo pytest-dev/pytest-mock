@@ -1345,6 +1345,24 @@ class TestStop:
         assert Class1.get() == 1
         assert Class2.get() == 2
 
+    def test_same_object_patched_twice(self, mocker: MockerFixture) -> None:
+        """Stopping an object used by several patches undoes the newest patch first."""
+
+        class Class1:
+            @staticmethod
+            def get():
+                return 1
+
+        handle_get = mocker.MagicMock(return_value=3)
+
+        mocker.patch.object(Class1, "get", handle_get)
+        mocker.patch.object(Class1, "get", handle_get)
+
+        mocker.stop(handle_get)
+        assert Class1.get() == 3
+        mocker.stop(handle_get)
+        assert Class1.get() == 1
+
 
 class TestContextManagerWarnings:
     """Warnings when patches are misused as context managers."""

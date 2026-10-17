@@ -61,7 +61,7 @@ class MockCache:
     cache: list[MockCacheItem] = field(default_factory=list)
 
     def _find(self, mock: MockType) -> MockCacheItem:
-        for mock_item in self.cache:
+        for mock_item in reversed(self.cache):
             if mock_item.mock is mock:
                 return mock_item
         raise ValueError("This mock object is not registered")

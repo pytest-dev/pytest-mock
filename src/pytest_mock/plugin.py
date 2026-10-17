@@ -46,7 +46,9 @@ class PytestMockWarning(UserWarning):
     """Base class for all warnings emitted by pytest-mock."""
 
 
-@dataclass
+# eq=False keeps identity comparison: a generated __eq__ would compare the
+# mocks themselves, and a mock's __eq__ can return True or raise.
+@dataclass(eq=False)
 class MockCacheItem:
     mock: MockType
     patch: Any | None = None
@@ -60,10 +62,10 @@ class MockCache:
 
     cache: list[MockCacheItem] = field(default_factory=list)
 
-    def _find(self, mock: MockType) -> MockCacheItem:
-        for mock_item in self.cache:
-            if mock_item.mock is mock:
-                return mock_item
+    def _find_index(self, mock: MockType) -> int:
+        for index in reversed(range(len(self.cache))):
+            if self.cache[index].mock is mock:
+                return index
         raise ValueError("This mock object is not registered")
 
     def add(self, mock: MockType, **kwargs: Any) -> MockCacheItem:
@@ -71,10 +73,11 @@ class MockCache:
         return self.cache[-1]
 
     def remove(self, mock: MockType) -> None:
-        mock_item = self._find(mock)
+        index = self._find_index(mock)
+        mock_item = self.cache[index]
         if mock_item.patch:
             mock_item.patch.stop()
-        self.cache.remove(mock_item)
+        del self.cache[index]
 
     def clear(self) -> None:
         for mock_item in reversed(self.cache):

@@ -1221,6 +1221,29 @@ class TestConfiguration:
 class TestStop:
     """``mocker.stop`` and ``mocker.stopall``."""
 
+    @pytest.mark.parametrize(
+        "eq_side_effect", [None, RuntimeError("unexpected equality")]
+    )
+    def test_autospec_identity(
+        self, mocker: MockerFixture, eq_side_effect: Exception | None
+    ) -> None:
+        first = mocker.create_autospec(AutospecTarget, instance=True)
+        second = mocker.create_autospec(AutospecTarget, instance=True)
+        equality: Any = first.__eq__
+        equality.return_value = True
+        equality.side_effect = eq_side_effect
+        first.run()
+        second.run()
+
+        mocker.stop(second)
+        mocker.resetall()
+
+        first.run.assert_not_called()
+        second.run.assert_called_once_with()
+        with pytest.raises(ValueError, match="not registered"):
+            mocker.stop(second)
+        mocker.stop(first)
+
     def test_plain_stopall(self, testdir: Any) -> None:
         """patch.stopall() in a test should not cause an error during unconfigure (#137)"""
         testdir.makeini(
@@ -1319,6 +1342,24 @@ class TestStop:
 
         assert Class1.get() == 1
         assert Class2.get() == 2
+
+    def test_same_object_patched_twice(self, mocker: MockerFixture) -> None:
+        """Stopping an object used by several patches undoes the newest patch first."""
+
+        class Class1:
+            @staticmethod
+            def get():
+                return 1
+
+        handle_get = mocker.MagicMock(return_value=3)
+
+        mocker.patch.object(Class1, "get", handle_get)
+        mocker.patch.object(Class1, "get", handle_get)
+
+        mocker.stop(handle_get)
+        assert Class1.get() == 3
+        mocker.stop(handle_get)
+        assert Class1.get() == 1
 
 
 class TestContextManagerWarnings:

@@ -1129,6 +1129,42 @@ class TestAssertHasCallsPairing:
         assert introspection.count("\nArgs:\n") == 1
         assert introspection.count("\nKwargs:\n") == 1
 
+    @pytest.mark.parametrize("use_any", [False, True])
+    @pytest.mark.parametrize("extra_actual", [False, True])
+    def test_overlapping_matchers_preserve_literal_matches(
+        self, mocker: MockerFixture, use_any: bool, extra_actual: bool
+    ) -> None:
+        class MatchesStrings:
+            def __eq__(self, other: object) -> bool:
+                return isinstance(other, str)
+
+        stub = mocker.MagicMock()
+        stub.child("same")
+        stub.child("different")
+        if extra_actual:
+            stub.child("unmatched")
+        matcher = mocker.ANY if use_any else MatchesStrings()
+
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_has_calls(
+                [
+                    mocker.call.child(matcher),
+                    mocker.call.child("same"),
+                    mocker.call.child("missing"),
+                ]
+            )
+
+        message = str(exc_info.value)
+        if extra_actual:
+            introspection = message.split("pytest introspection follows:")[1]
+            assert "assert ('unmatched',) == ('missing',)" in introspection
+            assert introspection.count("\nArgs:\n") == 1
+            assert "'same'" not in introspection
+            assert "'different'" not in introspection
+        else:
+            assert "call.child('missing')" in message
+            assert "pytest introspection follows:" not in message
+
 
 @pytest.mark.usefixtures("needs_assert_rewrite")
 class TestAsyncAssertions:

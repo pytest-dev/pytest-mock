@@ -568,14 +568,15 @@ def _get_mismatched_calls(
             key = _unpack_expected_call(mock._call_matcher(actual))
             actual_with_keys.append((actual, key))
 
-    unmatched_expected = []
-    # Reserve every exact match before pairing argument mismatches, so an earlier
-    # expectation cannot consume the actual call matching a later expectation.
+    expected_calls = []
+    candidates = []
     for expect_call in expect_calls:
         expected = _unpack_expected_call(expect_call)
         if expected is None:
             continue
+        expected_calls.append(expected)
         expected_key = _unpack_expected_call(mock._call_matcher(expected))
+        matching_indices = []
         for index, (actual, actual_key) in enumerate(actual_with_keys):
             if (
                 actual[0] == expected[0]
@@ -584,15 +585,53 @@ def _get_mismatched_calls(
                 # Keep expected-side ANY and custom matcher equality semantics.
                 and expected_key[1:] == actual_key[1:]
             ):
-                del actual_with_keys[index]
-                break
-        else:
-            unmatched_expected.append(expected)
+                matching_indices.append(index)
+        candidates.append(matching_indices)
 
-    for expected in unmatched_expected:
-        for index, (actual, _) in enumerate(actual_with_keys):
+    actual_matches: list[int | None] = [None] * len(actual_with_keys)
+    expected_matches: list[int | None] = [None] * len(expected_calls)
+
+    def reserve_match(expected_index: int) -> None:
+        # Find an augmenting path so a broad matcher can move to another actual
+        # call instead of taking the only match for a later expectation.
+        pending = [expected_index]
+        seen_expected = {expected_index}
+        parents: dict[int, int] = {}
+        for current_expected in pending:
+            for actual_index in candidates[current_expected]:
+                if actual_index in parents:
+                    continue
+                parents[actual_index] = current_expected
+                matched_expected = actual_matches[actual_index]
+                if matched_expected is None:
+                    path_actual: int | None = actual_index
+                    while path_actual is not None:
+                        path_expected = parents[path_actual]
+                        previous_actual = expected_matches[path_expected]
+                        actual_matches[path_actual] = path_expected
+                        expected_matches[path_expected] = path_actual
+                        path_actual = previous_actual
+                    return
+                if matched_expected not in seen_expected:
+                    seen_expected.add(matched_expected)
+                    pending.append(matched_expected)
+
+    # Reserve a maximum one-to-one set of exact matches before selecting the
+    # remaining same-name argument mismatches for introspection.
+    for expected_index in range(len(expected_calls)):
+        reserve_match(expected_index)
+
+    remaining_actual = [
+        actual
+        for index, (actual, _) in enumerate(actual_with_keys)
+        if actual_matches[index] is None
+    ]
+    for expected_index, expected in enumerate(expected_calls):
+        if expected_matches[expected_index] is not None:
+            continue
+        for index, actual in enumerate(remaining_actual):
             if actual[0] == expected[0]:
-                del actual_with_keys[index]
+                del remaining_actual[index]
                 yield actual, expected
                 break
 

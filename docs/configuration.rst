@@ -26,39 +26,49 @@ of mock call assertions like ``Mock.assert_called_with()`` by hiding internal tr
 entries from the ``mock`` module.
 
 It also adds introspection information on differing call arguments when
-calling the helper methods. This features catches `AssertionError` raised in
-the method, and uses pytest's own `advanced assertions`_ to return a better
-diff::
+``assert_called_with``, ``assert_called_once_with``, ``assert_awaited_with``,
+``assert_awaited_once_with``, ``assert_has_calls`` or ``assert_has_awaits`` fail
+because of the arguments of the calls. This feature catches the `AssertionError`
+raised in the method, and uses pytest's own `advanced assertions`_ to return a
+better diff::
 
-
-    mocker = <pytest_mock.MockerFixture object at 0x0381E2D0>
+    mocker = <pytest_mock.plugin.MockerFixture object at 0x000001D7EBD26270>
 
         def test(mocker):
             m = mocker.Mock()
             m('fo')
     >       m.assert_called_once_with('', bar=4)
-    E       AssertionError: Expected call: mock('', bar=4)
-    E       Actual call: mock('fo')
+    E       AssertionError: expected call not found.
+    E       Expected: mock('', bar=4)
+    E         Actual: mock('fo')
     E
     E       pytest introspection follows:
     E
     E       Args:
     E       assert ('fo',) == ('',)
+    E
     E         At index 0 diff: 'fo' != ''
-    E         Use -v to get the full diff
+    E         Use -v to get more diff
     E       Kwargs:
     E       assert {} == {'bar': 4}
-    E         Right contains more items:
+    E
+    E         Right contains 1 more item:
     E         {'bar': 4}
-    E         Use -v to get the full diff
+    E         Use -v to get more diff
 
-
-    test_foo.py:6: AssertionError
-    ========================== 1 failed in 0.03 seconds ===========================
-
+    test_foo.py:4: AssertionError
 
 This is useful when asserting mock calls with many/nested arguments and trying
 to quickly see the difference.
+
+The other assertions, such as ``assert_called_once``, ``assert_not_called`` or
+``assert_any_call``, fail because of how many times the mock was called, or
+because none of its calls matches, so there is no single call to compare with the
+expected arguments: the mock's own message, which lists the calls, is shown
+instead.
+
+The introspection requires pytest's assertion rewriting, so it is not shown with
+``--assert=plain``.
 
 This feature is probably safe, but if you encounter any problems it can be disabled in
 your ``pytest.ini`` file:

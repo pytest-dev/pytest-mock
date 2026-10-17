@@ -533,34 +533,73 @@ _mock_module_patches: list[Any] = []
 _mock_module_originals: dict[str, Any] = {}
 
 
+_CallArgs = tuple[tuple[Any, ...], dict[str, Any]]
+
+
+def _bind_to_spec(
+    mock: Any, actual: _CallArgs, expected: _CallArgs
+) -> tuple[_CallArgs, _CallArgs]:
+    """
+    Bind the actual and expected arguments to the mock's spec signature, like
+    the mock does before comparing them, so ``f(1, b=2)`` and ``f(1, 2)`` are
+    not reported as different. Return them unchanged when the mock has no
+    signature or either side does not match it.
+    """
+    sig = getattr(mock, "_spec_signature", None)
+    if sig is None:
+        return actual, expected
+    try:
+        bound_actual = sig.bind(*actual[0], **actual[1])
+        bound_expected = sig.bind(*expected[0], **expected[1])
+    except TypeError:
+        return actual, expected
+    return (
+        (bound_actual.args, bound_actual.kwargs),
+        (bound_expected.args, bound_expected.kwargs),
+    )
+
+
 def assert_wrapper(
     __wrapped_mock_method__: Callable[..., Any],
-    __call_args_attr__: str,
+    __call_args_attr__: str | None,
     *args: Any,
     **kwargs: Any,
 ) -> None:
+    """
+    Call the wrapped assertion, hiding its frames from the traceback.
+
+    When ``__call_args_attr__`` is given, the failure message also gets
+    pytest's introspection of the differences between the arguments of the
+    mock's last call (or await) and the expected arguments.
+    """
     __tracebackhide__ = True
     try:
         __wrapped_mock_method__(*args, **kwargs)
         return
     except AssertionError as e:
-        if getattr(e, "_mock_introspection_applied", 0):
-            msg = str(e)
-        else:
+        msg = str(e)
+        if (
+            not getattr(e, "_mock_introspection_applied", 0)
+            and __call_args_attr__ is not None
+        ):
             __mock_self = args[0]
-            msg = str(e)
             call_args = getattr(__mock_self, __call_args_attr__)
             if call_args is not None:
-                actual_args, actual_kwargs = call_args
+                (actual_args, actual_kwargs), (expect_args, expect_kwargs) = (
+                    _bind_to_spec(__mock_self, tuple(call_args), (args[1:], kwargs))
+                )
                 introspection = ""
                 try:
-                    assert actual_args == args[1:]
+                    assert actual_args == expect_args
                 except AssertionError as e_args:
-                    introspection += "\nArgs:\n" + str(e_args)
+                    # Without assertion rewriting the message is empty.
+                    if str(e_args):
+                        introspection += "\nArgs:\n" + str(e_args)
                 try:
-                    assert actual_kwargs == kwargs
+                    assert actual_kwargs == expect_kwargs
                 except AssertionError as e_kwargs:
-                    introspection += "\nKwargs:\n" + str(e_kwargs)
+                    if str(e_kwargs):
+                        introspection += "\nKwargs:\n" + str(e_kwargs)
                 if introspection:
                     msg += "\n\npytest introspection follows:\n" + introspection
         e = AssertionError(msg)
@@ -660,9 +699,7 @@ def assert_has_calls_wrapper(
 
 def wrap_assert_not_called(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
-    assert_wrapper(
-        _mock_module_originals["assert_not_called"], "call_args", *args, **kwargs
-    )
+    assert_wrapper(_mock_module_originals["assert_not_called"], None, *args, **kwargs)
 
 
 def wrap_assert_called_with(*args: Any, **kwargs: Any) -> None:
@@ -674,15 +711,19 @@ def wrap_assert_called_with(*args: Any, **kwargs: Any) -> None:
 
 def wrap_assert_called_once(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
-    assert_wrapper(
-        _mock_module_originals["assert_called_once"], "call_args", *args, **kwargs
-    )
+    assert_wrapper(_mock_module_originals["assert_called_once"], None, *args, **kwargs)
 
 
 def wrap_assert_called_once_with(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
+    # If the mock was not called exactly once, the failure is about the call
+    # count, not the arguments of the last call.
+    call_args_attr = "call_args" if args[0].call_count == 1 else None
     assert_wrapper(
-        _mock_module_originals["assert_called_once_with"], "call_args", *args, **kwargs
+        _mock_module_originals["assert_called_once_with"],
+        call_args_attr,
+        *args,
+        **kwargs,
     )
 
 
@@ -695,23 +736,17 @@ def wrap_assert_has_calls(*args: Any, **kwargs: Any) -> None:
 
 def wrap_assert_any_call(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
-    assert_wrapper(
-        _mock_module_originals["assert_any_call"], "call_args", *args, **kwargs
-    )
+    assert_wrapper(_mock_module_originals["assert_any_call"], None, *args, **kwargs)
 
 
 def wrap_assert_called(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
-    assert_wrapper(
-        _mock_module_originals["assert_called"], "call_args", *args, **kwargs
-    )
+    assert_wrapper(_mock_module_originals["assert_called"], None, *args, **kwargs)
 
 
 def wrap_assert_not_awaited(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
-    assert_wrapper(
-        _mock_module_originals["assert_not_awaited"], "await_args", *args, **kwargs
-    )
+    assert_wrapper(_mock_module_originals["assert_not_awaited"], None, *args, **kwargs)
 
 
 def wrap_assert_awaited_with(*args: Any, **kwargs: Any) -> None:
@@ -723,16 +758,17 @@ def wrap_assert_awaited_with(*args: Any, **kwargs: Any) -> None:
 
 def wrap_assert_awaited_once(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
-    assert_wrapper(
-        _mock_module_originals["assert_awaited_once"], "await_args", *args, **kwargs
-    )
+    assert_wrapper(_mock_module_originals["assert_awaited_once"], None, *args, **kwargs)
 
 
 def wrap_assert_awaited_once_with(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
+    # If the mock was not awaited exactly once, the failure is about the await
+    # count, not the arguments of the last await.
+    await_args_attr = "await_args" if args[0].await_count == 1 else None
     assert_wrapper(
         _mock_module_originals["assert_awaited_once_with"],
-        "await_args",
+        await_args_attr,
         *args,
         **kwargs,
     )
@@ -750,16 +786,12 @@ def wrap_assert_has_awaits(*args: Any, **kwargs: Any) -> None:
 
 def wrap_assert_any_await(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
-    assert_wrapper(
-        _mock_module_originals["assert_any_await"], "await_args", *args, **kwargs
-    )
+    assert_wrapper(_mock_module_originals["assert_any_await"], None, *args, **kwargs)
 
 
 def wrap_assert_awaited(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
-    assert_wrapper(
-        _mock_module_originals["assert_awaited"], "await_args", *args, **kwargs
-    )
+    assert_wrapper(_mock_module_originals["assert_awaited"], None, *args, **kwargs)
 
 
 def wrap_assert_methods(config: Any) -> None:

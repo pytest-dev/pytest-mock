@@ -1135,6 +1135,24 @@ class TestAssertWrappers:
         assert "During handling of the above exception" not in result.stdout.str()
         assert "mock.py" not in result.stdout.str()
 
+    def test_no_introspection_without_assert_rewrite(self, testdir: Any) -> None:
+        """
+        Without assertion rewriting there is no introspection to show, so the
+        message does not get empty "Args:" and "Kwargs:" sections.
+        """
+        testdir.makepyfile(
+            """
+            def test_foo(mocker):
+                stub = mocker.stub()
+                stub(1, greet='hello')
+                stub.assert_called_once_with(2, greet='hey')
+            """
+        )
+        result = testdir.runpytest_subprocess("--assert=plain")
+        result.assert_outcomes(failed=1)
+        assert "pytest introspection follows:" not in result.stdout.str()
+        assert "Args:" not in result.stdout.str()
+
 
 class TestAssertHasCalls:
     """``assert_has_calls``, including the shapes accepted as expected calls."""
@@ -1307,7 +1325,7 @@ class TestAsyncAssertions:
 
     @pytest.mark.parametrize(
         "assertion",
-        ["assert_awaited_with", "assert_awaited_once_with", "assert_any_await"],
+        ["assert_awaited_with", "assert_awaited_once_with"],
     )
     @pytest.mark.asyncio
     async def test_uses_await_arguments(
@@ -1440,6 +1458,70 @@ class TestIntrospection:
         with self.assert_argument_introspection(complex_kwargs, wrong_kwargs):
             stub.assert_called_with(**wrong_kwargs)
             stub.assert_called_once_with(**wrong_kwargs)
+
+    @pytest.mark.parametrize(
+        "assertion",
+        [
+            "assert_called_once()",
+            "assert_not_called()",
+            "assert_any_call(3)",
+            # Fails because of the call count, not the arguments.
+            "assert_called_once_with(3)",
+        ],
+    )
+    def test_no_single_expected_call(
+        self, mocker: MockerFixture, assertion: str
+    ) -> None:
+        """
+        No introspection when the failure is not about the arguments of the last
+        call, as comparing them with the expected arguments would be misleading.
+        """
+        stub = mocker.stub()
+        stub(1)
+        stub(2)
+        with pytest.raises(AssertionError) as exc_info:
+            eval(f"stub.{assertion}")
+        assert "pytest introspection follows:" not in str(exc_info.value)
+
+    @pytest.mark.parametrize(
+        "assertion",
+        [
+            "assert_awaited_once()",
+            "assert_not_awaited()",
+            "assert_any_await(3)",
+            # Fails because of the await count, not the arguments.
+            "assert_awaited_once_with(3)",
+        ],
+    )
+    @pytest.mark.asyncio
+    async def test_no_single_expected_await(
+        self, mocker: MockerFixture, assertion: str
+    ) -> None:
+        stub = mocker.AsyncMock()
+        await stub(1)
+        await stub(2)
+        with pytest.raises(AssertionError) as exc_info:
+            eval(f"stub.{assertion}")
+        assert "pytest introspection follows:" not in str(exc_info.value)
+
+    def test_autospec_binds_arguments(self, mocker: MockerFixture) -> None:
+        """
+        Arguments are bound to the spec signature before comparing them, like
+        the mock does, so passing an argument by position or by keyword does not
+        show up as a difference.
+        """
+
+        def target(a: int, b: int, c: int = 0) -> None:
+            pass
+
+        stub = mocker.create_autospec(target)
+        stub(1, b=2, c=3)
+        stub.assert_called_once_with(1, 2, c=3)
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_called_once_with(1, 2, c=4)
+        introspection = str(exc_info.value).split("pytest introspection follows:")[1]
+        assert "assert (1, 2, 3) == (1, 2, 4)" in introspection
+        assert "Kwargs" not in introspection
 
     def test_detailed(self, testdir: Any) -> None:
         """Check that the "mock_use_standalone" is being used."""

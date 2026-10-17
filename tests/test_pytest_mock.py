@@ -989,6 +989,148 @@ class TestAssertHasCalls:
 
 
 @pytest.mark.usefixtures("needs_assert_rewrite")
+class TestAssertHasCallsPairing:
+    def test_context_manager_missing_direct_call(self, mocker: MockerFixture) -> None:
+        stub = mocker.MagicMock()
+        with stub:
+            stub("a")
+
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_has_calls([mocker.call("a"), mocker.call("b")])
+
+        assert "pytest introspection follows:" not in str(exc_info.value)
+        assert "call('b')" in str(exc_info.value)
+
+    def test_mixed_calls_pair_arguments_by_name(self, mocker: MockerFixture) -> None:
+        stub = mocker.MagicMock()
+        with stub:
+            stub("direct-actual")
+            stub.child("child-actual", key="child-actual")
+            stub("matching")
+
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_has_calls(
+                [
+                    mocker.call("direct-expected"),
+                    mocker.call.child("child-expected", key="child-expected"),
+                    mocker.call("matching"),
+                ]
+            )
+
+        introspection = str(exc_info.value).split("pytest introspection follows:")[1]
+        assert "assert ('direct-actual',) == ('direct-expected',)" in introspection
+        assert "assert ('child-actual',) == ('child-expected',)" in introspection
+        assert (
+            "assert {'key': 'child-actual'} == {'key': 'child-expected'}"
+            in introspection
+        )
+        assert introspection.count("\nArgs:\n") == 2
+        assert introspection.count("\nKwargs:\n") == 1
+        assert "matching" not in introspection
+        assert "None" not in introspection
+        assert "__enter__" not in introspection
+        assert "__exit__" not in introspection
+
+    def test_unmatched_names_keep_original_message(self, mocker: MockerFixture) -> None:
+        stub = mocker.MagicMock()
+        stub.a("actual")
+
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_has_calls([mocker.call.b("expected")])
+
+        message = str(exc_info.value)
+        assert "call.a('actual')" in message
+        assert "call.b('expected')" in message
+        assert "pytest introspection follows:" not in message
+
+    @pytest.mark.parametrize("child", [False, True])
+    def test_exact_matches_reserved_before_pairing(
+        self, mocker: MockerFixture, child: bool
+    ) -> None:
+        stub = mocker.MagicMock()
+        invoke = stub.child if child else stub
+        expected = mocker.call.child if child else mocker.call
+        invoke("same", key="same")
+        invoke("different", key="different")
+
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_has_calls(
+                [expected("expected", key="expected"), expected("same", key="same")]
+            )
+
+        introspection = str(exc_info.value).split("pytest introspection follows:")[1]
+        assert "assert ('different',) == ('expected',)" in introspection
+        assert "assert {'key': 'different'} == {'key': 'expected'}" in introspection
+        assert introspection.count("\nArgs:\n") == 1
+        assert introspection.count("\nKwargs:\n") == 1
+        assert "'same'" not in introspection
+
+    def test_duplicate_expectations_use_distinct_calls(
+        self, mocker: MockerFixture
+    ) -> None:
+        stub = mocker.MagicMock()
+        stub.child("same")
+        stub.child("different")
+
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_has_calls(
+                [mocker.call.child("same"), mocker.call.child("same")]
+            )
+
+        introspection = str(exc_info.value).split("pytest introspection follows:")[1]
+        assert "assert ('different',) == ('same',)" in introspection
+        assert introspection.count("\nArgs:\n") == 1
+
+    def test_order_only_failure_keeps_original_message(
+        self, mocker: MockerFixture
+    ) -> None:
+        stub = mocker.MagicMock()
+        stub.first("first")
+        stub.second("second")
+
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_has_calls(
+                [mocker.call.second("second"), mocker.call.first("first")]
+            )
+
+        assert "pytest introspection follows:" not in str(exc_info.value)
+
+    def test_any_exact_match_is_reserved(self, mocker: MockerFixture) -> None:
+        stub = mocker.MagicMock()
+        stub.child("first")
+        stub.child("second")
+
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_has_calls(
+                [mocker.call.child("expected"), mocker.call.child(mocker.ANY)]
+            )
+
+        introspection = str(exc_info.value).split("pytest introspection follows:")[1]
+        assert introspection.count("\nArgs:\n") == 1
+        assert "'expected'" in introspection
+        assert "<ANY>" not in introspection
+
+    def test_autospec_exact_match_uses_signature(self, mocker: MockerFixture) -> None:
+        def target(value: int) -> None:
+            pass
+
+        stub = mocker.create_autospec(target)
+        stub(1)
+        stub(2)
+
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_has_calls([mocker.call(value=3), mocker.call(value=1)])
+
+        introspection = str(exc_info.value).split("pytest introspection follows:")[1]
+        assert "assert (2,)" in introspection
+        assert "{'value': 3}" in introspection
+        assert "assert (1,)" not in introspection
+        assert "{'value': 1}" not in introspection
+        assert introspection.count("\nArgs:\n") == 1
+        assert introspection.count("\nKwargs:\n") == 1
+
+
+@pytest.mark.usefixtures("needs_assert_rewrite")
 class TestAsyncAssertions:
     """Assertions on ``AsyncMock`` introspect awaits, not calls."""
 

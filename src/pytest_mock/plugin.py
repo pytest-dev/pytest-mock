@@ -532,30 +532,69 @@ def assert_wrapper(
         raise e  # noqa:TRY201
 
 
-def _unpack_expected_call(expect_call: Any) -> tuple[Any, Any] | None:
+def _unpack_expected_call(expect_call: Any) -> tuple[Any, Any, Any] | None:
     """
-    Return the ``(args, kwargs)`` of an expected call, or ``None``
+    Return the ``(name, args, kwargs)`` of a call, or ``None``
     if its shape is not recognized.
     """
     match expect_call:
         case ():
-            return (), {}
-        case (_, args, kwargs):
-            return args, kwargs
+            return "", (), {}
+        case (name, args, kwargs):
+            return name, args, kwargs
         case (tuple() as args,):
-            return args, {}
-        case (str(),):
-            return (), {}
+            return "", args, {}
+        case (str() as name,):
+            return name, (), {}
         case (kwargs,):
-            return (), kwargs
-        case (str(), tuple() as args):
-            return args, {}
-        case (str(), kwargs):
-            return (), kwargs
+            return "", (), kwargs
+        case (str() as name, tuple() as args):
+            return name, args, {}
+        case (str() as name, kwargs):
+            return name, (), kwargs
         case (args, kwargs):
-            return args, kwargs
+            return "", args, kwargs
         case _:
             return None
+
+
+def _get_mismatched_calls(
+    mock: Any, actual_calls: Iterable[Any], expect_calls: Iterable[Any]
+) -> Iterator[tuple[Any, Any]]:
+    actual_with_keys = []
+    for actual_call in actual_calls:
+        actual = _unpack_expected_call(actual_call)
+        if actual is not None:
+            key = _unpack_expected_call(mock._call_matcher(actual))
+            actual_with_keys.append((actual, key))
+
+    unmatched_expected = []
+    # Reserve every exact match before pairing argument mismatches, so an earlier
+    # expectation cannot consume the actual call matching a later expectation.
+    for expect_call in expect_calls:
+        expected = _unpack_expected_call(expect_call)
+        if expected is None:
+            continue
+        expected_key = _unpack_expected_call(mock._call_matcher(expected))
+        for index, (actual, actual_key) in enumerate(actual_with_keys):
+            if (
+                actual[0] == expected[0]
+                and expected_key is not None
+                and actual_key is not None
+                # Keep expected-side ANY and custom matcher equality semantics.
+                and expected_key[1:] == actual_key[1:]
+            ):
+                del actual_with_keys[index]
+                break
+        else:
+            unmatched_expected.append(expected)
+
+    for expected in unmatched_expected:
+        for index, (actual, _) in enumerate(actual_with_keys):
+            if actual[0] == expected[0]:
+                del actual_with_keys[index]
+                yield actual, expected
+                break
 
 
 def assert_has_calls_wrapper(
@@ -585,14 +624,17 @@ def assert_has_calls_wrapper(
         ):
             actual_calls = list(call_list)
             introspection = ""
-            for actual_call, expect_call in itertools.zip_longest(
-                actual_calls, expect_calls
-            ):
+            call_pairs = (
+                _get_mismatched_calls(__mock_self, actual_calls, expect_calls)
+                if __call_list_attr__ == "mock_calls"
+                else itertools.zip_longest(actual_calls, expect_calls)
+            )
+            for actual_call, expect_call in call_pairs:
                 if actual_call is not None:
                     unpacked = _unpack_expected_call(actual_call)
                     if unpacked is None:
                         continue
-                    actual_args, actual_kwargs = unpacked
+                    _, actual_args, actual_kwargs = unpacked
                 else:
                     actual_args = ()
                     actual_kwargs = {}
@@ -601,7 +643,7 @@ def assert_has_calls_wrapper(
                     unpacked = _unpack_expected_call(expect_call)
                     if unpacked is None:
                         continue
-                    expect_args, expect_kwargs = unpacked
+                    _, expect_args, expect_kwargs = unpacked
                 else:
                     expect_args = ()
                     expect_kwargs = {}

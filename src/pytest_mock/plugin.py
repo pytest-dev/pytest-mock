@@ -56,6 +56,10 @@ class MockCacheItem:
     is_spy: bool = False
     # The ``side_effect`` a spy uses to call the spied code, restored by ``resetall``.
     spy_side_effect: Callable[..., Any] | None = None
+    # ``mock.__enter__`` and its ``side_effect`` that warns about using the mock
+    # as a context manager, restored by ``resetall``.
+    enter_mock: Any | None = None
+    enter_side_effect: Callable[[], None] | None = None
     # The objects ``resetall`` resets instead of ``mock``, for patches such as
     # ``patch.multiple`` whose ``mock`` is a dict of the patched values.
     reset_mocks: tuple[Any, ...] | None = None
@@ -168,6 +172,10 @@ class MockerFixture:
             # it means going back to that, not to ``None``.
             if side_effect and mock_item.spy_side_effect is not None:
                 mock_item.mock.side_effect = mock_item.spy_side_effect
+            # Resetting ``side_effect`` also clears it on ``__enter__``, which
+            # would drop the warning about using the mock as a context manager.
+            if side_effect and mock_item.enter_mock is not None:
+                mock_item.enter_mock.side_effect = mock_item.enter_side_effect
 
     def _reset_mock(self, mock: Any, *, return_value: bool, side_effect: bool) -> None:
         # See issue #237.
@@ -307,7 +315,7 @@ class MockerFixture:
             """
             p = mock_func(*args, **kwargs)
             mocked: MockType = p.start()
-            self.__mock_cache.add(mock=mocked, patch=p)
+            mock_item = self.__mock_cache.add(mock=mocked, patch=p)
             if hasattr(mocked, "reset_mock"):  # noqa:SIM102
                 # check if `mocked` is actually a mock object, as depending on autospec or target
                 # parameters `mocked` can be anything
@@ -320,6 +328,8 @@ class MockerFixture:
                         PytestMockWarning,
                         stacklevel=5,
                     )
+                    mock_item.enter_mock = mocked.__enter__
+                    mock_item.enter_side_effect = mocked.__enter__.side_effect
             return mocked
 
         def object(

@@ -1818,6 +1818,52 @@ class TestContextManagerWarnings:
 
         assert warn_record[0].filename == __file__
 
+    def test_patch_after_resetall(self, mocker: MockerFixture) -> None:
+        """``resetall(side_effect=True)`` keeps the warning (#637)."""
+        mocked = mocker.patch("json.loads")
+        mocker.resetall(return_value=True, side_effect=True)
+
+        with pytest.warns(PytestMockWarning) as warn_record, mocked:
+            pass
+
+        assert warn_record[0].filename == __file__
+
+    def test_patch_deleted_enter_after_resetall(self, mocker: MockerFixture) -> None:
+        """``resetall(side_effect=True)`` leaves a deleted ``__enter__`` alone."""
+        mocked = mocker.patch("json.loads")
+        del mocked.__enter__
+        mocker.resetall(side_effect=True)
+
+        assert not hasattr(mocked, "__enter__")
+
+    def test_spy_after_resetall(self, mocker: MockerFixture) -> None:
+        """Spies backed by a ``MagicMock`` also keep the warning after
+        ``resetall(side_effect=True)`` (#637)."""
+        expected = os.getcwd()
+        spy = mocker.spy(os, "getcwd")
+        mocker.resetall(side_effect=True)
+
+        with pytest.warns(PytestMockWarning), spy:
+            pass
+        assert os.getcwd() == expected
+
+    def test_patch_context_manager_after_resetall(self, mocker: MockerFixture) -> None:
+        """``resetall`` does not add the warning to ``patch.context_manager``."""
+
+        class A:
+            def doIt(self):
+                return False
+
+        a = A()
+        mocked = mocker.patch.context_manager(a, "doIt", return_value=True)
+        mocker.resetall(side_effect=True)
+
+        with warnings.catch_warnings(record=True) as warn_record:  # noqa:SIM117
+            with mocked:
+                pass
+
+        assert len(warn_record) == 0
+
     def test_patching_a_context_manager(self, mocker: MockerFixture) -> None:
         """Our message about misusing mocker as a context manager should not affect mocking
         context managers (see #192)"""

@@ -1,8 +1,10 @@
 Releases
 ========
 
-UNRELEASED
-----------
+3.16.1
+------
+
+*2026-10-17*
 
 * `#617 <https://github.com/pytest-dev/pytest-mock/pull/617>`_: Fixed ``assert_has_calls`` raising ``ValueError`` instead of ``AssertionError`` (or showing misleading introspection) when the expected calls are plain tuples rather than ``call(...)`` objects, such as ``(args, kwargs)`` entries of another mock's ``call_args_list``, ``(args,)``, ``(kwargs,)``, ``(name, args)`` or ``(name, kwargs)``.
 * `#621 <https://github.com/pytest-dev/pytest-mock/pull/621>`_: Fixed ``mocker.stop()`` sometimes stopping the wrong mock, for example with mocks from ``mocker.create_autospec``.

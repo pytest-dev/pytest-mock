@@ -1106,6 +1106,35 @@ class TestAssertWrappers:
         result = testdir.runpytest()
         assert "pytest introspection follows:" not in result.stdout.str()
 
+    @pytest.mark.parametrize(
+        "assertion",
+        [
+            "stub.assert_called_with(2)",
+            # assert_called_once_with calls assert_called_with internally,
+            # so both wrappers are involved.
+            "stub.assert_called_once_with(2)",
+            "stub.assert_not_called()",
+            "stub.assert_has_calls([mocker.call(2)])",
+        ],
+    )
+    def test_no_chained_tracebacks(self, testdir: Any, assertion: str) -> None:
+        """
+        The wrapped assertions report the failure only once, without the
+        original exception from the mock module chained to it.
+        """
+        testdir.makepyfile(
+            f"""
+            def test_foo(mocker):
+                stub = mocker.stub()
+                stub(1)
+                {assertion}
+            """
+        )
+        result = testdir.runpytest()
+        result.assert_outcomes(failed=1)
+        assert "During handling of the above exception" not in result.stdout.str()
+        assert "mock.py" not in result.stdout.str()
+
 
 class TestAssertHasCalls:
     """``assert_has_calls``, including the shapes accepted as expected calls."""

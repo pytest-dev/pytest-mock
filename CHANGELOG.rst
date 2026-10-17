@@ -1,6 +1,11 @@
 Releases
 ========
 
+UNRELEASED
+----------
+
+* `#641 <https://github.com/pytest-dev/pytest-mock/pull/641>`_: Failures of mock assertions such as ``assert_called_with`` are again reported only once, instead of two or three times with the original error from the ``mock`` module chained before them.
+
 3.16.1
 ------
 

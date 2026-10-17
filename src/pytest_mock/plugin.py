@@ -46,6 +46,8 @@ class PytestMockWarning(UserWarning):
     """Base class for all warnings emitted by pytest-mock."""
 
 
+# eq=False keeps identity comparison: a generated __eq__ would compare the
+# mocks themselves, and a mock's __eq__ can return True or raise.
 @dataclass(eq=False)
 class MockCacheItem:
     mock: MockType

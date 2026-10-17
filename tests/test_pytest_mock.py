@@ -953,6 +953,24 @@ class TestAssertHasCalls:
         assert "'expected'" in introspection
         assert "Args" not in introspection
 
+    @pytest.mark.usefixtures("needs_assert_rewrite")
+    def test_calls_by_keyword(self, mocker: MockerFixture) -> None:
+        stub = mocker.stub()
+        stub("actual")
+        stub.assert_has_calls(calls=[mocker.call("actual")])
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_has_calls(calls=[mocker.call("expected")])
+        introspection = str(exc_info.value).split("pytest introspection follows:")[1]
+        assert "'expected'" in introspection
+        assert "'actual'" in introspection
+
+    def test_any_order_by_position(self, mocker: MockerFixture) -> None:
+        stub = mocker.stub()
+        stub("actual")
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_has_calls([mocker.call("expected")], True)
+        assert "pytest introspection follows:" not in str(exc_info.value)
+
 
 @pytest.mark.usefixtures("needs_assert_rewrite")
 class TestAsyncAssertions:
@@ -982,6 +1000,46 @@ class TestAsyncAssertions:
         introspection = str(exc_info.value).split("pytest introspection follows:")[1]
         assert "'called'" in introspection
         assert "'awaited'" not in introspection
+
+    @pytest.mark.asyncio
+    async def test_has_awaits(self, mocker: MockerFixture) -> None:
+        stub = mocker.AsyncMock()
+        await stub("awaited", source="awaited")
+        stub("called", source="called").close()
+
+        stub.assert_has_awaits([mocker.call("awaited", source="awaited")])
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_has_awaits([mocker.call("wrong", source="wrong")])
+        introspection = str(exc_info.value).split("pytest introspection follows:")[1]
+        assert "'awaited'" in introspection
+        assert "'wrong'" in introspection
+        assert "'called'" not in introspection
+        assert "call(" not in introspection
+
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_has_awaits([mocker.call("wrong")], any_order=True)
+        assert "pytest introspection follows:" not in str(exc_info.value)
+
+    @pytest.mark.asyncio
+    async def test_has_awaits_calls_by_keyword(self, mocker: MockerFixture) -> None:
+        stub = mocker.AsyncMock()
+        await stub("awaited")
+        stub.assert_has_awaits(calls=[mocker.call("awaited")])
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_has_awaits(calls=[mocker.call("wrong")])
+        introspection = str(exc_info.value).split("pytest introspection follows:")[1]
+        assert "'awaited'" in introspection
+        assert "'wrong'" in introspection
+
+    @pytest.mark.asyncio
+    async def test_has_awaits_any_order_by_position(
+        self, mocker: MockerFixture
+    ) -> None:
+        stub = mocker.AsyncMock()
+        await stub("awaited")
+        with pytest.raises(AssertionError) as exc_info:
+            stub.assert_has_awaits([mocker.call("wrong")], True)
+        assert "pytest introspection follows:" not in str(exc_info.value)
 
     def test_without_await(self, mocker: MockerFixture) -> None:
         stub = mocker.AsyncMock()

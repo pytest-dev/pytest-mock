@@ -221,6 +221,79 @@ class TestMockerAttributes:
 class TestResetAll:
     """``mocker.resetall``."""
 
+    @pytest.mark.parametrize("return_value", [False, True])
+    @pytest.mark.parametrize("side_effect", [False, True])
+    def test_patch_multiple(
+        self, mocker: MockerFixture, return_value: bool, side_effect: bool
+    ) -> None:
+        original_rm, original_ls = UnixFS.rm, UnixFS.ls
+        mocks = mocker.patch.multiple(UnixFS, rm=mocker.DEFAULT, ls=mocker.DEFAULT)
+        mocks["rm"].return_value = "removed"
+        mocks["ls"].side_effect = ["first", "second"]
+        assert UnixFS.rm("file") == "removed"
+        assert UnixFS.ls("directory") == "first"
+
+        mocker.resetall(return_value=return_value, side_effect=side_effect)
+
+        for mock in mocks.values():
+            mock.assert_not_called()
+        if return_value:
+            assert isinstance(mocks["rm"].return_value, mocker.Mock)
+        else:
+            assert UnixFS.rm("file") == "removed"
+        if side_effect:
+            assert mocks["ls"].side_effect is None
+        else:
+            assert UnixFS.ls("directory") == "second"
+        assert UnixFS.rm is mocks["rm"]
+        assert UnixFS.ls is mocks["ls"]
+
+        mocker.stopall()
+        assert UnixFS.rm == original_rm
+        assert UnixFS.ls == original_ls
+
+    def test_patch_multiple_autospec(self, mocker: MockerFixture) -> None:
+        mocks = mocker.patch.multiple(AutospecTarget, run=mocker.DEFAULT, autospec=True)
+        target = AutospecTarget()
+        target.run()
+
+        mocker.resetall()
+
+        mocks["run"].assert_not_called()
+        with pytest.raises(TypeError):
+            target.run("extra")  # type: ignore[call-arg]
+
+    def test_patch_multiple_explicit_values(self, mocker: MockerFixture) -> None:
+        """Values passed explicitly to ``patch.multiple`` are reset like the mocks
+        it creates, as with ``patch.object(new=...)``."""
+        rm = mocker.Mock(return_value="removed")
+        mocks = mocker.patch.multiple(UnixFS, rm=rm, ls=mocker.DEFAULT)
+        assert UnixFS.rm("file") == "removed"
+        UnixFS.ls("directory")
+
+        mocker.resetall(return_value=True)
+
+        rm.assert_not_called()
+        mocks["ls"].assert_not_called()
+        assert isinstance(rm.return_value, mocker.Mock)
+        assert UnixFS.rm is rm
+
+    def test_patch_multiple_non_mock_values(self, mocker: MockerFixture) -> None:
+        """Values that aren't mocks are left alone."""
+        mocker.patch.multiple(UnixFS, rm=None, ls=mocker.DEFAULT)
+        mocker.resetall()
+        assert UnixFS.rm is None
+
+    def test_patch_multiple_new_callable(self, mocker: MockerFixture) -> None:
+        mocks = mocker.patch.multiple(
+            UnixFS, new_callable=mocker.MagicMock, rm=mocker.DEFAULT
+        )
+        UnixFS.rm("file")
+
+        mocker.resetall()
+
+        mocks["rm"].assert_not_called()
+
     def test_basic(self, mocker: MockerFixture) -> None:
         listdir = mocker.patch("os.listdir", return_value="foo")
         open = mocker.patch("os.open", side_effect=["bar", "baz"])
@@ -387,6 +460,27 @@ class TestResetAll:
         assert call() == 4
         assert spy.spy_return == 4
 
+    def test_mock_spy_attributes(self, mocker: MockerFixture) -> None:
+        """Attributes named like the spy attributes on mocks that are not spies
+        are reset like any other attribute, not replaced."""
+        mocked = mocker.patch("os.getcwd")
+        mocked.spy_return.method(1)
+        spy_attributes = {
+            name: getattr(mocked, name)
+            for name in (
+                "spy_return",
+                "spy_return_iter",
+                "spy_return_list",
+                "spy_exception",
+            )
+        }
+
+        mocker.resetall()
+
+        for name, attribute in spy_attributes.items():
+            assert getattr(mocked, name) is attribute
+        mocked.spy_return.method.assert_not_called()
+
     def test_patch_dict(self, mocker: MockerFixture) -> None:
         """
         We can call resetall after patching a dict.
@@ -397,6 +491,17 @@ class TestResetAll:
         assert x == {"new": 10}
         mocker.resetall()
         assert x == {"new": 10}
+
+    def test_patch_dict_does_not_reset_values(self, mocker: MockerFixture) -> None:
+        value = mocker.Mock()
+        value("called")
+        target: dict[str, Any] = {}
+        mocker.patch.dict(target, value=value)
+
+        mocker.resetall()
+
+        value.assert_called_once_with("called")
+        assert target["value"] is value
 
 
 class TestMockerStub:
@@ -570,6 +675,13 @@ class TestSpy:
 
         # Testing spy can still be reset (#237).
         mocker.resetall()
+        self.assert_spy_has_no_return(spy)
+
+        with pytest.raises(ValueError):
+            Foo().bar(0)
+        assert str(spy.spy_exception) == "invalid x"
+        mocker.resetall()
+        assert spy.spy_exception is None
 
         with pytest.raises(ValueError):
             Foo().bar(0)
@@ -581,6 +693,33 @@ class TestSpy:
         assert spy.spy_return_iter is None
         assert spy.spy_return_list == [45]
         assert spy.spy_exception is None
+
+    @pytest.mark.asyncio
+    async def test_reset_async(self, mocker: MockerFixture) -> None:
+        class Foo:
+            async def bar(self, x):
+                if x == 0:
+                    raise ValueError("invalid x")
+                return x * 3
+
+        spy = mocker.spy(Foo, "bar")
+
+        assert await Foo().bar(10) == 30
+        assert spy.spy_return == 30
+        mocker.resetall()
+        self.assert_spy_has_no_return(spy)
+        assert spy.await_count == 0
+
+        with pytest.raises(ValueError):
+            await Foo().bar(0)
+        assert str(spy.spy_exception) == "invalid x"
+        mocker.resetall()
+        assert spy.spy_exception is None
+
+        assert await Foo().bar(15) == 45
+        assert spy.spy_return == 45
+        assert spy.spy_return_list == [45]
+        assert spy.await_count == 1
 
     def test_callable_like(
         self, testdir: Any, mocker: MockerFixture, request: pytest.FixtureRequest

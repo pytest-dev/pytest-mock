@@ -54,6 +54,9 @@ class MockCacheItem:
     patch: Any | None = None
     # The ``side_effect`` a spy uses to call the spied code, restored by ``resetall``.
     spy_side_effect: Callable[..., Any] | None = None
+    # The objects ``resetall`` resets instead of ``mock``, for patches such as
+    # ``patch.multiple`` whose ``mock`` is a dict of the patched values.
+    reset_mocks: tuple[Any, ...] | None = None
 
 
 @dataclass
@@ -140,28 +143,35 @@ class MockerFixture:
             calling the spied code.
         """
         for mock_item in self._mock_cache:
-            # See issue #237.
-            if not hasattr(mock_item.mock, "reset_mock"):
-                continue
-            # NOTE: The mock may be a dictionary
-            if hasattr(mock_item.mock, "spy_return_list"):
-                mock_item.mock.spy_return_list = []
-            if hasattr(mock_item.mock, "spy_return_iter"):
-                mock_item.mock.spy_return_iter = None
-            # ``reset_mock`` is defined on ``NonCallableMock``, which is the base
-            # of every mock class. Autospecced *functions* are plain functions
-            # carrying a no-argument ``reset_mock`` closure, so they take the
-            # ``else`` branch.
-            if isinstance(mock_item.mock, self.NonCallableMock):
-                mock_item.mock.reset_mock(
-                    return_value=return_value, side_effect=side_effect
+            reset_mocks = mock_item.reset_mocks
+            if reset_mocks is None:
+                reset_mocks = (mock_item.mock,)
+            for mock in reset_mocks:
+                self._reset_mock(
+                    mock, return_value=return_value, side_effect=side_effect
                 )
-            else:
-                mock_item.mock.reset_mock()
             # A spy's ``side_effect`` is what calls the spied code, so resetting
             # it means going back to that, not to ``None``.
             if side_effect and mock_item.spy_side_effect is not None:
                 mock_item.mock.side_effect = mock_item.spy_side_effect
+
+    def _reset_mock(self, mock: Any, *, return_value: bool, side_effect: bool) -> None:
+        # See issue #237.
+        if not hasattr(mock, "reset_mock"):
+            return
+        # NOTE: The mock may be a dictionary
+        if hasattr(mock, "spy_return_list"):
+            mock.spy_return_list = []
+        if hasattr(mock, "spy_return_iter"):
+            mock.spy_return_iter = None
+        # ``reset_mock`` is defined on ``NonCallableMock``, which is the base
+        # of every mock class. Autospecced *functions* are plain functions
+        # carrying a no-argument ``reset_mock`` closure, so they take the
+        # ``else`` branch.
+        if isinstance(mock, self.NonCallableMock):
+            mock.reset_mock(return_value=return_value, side_effect=side_effect)
+        else:
+            mock.reset_mock()
 
     def stopall(self) -> None:
         """
@@ -370,7 +380,7 @@ class MockerFixture:
             **kwargs: Any,
         ) -> dict[str, MockType]:
             """API to mock.patch.multiple"""
-            return self._start_patch(
+            mocked = self._start_patch(
                 self.mock_module.patch.multiple,
                 True,
                 target,
@@ -381,6 +391,16 @@ class MockerFixture:
                 new_callable=new_callable,
                 **kwargs,
             )
+            # The returned dict only holds the mocks created for ``DEFAULT``
+            # values, so the values passed explicitly are collected from the
+            # patchers.
+            mock_item = self.__mock_cache.find(mocked)
+            patchers = [mock_item.patch, *mock_item.patch.additional_patchers]
+            mock_item.reset_mocks = (
+                *mocked.values(),
+                *(p.new for p in patchers if p.new is not self.mock_module.DEFAULT),
+            )
+            return mocked
 
         def dict(
             self,

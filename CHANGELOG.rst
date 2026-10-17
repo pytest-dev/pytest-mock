@@ -9,6 +9,7 @@ UNRELEASED
 * `#621 <https://github.com/pytest-dev/pytest-mock/pull/621>`_: ``mocker.stop()`` now undoes the most recent patch first when the same object is used in several patches.
 * `#623 <https://github.com/pytest-dev/pytest-mock/pull/623>`_: Fixed misleading introspection in ``assert_has_awaits`` failures, and ``assert_has_calls``/``assert_has_awaits`` raising ``IndexError`` instead of ``AssertionError`` when ``calls`` is passed by keyword.
 * `#624 <https://github.com/pytest-dev/pytest-mock/pull/624>`_: Clear ``spy_return_iter`` after a spied synchronous or asynchronous function raises, matching ``spy_return``.
+* `#629 <https://github.com/pytest-dev/pytest-mock/pull/629>`_: Fixed ``mocker.resetall()`` skipping the mocks patched with ``mocker.patch.multiple()``, both the ones it creates and the ones passed explicitly.
 * `#633 <https://github.com/pytest-dev/pytest-mock/pull/633>`_: Fixed spies on ``classmethod``, ``staticmethod``, builtins and classes returning a ``MagicMock`` instead of calling the spied code after ``mocker.resetall(side_effect=True)``. Resetting a spy's ``side_effect`` now goes back to calling the spied code, also clearing any ``side_effect`` set on the spy.
 
 3.16.0

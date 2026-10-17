@@ -739,10 +739,10 @@ class TestSpyReturnIter:
         spy = mocker.spy(foo, "bar", duplicate_iterators=True)
         assert list(foo.bar()) == [1, 2]
         assert spy.spy_return_iter is not None
-        with pytest.raises(ValueError, match="failed"):
+        with pytest.raises(ValueError, match="failed") as exc_info:
             foo.bar(fail=True)
         assert spy.spy_return is None
-        assert spy.spy_exception is not None
+        assert spy.spy_exception is exc_info.value
         assert spy.spy_return_iter is None
 
     @pytest.mark.asyncio
@@ -759,10 +759,10 @@ class TestSpyReturnIter:
         spy = mocker.spy(foo, "bar", duplicate_iterators=True)
         assert list(await foo.bar()) == [1, 2]
         assert spy.spy_return_iter is not None
-        with pytest.raises(ValueError, match="failed"):
+        with pytest.raises(ValueError, match="failed") as exc_info:
             await foo.bar(fail=True)
         assert spy.spy_return is None
-        assert spy.spy_exception is not None
+        assert spy.spy_exception is exc_info.value
         assert spy.spy_return_iter is None
 
 

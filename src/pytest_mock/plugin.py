@@ -179,45 +179,36 @@ class MockerFixture:
         """
         method = getattr(obj, name)
 
-        def wrapper(*args, **kwargs):
+        def reset_spy_state():
             spy_obj.spy_return = None
             spy_obj.spy_return_iter = None
             spy_obj.spy_exception = None
+
+        def record_return(r):
+            if duplicate_iterators and isinstance(r, Iterator):
+                r, duplicated_iterator = itertools.tee(r, 2)
+                spy_obj.spy_return_iter = duplicated_iterator
+            spy_obj.spy_return = r
+            spy_obj.spy_return_list.append(r)
+            return r
+
+        def wrapper(*args, **kwargs):
+            reset_spy_state()
             try:
                 r = method(*args, **kwargs)
             except BaseException as e:
                 spy_obj.spy_exception = e
                 raise
-            else:
-                if duplicate_iterators and isinstance(r, Iterator):
-                    r, duplicated_iterator = itertools.tee(r, 2)
-                    spy_obj.spy_return_iter = duplicated_iterator
-                else:
-                    spy_obj.spy_return_iter = None
-
-                spy_obj.spy_return = r
-                spy_obj.spy_return_list.append(r)
-            return r
+            return record_return(r)
 
         async def async_wrapper(*args, **kwargs):
-            spy_obj.spy_return = None
-            spy_obj.spy_return_iter = None
-            spy_obj.spy_exception = None
+            reset_spy_state()
             try:
                 r = await method(*args, **kwargs)
             except BaseException as e:
                 spy_obj.spy_exception = e
                 raise
-            else:
-                if duplicate_iterators and isinstance(r, Iterator):
-                    r, duplicated_iterator = itertools.tee(r, 2)
-                    spy_obj.spy_return_iter = duplicated_iterator
-                else:
-                    spy_obj.spy_return_iter = None
-
-                spy_obj.spy_return = r
-                spy_obj.spy_return_list.append(r)
-            return r
+            return record_return(r)
 
         if inspect.iscoroutinefunction(method):
             wrapped = functools.update_wrapper(async_wrapper, method)

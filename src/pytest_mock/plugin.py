@@ -52,6 +52,8 @@ class PytestMockWarning(UserWarning):
 class MockCacheItem:
     mock: MockType
     patch: Any | None = None
+    # The ``side_effect`` a spy uses to call the spied code, restored by ``resetall``.
+    spy_side_effect: Callable[..., Any] | None = None
 
 
 @dataclass
@@ -71,6 +73,9 @@ class MockCache:
     def add(self, mock: MockType, **kwargs: Any) -> MockCacheItem:
         self.cache.append(MockCacheItem(mock=mock, **kwargs))
         return self.cache[-1]
+
+    def find(self, mock: MockType) -> MockCacheItem:
+        return self.cache[self._find_index(mock)]
 
     def remove(self, mock: MockType) -> None:
         index = self._find_index(mock)
@@ -152,6 +157,10 @@ class MockerFixture:
                 )
             else:
                 mock_item.mock.reset_mock()
+            # A spy's ``side_effect`` is what calls the spied code, so resetting
+            # it means going back to that, not to ``None``.
+            if side_effect and mock_item.spy_side_effect is not None:
+                mock_item.mock.side_effect = mock_item.spy_side_effect
 
     def stopall(self) -> None:
         """
@@ -221,6 +230,7 @@ class MockerFixture:
             SpyType,
             self.patch.object(obj, name, side_effect=wrapped, autospec=autospec),
         )
+        self._mock_cache.find(spy_obj).spy_side_effect = wrapped
         spy_obj.spy_return = None
         spy_obj.spy_return_iter = None
         spy_obj.spy_return_list = []

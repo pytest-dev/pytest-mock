@@ -266,7 +266,16 @@ class TestResetAll:
     @pytest.mark.parametrize("return_value", [False, True])
     @pytest.mark.parametrize("side_effect", [False, True])
     @pytest.mark.parametrize(
-        "target", ["function", "instance_method", "method_on_class"]
+        "target",
+        [
+            "function",
+            "instance_method",
+            "method_on_class",
+            "classmethod",
+            "staticmethod",
+            "builtin",
+            "class",
+        ],
     )
     def test_spy_keeps_calling_through(
         self, mocker: MockerFixture, target: str, return_value: bool, side_effect: bool
@@ -274,8 +283,18 @@ class TestResetAll:
         """Spies keep calling the spied code after ``resetall``, whatever its arguments."""
 
         class Foo:
+            Int = int
+
             def bar(self, arg: int) -> int:
                 return arg * 2
+
+            @classmethod
+            def class_bar(cls, arg: int) -> int:
+                return arg * 3
+
+            @staticmethod
+            def static_bar(arg: int) -> int:
+                return arg * 4
 
         foo = Foo()
         if target == "function":
@@ -286,10 +305,26 @@ class TestResetAll:
             spy = mocker.spy(foo, "bar")
             call = lambda: foo.bar(2)
             expected = 4
-        else:
+        elif target == "method_on_class":
             spy = mocker.spy(Foo, "bar")
             call = lambda: foo.bar(2)
             expected = 4
+        elif target == "classmethod":
+            spy = mocker.spy(Foo, "class_bar")
+            call = lambda: Foo.class_bar(2)
+            expected = 6
+        elif target == "staticmethod":
+            spy = mocker.spy(Foo, "static_bar")
+            call = lambda: Foo.static_bar(2)
+            expected = 8
+        elif target == "builtin":
+            expected = os.getcwd()
+            spy = mocker.spy(os, "getcwd")
+            call = os.getcwd
+        else:
+            spy = mocker.spy(Foo, "Int")
+            call = lambda: Foo.Int("5")
+            expected = 5
         assert call() == expected
 
         mocker.resetall(return_value=return_value, side_effect=side_effect)
@@ -322,6 +357,35 @@ class TestResetAll:
         assert await foo.bar(2) == 4
         assert spy.spy_return == 4
         assert spy.spy_return_list == [4]
+
+    @pytest.mark.parametrize("target", ["instance_method", "classmethod"])
+    def test_spy_side_effect_override(self, mocker: MockerFixture, target: str) -> None:
+        """``resetall(side_effect=True)`` clears a ``side_effect`` set on a spy,
+        going back to calling the spied code."""
+
+        class Foo:
+            def bar(self, arg: int) -> int:
+                return arg * 2
+
+            @classmethod
+            def class_bar(cls, arg: int) -> int:
+                return arg * 2
+
+        foo = Foo()
+        if target == "instance_method":
+            spy = mocker.spy(foo, "bar")
+            call: Callable[[], int] = lambda: foo.bar(2)
+        else:
+            spy = mocker.spy(Foo, "class_bar")
+            call = lambda: Foo.class_bar(2)
+        spy.side_effect = ValueError
+        with pytest.raises(ValueError):
+            call()
+
+        mocker.resetall(side_effect=True)
+
+        assert call() == 4
+        assert spy.spy_return == 4
 
     def test_patch_dict(self, mocker: MockerFixture) -> None:
         """

@@ -1,6 +1,11 @@
 Releases
 ========
 
+UNRELEASED
+----------
+
+* `#648 <https://github.com/pytest-dev/pytest-mock/pull/648>`_: Fixed ``mocker.patch.multiple()`` so that each patched mock can be stopped individually with ``mocker.stop()`` and emits ``PytestMockWarning`` when used as a context manager, matching ``mocker.patch`` and ``mocker.patch.object``.
+
 3.17.0
 ------
 

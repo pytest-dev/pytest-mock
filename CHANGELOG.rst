@@ -1,8 +1,10 @@
 Releases
 ========
 
-UNRELEASED
-----------
+3.16.2
+------
+
+*2026-10-17*
 
 * `#641 <https://github.com/pytest-dev/pytest-mock/pull/641>`_: Failures of mock assertions such as ``assert_called_with`` are again reported only once, instead of two or three times with the original error from the ``mock`` module chained before them.
 * `#642 <https://github.com/pytest-dev/pytest-mock/pull/642>`_: Mock assertion failures no longer show misleading introspection when they are not about the arguments of the last call: ``assert_called``, ``assert_called_once``, ``assert_not_called``, ``assert_any_call``, their ``await`` counterparts, and ``assert_called_once_with``/``assert_awaited_once_with`` when the mock was not called (awaited) exactly once. The introspection also no longer reports arguments passed by position versus by keyword as different for autospecced mocks, and no longer shows empty ``Args:``/``Kwargs:`` sections when assertion rewriting is not available.

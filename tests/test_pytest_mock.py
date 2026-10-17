@@ -399,11 +399,16 @@ class TestResetAll:
             call = lambda: Foo.Int("5")
             expected = 5
         assert call() == expected
+        original_side_effect = spy.side_effect
 
         mocker.resetall(return_value=return_value, side_effect=side_effect)
 
         assert spy.call_count == 0
+        assert spy.side_effect is original_side_effect
+        assert spy.spy_return is None
+        assert spy.spy_return_iter is None
         assert spy.spy_return_list == []
+        assert spy.spy_exception is None
         assert call() == expected
         assert spy.spy_return == expected
         assert spy.spy_return_list == [expected]
@@ -480,6 +485,75 @@ class TestResetAll:
         for name, attribute in spy_attributes.items():
             assert getattr(mocked, name) is attribute
         mocked.spy_return.method.assert_not_called()
+
+    @pytest.mark.parametrize("return_value", [False, True])
+    @pytest.mark.parametrize("side_effect", [False, True])
+    def test_autospecced_function_options(
+        self, mocker: MockerFixture, return_value: bool, side_effect: bool
+    ) -> None:
+        def target(value):
+            return value
+
+        def effect(value):
+            return value * 2
+
+        mocked = mocker.create_autospec(target, return_value="previous")
+        mocked.side_effect = effect
+        assert mocked(3) == 6
+
+        mocker.resetall(return_value=return_value, side_effect=side_effect)
+
+        mocked.assert_not_called()
+        if return_value:
+            assert isinstance(mocked.return_value, mocker.Mock)
+        else:
+            assert mocked.return_value == "previous"
+        assert mocked.side_effect is (None if side_effect else effect)
+
+        if not side_effect:
+            assert mocked(4) == 8
+        elif return_value:
+            assert mocked(4) is mocked.return_value
+        else:
+            assert mocked(4) == "previous"
+
+        with pytest.raises(TypeError):
+            mocked()
+
+    def test_patched_autospecced_function_options(self, mocker: MockerFixture) -> None:
+        mocked = mocker.patch(
+            "os.path.commonprefix", autospec=True, return_value="previous"
+        )
+        mocked.side_effect = lambda paths: "effect"
+        assert os.path.commonprefix(["a", "b"]) == "effect"
+
+        mocker.resetall(return_value=True, side_effect=True)
+
+        mocked.assert_not_called()
+        assert isinstance(mocked.return_value, mocker.Mock)
+        assert mocked.side_effect is None
+        assert os.path.commonprefix(["a", "b"]) is mocked.return_value
+        mocked.assert_called_once_with(["a", "b"])
+
+    def test_new_object_with_mock_attribute(self, mocker: MockerFixture) -> None:
+        class Replacement:
+            def __init__(self):
+                self.mock = mocker.Mock()
+                self.return_value = "previous"
+                self.side_effect = ValueError
+                self.reset_count = 0
+
+            def reset_mock(self):
+                self.reset_count += 1
+
+        replacement = Replacement()
+        mocker.patch.object(os, "listdir", new=replacement)
+
+        mocker.resetall(return_value=True, side_effect=True)
+
+        assert replacement.reset_count == 1
+        assert replacement.return_value == "previous"
+        assert replacement.side_effect is ValueError
 
     def test_patch_dict(self, mocker: MockerFixture) -> None:
         """

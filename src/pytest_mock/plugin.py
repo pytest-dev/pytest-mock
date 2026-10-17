@@ -253,11 +253,15 @@ class MockerFixture:
 
     def async_stub(self, name: str | None = None) -> AsyncMockType:
         """
-        Create a async stub method. It accepts any arguments. Ideal to register to
-        callbacks in tests.
+        Create an async stub method. It accepts any arguments. Ideal to register to
+        asynchronous callbacks in tests.
+
+        Calls and awaits are tracked separately: calling the stub is recorded
+        right away (``assert_called*``), while awaiting the result is recorded
+        only once it is awaited (``assert_awaited*``).
 
         :param name: the constructed stub's name as used in repr
-        :return: Stub object.
+        :return: Stub object, an ``AsyncMock``.
         """
         return cast(
             AsyncMockType,

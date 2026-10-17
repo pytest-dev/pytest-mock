@@ -141,10 +141,11 @@ Async stub
 ~~~~~~~~~~
 
 Use ``mocker.async_stub()`` for an asynchronous callback. It returns an
-``AsyncMock``, so calling it creates an awaitable. Call assertions such as
-``assert_called_once_with`` record that invocation, even when the awaitable
-has not been awaited. Use ``assert_awaited_once_with`` to verify that the
-callback was awaited with the expected arguments.
+``AsyncMock``, so calling it creates an awaitable. The call is recorded as
+soon as the stub is called, so call assertions such as
+``assert_called_once_with`` pass even before the awaitable is awaited. Use
+``assert_awaited_once_with`` to verify that the callback was awaited with the
+expected arguments.
 
 For example, with `pytest-asyncio <https://pytest-asyncio.readthedocs.io/>`_:
 

@@ -558,16 +558,6 @@ def _unpack_expected_call(expect_call: Any) -> tuple[Any, Any] | None:
             return None
 
 
-def _bind_has_calls_args(
-    self: Any, calls: Any, any_order: bool = False
-) -> tuple[Any, Any, bool]:
-    """
-    Bind the arguments of ``assert_has_calls``/``assert_has_awaits`` the same way
-    the original methods do, so they can be passed by position or keyword.
-    """
-    return self, calls, any_order
-
-
 def assert_has_calls_wrapper(
     __wrapped_mock_method__: Callable[..., Any],
     __call_list_attr__: str,
@@ -579,10 +569,21 @@ def assert_has_calls_wrapper(
         __wrapped_mock_method__(*args, **kwargs)
         return
     except AssertionError as e:
-        __mock_self, expect_calls, any_order = _bind_has_calls_args(*args, **kwargs)
+        # Bind the arguments like the original method does, so ``calls`` and
+        # ``any_order`` can be passed either by position or by keyword.
+        bound = inspect.signature(__wrapped_mock_method__).bind(*args, **kwargs)
+        bound.apply_defaults()
+        __mock_self = bound.arguments["self"]
+        expect_calls = bound.arguments["calls"]
+        any_order = bound.arguments["any_order"]
+        call_list = getattr(__mock_self, __call_list_attr__)
         msg = str(e)
-        if not getattr(e, "_mock_introspection_applied", 0) and not any_order:
-            actual_calls = list(getattr(__mock_self, __call_list_attr__))
+        if (
+            not getattr(e, "_mock_introspection_applied", 0)
+            and not any_order
+            and call_list is not None
+        ):
+            actual_calls = list(call_list)
             introspection = ""
             for actual_call, expect_call in itertools.zip_longest(
                 actual_calls, expect_calls

@@ -609,94 +609,6 @@ def assert_wrapper(
         raise e from None
 
 
-def _unpack_expected_call(expect_call: Any) -> tuple[Any, Any] | None:
-    """
-    Return the ``(args, kwargs)`` of an expected call, or ``None``
-    if its shape is not recognized.
-    """
-    match expect_call:
-        case ():
-            return (), {}
-        case (_, args, kwargs):
-            return args, kwargs
-        case (tuple() as args,):
-            return args, {}
-        case (str(),):
-            return (), {}
-        case (kwargs,):
-            return (), kwargs
-        case (str(), tuple() as args):
-            return args, {}
-        case (str(), kwargs):
-            return (), kwargs
-        case (args, kwargs):
-            return args, kwargs
-        case _:
-            return None
-
-
-def assert_has_calls_wrapper(
-    __wrapped_mock_method__: Callable[..., Any],
-    __call_list_attr__: str,
-    *args: Any,
-    **kwargs: Any,
-) -> None:
-    __tracebackhide__ = True
-    try:
-        __wrapped_mock_method__(*args, **kwargs)
-        return
-    except AssertionError as e:
-        # Bind the arguments like the original method does, so ``calls`` and
-        # ``any_order`` can be passed either by position or by keyword.
-        bound = inspect.signature(__wrapped_mock_method__).bind(*args, **kwargs)
-        bound.apply_defaults()
-        __mock_self = bound.arguments["self"]
-        expect_calls = bound.arguments["calls"]
-        any_order = bound.arguments["any_order"]
-        call_list = getattr(__mock_self, __call_list_attr__)
-        msg = str(e)
-        if (
-            not getattr(e, "_mock_introspection_applied", 0)
-            and not any_order
-            and call_list is not None
-        ):
-            actual_calls = list(call_list)
-            introspection = ""
-            for actual_call, expect_call in itertools.zip_longest(
-                actual_calls, expect_calls
-            ):
-                if actual_call is not None:
-                    actual_args, actual_kwargs = actual_call
-                else:
-                    actual_args = ()
-                    actual_kwargs = {}
-
-                if expect_call is not None:
-                    unpacked = _unpack_expected_call(expect_call)
-                    if unpacked is None:
-                        continue
-                    expect_args, expect_kwargs = unpacked
-                else:
-                    expect_args = ()
-                    expect_kwargs = {}
-
-                try:
-                    assert actual_args == expect_args
-                except AssertionError as e_args:
-                    introspection += "\nArgs:\n" + str(e_args)
-                try:
-                    assert actual_kwargs == expect_kwargs
-                except AssertionError as e_kwargs:
-                    introspection += "\nKwargs:\n" + str(e_kwargs)
-            if introspection:
-                msg += "\n\npytest introspection follows:\n" + introspection
-        e = AssertionError(msg)
-        e._mock_introspection_applied = True  # type:ignore[attr-defined]
-        # Suppress the context, otherwise pytest shows the original error
-        # (and the mock frames) chained before this one.
-        raise e from None
-
-
 def wrap_assert_not_called(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
     assert_wrapper(_mock_module_originals["assert_not_called"], None, *args, **kwargs)
@@ -729,9 +641,7 @@ def wrap_assert_called_once_with(*args: Any, **kwargs: Any) -> None:
 
 def wrap_assert_has_calls(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
-    assert_has_calls_wrapper(
-        _mock_module_originals["assert_has_calls"], "call_args_list", *args, **kwargs
-    )
+    assert_wrapper(_mock_module_originals["assert_has_calls"], None, *args, **kwargs)
 
 
 def wrap_assert_any_call(*args: Any, **kwargs: Any) -> None:
@@ -776,12 +686,7 @@ def wrap_assert_awaited_once_with(*args: Any, **kwargs: Any) -> None:
 
 def wrap_assert_has_awaits(*args: Any, **kwargs: Any) -> None:
     __tracebackhide__ = True
-    assert_has_calls_wrapper(
-        _mock_module_originals["assert_has_awaits"],
-        "await_args_list",
-        *args,
-        **kwargs,
-    )
+    assert_wrapper(_mock_module_originals["assert_has_awaits"], None, *args, **kwargs)
 
 
 def wrap_assert_any_await(*args: Any, **kwargs: Any) -> None:

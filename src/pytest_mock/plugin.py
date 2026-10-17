@@ -565,7 +565,9 @@ def assert_wrapper(
                     msg += "\n\npytest introspection follows:\n" + introspection
         e = AssertionError(msg)
         e._mock_introspection_applied = True  # type:ignore[attr-defined]
-        raise e  # noqa:TRY201
+        # Suppress the context, otherwise pytest shows the original error
+        # (and the mock frames) chained before this one.
+        raise e from None
 
 
 def _unpack_expected_call(expect_call: Any) -> tuple[Any, Any] | None:
@@ -651,7 +653,9 @@ def assert_has_calls_wrapper(
                 msg += "\n\npytest introspection follows:\n" + introspection
         e = AssertionError(msg)
         e._mock_introspection_applied = True  # type:ignore[attr-defined]
-        raise e  # noqa:TRY201
+        # Suppress the context, otherwise pytest shows the original error
+        # (and the mock frames) chained before this one.
+        raise e from None
 
 
 def wrap_assert_not_called(*args: Any, **kwargs: Any) -> None:

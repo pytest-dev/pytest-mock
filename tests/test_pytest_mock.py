@@ -11,6 +11,7 @@ from contextlib import contextmanager
 from typing import Any
 from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
+from unittest.mock import call
 
 import pytest
 
@@ -1244,79 +1245,44 @@ class TestAssertHasCalls:
         with assert_traceback():
             stub.assert_has_calls([mocker.call("foo")])
 
-    @pytest.mark.usefixtures("needs_assert_rewrite")
-    def test_two_tuple_calls(self, mocker: MockerFixture) -> None:
-        """Expected calls given as ``(args, kwargs)`` pairs, such as the entries of
-        another mock's ``call_args_list``, must raise ``AssertionError`` on mismatch."""
-        expected = mocker.stub()
-        expected("foo", key="expected")
-        stub = mocker.stub()
-        stub("foo", key="actual")
-
-        with pytest.raises(AssertionError) as exc_info:
-            stub.assert_has_calls(expected.call_args_list)
-        introspection = str(exc_info.value).split("pytest introspection follows:")[1]
-        assert "'expected'" in introspection
-        assert "'actual'" in introspection
-
     @pytest.mark.parametrize(
-        "expected_call",
+        ("actual", "expected_calls"),
         [
-            pytest.param(((2,),), id="args-only"),
-            pytest.param(({"a": 2},), id="kwargs-only"),
+            pytest.param(((1,), {}), [((2,), {})], id="args-kwargs"),
+            pytest.param(((1,), {}), [((2,),)], id="args-only"),
+            pytest.param(((), {"a": 1}), [({"a": 2},)], id="kwargs-only"),
+            pytest.param(((1,), {}), [("", (2,))], id="name-args"),
+            pytest.param(((), {"a": 1}), [("", {"a": 2})], id="name-kwargs"),
+            pytest.param(((1,), {}), [call(2)], id="call"),
         ],
     )
-    def test_one_tuple_calls(
-        self, mocker: MockerFixture, expected_call: tuple[Any, ...]
+    def test_no_introspection(
+        self,
+        mocker: MockerFixture,
+        actual: tuple[tuple[Any, ...], dict[str, Any]],
+        expected_calls: list[Any],
     ) -> None:
-        """Expected calls given as ``(args,)`` or ``(kwargs,)`` must raise
-        ``AssertionError`` on mismatch."""
+        """
+        No introspection is added: the expected calls may match anywhere in
+        the actual calls, so there is no single actual call to compare each of
+        them with. All the shapes accepted as expected calls fail with an
+        ``AssertionError``.
+        """
         stub = mocker.MagicMock()
-        stub(1)
-        with pytest.raises(AssertionError, match="Calls not found"):
-            stub.assert_has_calls([expected_call])
+        stub(*actual[0], **actual[1])
+        for kwargs in ({}, {"any_order": True}):
+            with pytest.raises(AssertionError) as exc_info:
+                stub.assert_has_calls(expected_calls, **kwargs)
+            assert "pytest introspection follows:" not in str(exc_info.value)
 
-    @pytest.mark.usefixtures("needs_assert_rewrite")
-    def test_named_two_tuple_calls(self, mocker: MockerFixture) -> None:
-        """Expected calls given as ``(name, args)`` must be introspected using
-        ``args``, not the name."""
-        stub = mocker.MagicMock()
-        stub("actual")
-        with pytest.raises(AssertionError) as exc_info:
-            stub.assert_has_calls([("", ("expected",))])
-        introspection = str(exc_info.value).split("pytest introspection follows:")[1]
-        assert "'expected'" in introspection
-        assert "Kwargs" not in introspection
-
-    @pytest.mark.usefixtures("needs_assert_rewrite")
-    def test_named_kwargs_two_tuple_calls(self, mocker: MockerFixture) -> None:
-        """Expected calls given as ``(name, kwargs)`` must be introspected using
-        ``kwargs``, not the name."""
-        stub = mocker.MagicMock()
-        stub(key="actual")
-        with pytest.raises(AssertionError) as exc_info:
-            stub.assert_has_calls([("", {"key": "expected"})])
-        introspection = str(exc_info.value).split("pytest introspection follows:")[1]
-        assert "'expected'" in introspection
-        assert "Args" not in introspection
-
-    @pytest.mark.usefixtures("needs_assert_rewrite")
-    def test_calls_by_keyword(self, mocker: MockerFixture) -> None:
+    def test_arguments_by_keyword(self, mocker: MockerFixture) -> None:
         stub = mocker.stub()
         stub("actual")
         stub.assert_has_calls(calls=[mocker.call("actual")])
-        with pytest.raises(AssertionError) as exc_info:
+        with pytest.raises(AssertionError):
             stub.assert_has_calls(calls=[mocker.call("expected")])
-        introspection = str(exc_info.value).split("pytest introspection follows:")[1]
-        assert "'expected'" in introspection
-        assert "'actual'" in introspection
-
-    def test_any_order_by_position(self, mocker: MockerFixture) -> None:
-        stub = mocker.stub()
-        stub("actual")
-        with pytest.raises(AssertionError) as exc_info:
-            stub.assert_has_calls([mocker.call("expected")], True)
-        assert "pytest introspection follows:" not in str(exc_info.value)
+        with pytest.raises(AssertionError):
+            stub.assert_has_calls(calls=[mocker.call("expected")], any_order=True)
 
 
 @pytest.mark.usefixtures("needs_assert_rewrite")
@@ -1350,43 +1316,19 @@ class TestAsyncAssertions:
 
     @pytest.mark.asyncio
     async def test_has_awaits(self, mocker: MockerFixture) -> None:
-        stub = mocker.AsyncMock()
-        await stub("awaited", source="awaited")
-        stub("called", source="called").close()
-
-        stub.assert_has_awaits([mocker.call("awaited", source="awaited")])
-        with pytest.raises(AssertionError) as exc_info:
-            stub.assert_has_awaits([mocker.call("wrong", source="wrong")])
-        introspection = str(exc_info.value).split("pytest introspection follows:")[1]
-        assert "'awaited'" in introspection
-        assert "'wrong'" in introspection
-        assert "'called'" not in introspection
-        assert "call(" not in introspection
-
-        with pytest.raises(AssertionError) as exc_info:
-            stub.assert_has_awaits([mocker.call("wrong")], any_order=True)
-        assert "pytest introspection follows:" not in str(exc_info.value)
-
-    @pytest.mark.asyncio
-    async def test_has_awaits_calls_by_keyword(self, mocker: MockerFixture) -> None:
+        """No introspection is added, like for ``assert_has_calls``."""
         stub = mocker.AsyncMock()
         await stub("awaited")
+        stub.assert_has_awaits([mocker.call("awaited")])
         stub.assert_has_awaits(calls=[mocker.call("awaited")])
-        with pytest.raises(AssertionError) as exc_info:
-            stub.assert_has_awaits(calls=[mocker.call("wrong")])
-        introspection = str(exc_info.value).split("pytest introspection follows:")[1]
-        assert "'awaited'" in introspection
-        assert "'wrong'" in introspection
-
-    @pytest.mark.asyncio
-    async def test_has_awaits_any_order_by_position(
-        self, mocker: MockerFixture
-    ) -> None:
-        stub = mocker.AsyncMock()
-        await stub("awaited")
-        with pytest.raises(AssertionError) as exc_info:
-            stub.assert_has_awaits([mocker.call("wrong")], True)
-        assert "pytest introspection follows:" not in str(exc_info.value)
+        for args, kwargs in [
+            (([mocker.call("wrong")],), {}),
+            (([mocker.call("wrong")], True), {}),
+            ((), {"calls": [mocker.call("wrong")]}),
+        ]:
+            with pytest.raises(AssertionError) as exc_info:
+                stub.assert_has_awaits(*args, **kwargs)
+            assert "pytest introspection follows:" not in str(exc_info.value)
 
     def test_without_await(self, mocker: MockerFixture) -> None:
         stub = mocker.AsyncMock()

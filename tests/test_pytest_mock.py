@@ -263,6 +263,66 @@ class TestResetAll:
         assert mocked_object.run.return_value != "mocked"
         assert mocked_object.run.side_effect is None
 
+    @pytest.mark.parametrize("return_value", [False, True])
+    @pytest.mark.parametrize("side_effect", [False, True])
+    @pytest.mark.parametrize(
+        "target", ["function", "instance_method", "method_on_class"]
+    )
+    def test_spy_keeps_calling_through(
+        self, mocker: MockerFixture, target: str, return_value: bool, side_effect: bool
+    ) -> None:
+        """Spies keep calling the spied code after ``resetall``, whatever its arguments."""
+
+        class Foo:
+            def bar(self, arg: int) -> int:
+                return arg * 2
+
+        foo = Foo()
+        if target == "function":
+            spy = mocker.spy(os.path, "join")
+            call: Callable[[], object] = lambda: os.path.join("a", "b")
+            expected: object = os.path.join("a", "b")
+        elif target == "instance_method":
+            spy = mocker.spy(foo, "bar")
+            call = lambda: foo.bar(2)
+            expected = 4
+        else:
+            spy = mocker.spy(Foo, "bar")
+            call = lambda: foo.bar(2)
+            expected = 4
+        assert call() == expected
+
+        mocker.resetall(return_value=return_value, side_effect=side_effect)
+
+        assert spy.call_count == 0
+        assert spy.spy_return_list == []
+        assert call() == expected
+        assert spy.spy_return == expected
+        assert spy.spy_return_list == [expected]
+
+    @pytest.mark.parametrize("return_value", [False, True])
+    @pytest.mark.parametrize("side_effect", [False, True])
+    @pytest.mark.asyncio
+    async def test_async_spy_keeps_calling_through(
+        self, mocker: MockerFixture, return_value: bool, side_effect: bool
+    ) -> None:
+        """Async spies keep awaiting the spied code after ``resetall``."""
+
+        class Foo:
+            async def bar(self, arg: int) -> int:
+                return arg * 2
+
+        foo = Foo()
+        spy = mocker.spy(foo, "bar")
+        assert await foo.bar(2) == 4
+
+        mocker.resetall(return_value=return_value, side_effect=side_effect)
+
+        assert spy.call_count == 0
+        assert await foo.bar(2) == 4
+        assert spy.spy_return == 4
+        assert spy.spy_return_list == [4]
+
     def test_patch_dict(self, mocker: MockerFixture) -> None:
         """
         We can call resetall after patching a dict.

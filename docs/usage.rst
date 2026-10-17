@@ -25,7 +25,7 @@ The supported methods are:
 * `mocker.patch.dict <https://docs.python.org/3/library/unittest.mock.html#patch-dict>`_
 * `mocker.stopall <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.patch.stopall>`_
 * `mocker.stop <https://docs.python.org/3/library/unittest.mock.html#patch-methods-start-and-stop>`_
-* ``mocker.resetall()``: calls `reset_mock() <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock.reset_mock>`_ in all mocked objects up to this point. With ``side_effect=True``, spies go back to calling the spied code instead of having their ``side_effect`` set to ``None``.
+* ``mocker.resetall()``: calls `reset_mock() <https://docs.python.org/3/library/unittest.mock.html#unittest.mock.Mock.reset_mock>`_ in all mocked objects up to this point. See `Resetting mocks`_ below.
 
 Also, as a convenience, these names from the ``mock`` module are accessible directly from ``mocker``:
 
@@ -170,6 +170,45 @@ Do not use ``called`` or ``call_count`` alone to check that an asynchronous
 callback was awaited. ``await_count`` and the ``assert_awaited*`` methods
 track awaits separately.
 
+
+Resetting mocks
+---------------
+
+``mocker.resetall()`` calls ``reset_mock()`` on the mocks created through
+``mocker`` so far: those from ``mocker.patch`` (and its variants),
+``mocker.spy`` and ``mocker.create_autospec``. Mocks created with
+``mocker.stub()``, ``mocker.async_stub()`` or ``mocker.Mock()`` and the other
+aliases are not tracked, so they are not reset.
+
+.. code-block:: python
+
+    import os
+
+
+    def test_reset(mocker):
+        listdir = mocker.patch("os.listdir", return_value=["foo"])
+        os.listdir("/tmp")
+
+        mocker.resetall()
+        listdir.assert_not_called()
+        assert os.listdir("/tmp") == ["foo"]
+
+        mocker.resetall(return_value=True, side_effect=True)
+        assert os.listdir("/tmp") != ["foo"]
+
+By default only the recorded calls are reset. Pass ``return_value=True`` and/or
+``side_effect=True`` to also reset those, as with ``reset_mock()``.
+
+Some kinds of patches are handled specially:
+
+* ``mocker.patch.multiple``: every mock it patched in is reset, both the ones it
+  created and the ones passed explicitly.
+* ``mocker.patch.dict``: the patched dictionary and its values are left alone.
+* ``mocker.spy``: the ``spy_return``, ``spy_return_iter``, ``spy_return_list``
+  and ``spy_exception`` attributes are set back to their initial values. With
+  ``side_effect=True``, the spy goes back to calling the spied code instead of
+  having its ``side_effect`` set to ``None``, clearing any ``side_effect`` set on
+  the spy.
 
 Usage as context manager
 ------------------------

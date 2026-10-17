@@ -1,7 +1,9 @@
 Here are the steps on how to make a new release.
 
-1. Choose the version number: bump the minor version (``X.Y+1.0``) if the release adds features
-   or drops support for a Python version, or the patch version (``X.Y.Z+1``) if it only contains fixes.
+1. Choose the version number: bump the minor version (``X.Y+1.0``) if the release adds features,
+   drops support for a Python version, or removes or noticeably changes existing behavior (for
+   example, what is shown in failure messages), or the patch version (``X.Y.Z+1``) if it only
+   contains fixes.
 
 2. Create a ``release-VERSION`` branch from ``upstream/main``.
 

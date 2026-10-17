@@ -56,9 +56,6 @@ class MockCacheItem:
     is_spy: bool = False
     # The ``side_effect`` a spy uses to call the spied code, restored by ``resetall``.
     spy_side_effect: Callable[..., Any] | None = None
-    # The objects ``resetall`` resets instead of ``mock``, for patches such as
-    # ``patch.multiple`` whose ``mock`` is a dict of the patched values.
-    reset_mocks: tuple[Any, ...] | None = None
 
 
 @dataclass
@@ -153,13 +150,9 @@ class MockerFixture:
             calling the spied code.
         """
         for mock_item in self._mock_cache:
-            reset_mocks = mock_item.reset_mocks
-            if reset_mocks is None:
-                reset_mocks = (mock_item.mock,)
-            for mock in reset_mocks:
-                self._reset_mock(
-                    mock, return_value=return_value, side_effect=side_effect
-                )
+            self._reset_mock(
+                mock_item.mock, return_value=return_value, side_effect=side_effect
+            )
             # Spies are flagged when created: checking the spy attributes with
             # ``hasattr`` would also match any ``MagicMock``.
             if mock_item.is_spy:
@@ -392,9 +385,7 @@ class MockerFixture:
             **kwargs: Any,
         ) -> dict[str, MockType]:
             """API to mock.patch.multiple"""
-            mocked = self._start_patch(
-                self.mock_module.patch.multiple,
-                True,
+            patcher = self.mock_module.patch.multiple(
                 target,
                 spec=spec,
                 create=create,
@@ -403,16 +394,22 @@ class MockerFixture:
                 new_callable=new_callable,
                 **kwargs,
             )
-            # The returned dict only holds the mocks created for ``DEFAULT``
-            # values, so the values passed explicitly are collected from the
-            # patchers.
-            mock_item = self.__mock_cache.find(mocked)
-            patchers = [mock_item.patch, *mock_item.patch.additional_patchers]
-            mock_item.reset_mocks = (
-                *mocked.values(),
-                *(p.new for p in patchers if p.new is not self.mock_module.DEFAULT),
-            )
-            return mocked
+            patchers = [patcher, *patcher.additional_patchers]
+            patcher.additional_patchers.clear()
+            started: list[Any] = []
+            result: dict[str, MockType] = {}
+            try:
+                for p in patchers:
+                    p.attribute_name = None
+                    mocked = self._start_patch(lambda p=p: p, True)
+                    started.append(mocked)
+                    if p.new is self.mock_module.DEFAULT:
+                        result[p.attribute] = mocked
+            except BaseException:
+                for mocked in reversed(started):
+                    self.__mock_cache.remove(mocked)
+                raise
+            return result
 
         def dict(
             self,

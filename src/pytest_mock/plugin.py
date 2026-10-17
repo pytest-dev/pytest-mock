@@ -54,7 +54,9 @@ class MockCacheItem:
     patch: Any | None = None
     # The ``side_effect`` a spy uses to call the spied code, restored by ``resetall``.
     spy_side_effect: Callable[..., Any] | None = None
-    reset_mocks: tuple[MockType, ...] | None = None
+    # The objects ``resetall`` resets instead of ``mock``, for patches such as
+    # ``patch.multiple`` whose ``mock`` is a dict of the patched values.
+    reset_mocks: tuple[Any, ...] | None = None
 
 
 @dataclass
@@ -293,13 +295,7 @@ class MockerFixture:
             """
             p = mock_func(*args, **kwargs)
             mocked: MockType = p.start()
-            # patch.multiple returns a dictionary of the mocks it creates.
-            reset_mocks = (
-                tuple(mocked.values())
-                if mock_func is self.mock_module.patch.multiple
-                else None
-            )
-            self.__mock_cache.add(mock=mocked, patch=p, reset_mocks=reset_mocks)
+            self.__mock_cache.add(mock=mocked, patch=p)
             if hasattr(mocked, "reset_mock"):  # noqa:SIM102
                 # check if `mocked` is actually a mock object, as depending on autospec or target
                 # parameters `mocked` can be anything
@@ -384,7 +380,7 @@ class MockerFixture:
             **kwargs: Any,
         ) -> dict[str, MockType]:
             """API to mock.patch.multiple"""
-            return self._start_patch(
+            mocked = self._start_patch(
                 self.mock_module.patch.multiple,
                 True,
                 target,
@@ -395,6 +391,16 @@ class MockerFixture:
                 new_callable=new_callable,
                 **kwargs,
             )
+            # The returned dict only holds the mocks created for ``DEFAULT``
+            # values, so the values passed explicitly are collected from the
+            # patchers.
+            mock_item = self.__mock_cache.find(mocked)
+            patchers = [mock_item.patch, *mock_item.patch.additional_patchers]
+            mock_item.reset_mocks = (
+                *mocked.values(),
+                *(p.new for p in patchers if p.new is not self.mock_module.DEFAULT),
+            )
+            return mocked
 
         def dict(
             self,

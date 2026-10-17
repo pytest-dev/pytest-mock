@@ -263,6 +263,37 @@ class TestResetAll:
         with pytest.raises(TypeError):
             target.run("extra")  # type: ignore[call-arg]
 
+    def test_patch_multiple_explicit_values(self, mocker: MockerFixture) -> None:
+        """Values passed explicitly to ``patch.multiple`` are reset like the mocks
+        it creates, as with ``patch.object(new=...)``."""
+        rm = mocker.Mock(return_value="removed")
+        mocks = mocker.patch.multiple(UnixFS, rm=rm, ls=mocker.DEFAULT)
+        assert UnixFS.rm("file") == "removed"
+        UnixFS.ls("directory")
+
+        mocker.resetall(return_value=True)
+
+        rm.assert_not_called()
+        mocks["ls"].assert_not_called()
+        assert isinstance(rm.return_value, mocker.Mock)
+        assert UnixFS.rm is rm
+
+    def test_patch_multiple_non_mock_values(self, mocker: MockerFixture) -> None:
+        """Values that aren't mocks are left alone."""
+        mocker.patch.multiple(UnixFS, rm=None, ls=mocker.DEFAULT)
+        mocker.resetall()
+        assert UnixFS.rm is None
+
+    def test_patch_multiple_new_callable(self, mocker: MockerFixture) -> None:
+        mocks = mocker.patch.multiple(
+            UnixFS, new_callable=mocker.MagicMock, rm=mocker.DEFAULT
+        )
+        UnixFS.rm("file")
+
+        mocker.resetall()
+
+        mocks["rm"].assert_not_called()
+
     def test_basic(self, mocker: MockerFixture) -> None:
         listdir = mocker.patch("os.listdir", return_value="foo")
         open = mocker.patch("os.open", side_effect=["bar", "baz"])

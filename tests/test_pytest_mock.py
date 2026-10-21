@@ -1837,6 +1837,23 @@ class TestContextManagerWarnings:
         mocker.patch.object(dummy_module, "MyContext")
         assert isinstance(my_func(), mocker.MagicMock)
 
+    def test_patching_a_context_manager_object(self, mocker: MockerFixture) -> None:
+        """The warning should not change what entering the patched object returns."""
+
+        class dummy_module:
+            pool: Any = None
+
+        pool = mocker.patch.object(dummy_module, "pool")
+        with pytest.warns(PytestMockWarning), dummy_module.pool as entered:
+            pass
+        assert entered is pool.__enter__.return_value
+
+        connection = object()
+        pool.__enter__.return_value = connection
+        with pytest.warns(PytestMockWarning), dummy_module.pool as entered:
+            pass
+        assert entered is connection
+
     def test_patch_context_manager(self, mocker: MockerFixture) -> None:
         """Test that no warnings are issued when an object patched with
         patch.context_manager is used as a context manager (#221)"""

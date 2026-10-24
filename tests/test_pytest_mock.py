@@ -545,6 +545,123 @@ class TestMockerStub:
 class TestSpy:
     """``mocker.spy``."""
 
+    def test_spy_context_restores_on_normal_exit(self, mocker: MockerFixture) -> None:
+        class Foo:
+            def bar(self, value: int) -> int:
+                return value * 2
+
+        foo = Foo()
+        original = Foo.bar
+        with mocker.spy_context(Foo, "bar") as spy:
+            assert foo.bar(3) == 6
+            assert spy.spy_return == 6
+        assert Foo.bar is original
+        assert foo.bar(4) == 8
+        assert spy.call_count == 1
+
+    def test_spy_context_restores_on_exception(self, mocker: MockerFixture) -> None:
+        class Foo:
+            def bar(self) -> str:
+                return "original"
+
+        foo = Foo()
+        original = Foo.bar
+        with (
+            pytest.raises(RuntimeError, match="boom"),
+            mocker.spy_context(foo, "bar") as spy,
+        ):
+            assert foo.bar() == "original"
+            raise RuntimeError("boom")
+        assert foo.bar() == "original"
+        assert "bar" not in vars(foo)
+        assert Foo.bar is original
+        assert spy.call_count == 1
+
+    def test_spy_context_supports_class_and_static_methods(
+        self, mocker: MockerFixture
+    ) -> None:
+        class Foo:
+            @classmethod
+            def class_bar(cls) -> str:
+                return cls.__name__
+
+            @staticmethod
+            def static_bar() -> int:
+                return 42
+
+        with mocker.spy_context(Foo, "class_bar") as class_spy:
+            assert Foo.class_bar() == "Foo"
+            class_spy.assert_called_once_with()
+        with mocker.spy_context(Foo, "static_bar") as static_spy:
+            assert Foo.static_bar() == 42
+            static_spy.assert_called_once_with()
+
+    def test_nested_spy_contexts_restore_outer_spy(self, mocker: MockerFixture) -> None:
+        class Foo:
+            def bar(self) -> int:
+                return 42
+
+        foo = Foo()
+        with mocker.spy_context(foo, "bar") as outer:
+            assert foo.bar() == 42
+            with mocker.spy_context(foo, "bar") as inner:
+                assert foo.bar() == 42
+            assert foo.bar() == 42
+            assert inner.call_count == 1
+            assert outer.call_count == 3
+        assert foo.bar() == 42
+        assert outer.call_count == 3
+
+    def test_spy_context_can_be_stopped_manually(self, mocker: MockerFixture) -> None:
+        class Foo:
+            def bar(self) -> int:
+                return 42
+
+        foo = Foo()
+        with mocker.spy_context(foo, "bar") as spy:
+            mocker.stop(spy)
+            assert foo.bar() == 42
+        assert foo.bar() == 42
+
+    def test_spy_context_after_stopall(self, mocker: MockerFixture) -> None:
+        class Foo:
+            def bar(self) -> int:
+                return 42
+
+        foo = Foo()
+        with mocker.spy_context(foo, "bar"):
+            mocker.stopall()
+            assert foo.bar() == 42
+        assert foo.bar() == 42
+
+    @pytest.mark.asyncio
+    async def test_async_spy_context(self, mocker: MockerFixture) -> None:
+        class Foo:
+            async def bar(self, value: int) -> int:
+                return value * 2
+
+        foo = Foo()
+        with mocker.spy_context(foo, "bar") as spy:
+            assert await foo.bar(3) == 6
+            assert spy.spy_return == 6
+        assert await foo.bar(4) == 8
+        assert spy.await_count == 1
+
+    def test_spy_context_preserves_iterator_tracking(
+        self, mocker: MockerFixture
+    ) -> None:
+        class Foo:
+            def values(self) -> Iterator[int]:
+                return iter([1, 2, 3])
+
+        foo = Foo()
+        with mocker.spy_context(foo, "values", duplicate_iterators=True) as spy:
+            result = foo.values()
+            assert list(result) == [1, 2, 3]
+            assert spy.spy_return_iter is not None
+            assert list(spy.spy_return_iter) == [1, 2, 3]
+            assert spy.spy_return_list == [result]
+
     @staticmethod
     def assert_spy_has_no_return(spy: SpyType) -> None:
         assert spy.spy_return is None

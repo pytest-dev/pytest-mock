@@ -1,4 +1,5 @@
 import builtins
+import contextlib
 import functools
 import inspect
 import itertools
@@ -81,6 +82,9 @@ class MockCache:
 
     def find(self, mock: MockType) -> MockCacheItem:
         return self.cache[self._find_index(mock)]
+
+    def contains(self, mock: MockType) -> bool:
+        return any(item.mock is mock for item in self.cache)
 
     def remove(self, mock: MockType) -> None:
         index = self._find_index(mock)
@@ -244,7 +248,15 @@ class MockerFixture:
         else:
             wrapped = functools.update_wrapper(wrapper, method)
 
-        autospec = inspect.ismethod(method) or inspect.isfunction(method)
+        method_is_mock = issubclass(type(method), self.mock_module.NonCallableMock)
+        autospec_mock = getattr(method, "mock", None)
+        if autospec_mock is not None:
+            method_is_mock = method_is_mock or issubclass(
+                type(autospec_mock), self.mock_module.NonCallableMock
+            )
+        autospec = not method_is_mock and (
+            inspect.ismethod(method) or inspect.isfunction(method)
+        )
 
         spy_obj = cast(
             SpyType,
@@ -255,6 +267,23 @@ class MockerFixture:
         mock_item.spy_side_effect = wrapped
         _reset_spy(spy_obj)
         return spy_obj
+
+    @contextlib.contextmanager
+    def spy_context(
+        self, obj: object, name: str, duplicate_iterators: bool = False
+    ) -> Generator[SpyType, None, None]:
+        """Spy on a method for the duration of a ``with`` block.
+
+        The spy is also registered with this fixture, so it is restored during
+        fixture teardown if the block exits through an exception.
+        """
+        spy = self.spy(obj, name, duplicate_iterators=duplicate_iterators)
+        try:
+            yield spy
+        finally:
+            # The caller may stop this spy, or all spies, inside the block.
+            if self._mock_cache.contains(spy):
+                self.stop(spy)
 
     def stub(self, name: str | None = None) -> unittest.mock.MagicMock:
         """

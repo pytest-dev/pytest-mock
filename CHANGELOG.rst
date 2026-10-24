@@ -1,6 +1,11 @@
 Releases
 ========
 
+UNRELEASED
+----------
+
+* `#651 <https://github.com/pytest-dev/pytest-mock/pull/651>`_: Added ``mocker.spy_context`` to limit a spy to a ``with`` block and restore the original method when the block exits.
+
 3.17.0
 ------
 

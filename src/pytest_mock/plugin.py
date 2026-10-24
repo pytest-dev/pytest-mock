@@ -60,6 +60,11 @@ class MockCacheItem:
     # The objects ``resetall`` resets instead of ``mock``, for patches such as
     # ``patch.multiple`` whose ``mock`` is a dict of the patched values.
     reset_mocks: tuple[Any, ...] | None = None
+    patch_target: object | None = None
+    patch_attribute: str | None = None
+    patch_attributes: tuple[tuple[object, str], ...] = ()
+    patch_dependencies: tuple[MockType, ...] = ()
+    patch_descriptor: object | None = None
 
 
 @dataclass
@@ -89,6 +94,28 @@ class MockCache:
     def remove(self, mock: MockType) -> None:
         index = self._find_index(mock)
         mock_item = self.cache[index]
+        if mock_item.patch_target is not None:
+            target_attributes = mock_item.patch_attributes or (
+                (mock_item.patch_target, mock_item.patch_attribute),
+            )
+            for later_item in self.cache[index + 1 :]:
+                later_target_attributes = later_item.patch_attributes or (
+                    (later_item.patch_target, later_item.patch_attribute),
+                )
+                if any(
+                    target is later_target and attribute == later_attribute
+                    for target, attribute in target_attributes
+                    if attribute is not None
+                    for later_target, later_attribute in later_target_attributes
+                    if later_attribute is not None
+                ) or any(
+                    dependency is mock_item.mock
+                    for dependency in later_item.patch_dependencies
+                ):
+                    raise RuntimeError(
+                        "Cannot stop a patch while a later patch of the same "
+                        "attribute is active"
+                    )
         if mock_item.patch:
             mock_item.patch.stop()
         del self.cache[index]
@@ -211,6 +238,29 @@ class MockerFixture:
         :return: Spy object.
         """
         method = getattr(obj, name)
+        method_is_mock = issubclass(type(method), self.mock_module.NonCallableMock)
+        autospec_source: Any = method
+        patch_spec: Any = method
+        patch_descriptor = inspect.getattr_static(obj, name, None)
+        if isinstance(obj, type) and method_is_mock:
+            # Use the first patch's original descriptor across all nested scopes.
+            # A later patch's temp_original is itself an autospecced function.
+            for active_item in self._mock_cache:
+                if (
+                    active_item.patch_target is obj
+                    and active_item.patch_attribute == name
+                    and active_item.patch is not None
+                ):
+                    patch_descriptor = active_item.patch_descriptor
+                    if isinstance(patch_descriptor, (classmethod, staticmethod)):
+                        patch_spec = patch_descriptor.__get__(obj, obj)
+                        autospec_source = patch_spec
+                    else:
+                        autospec_source = patch_descriptor
+                        patch_spec = patch_descriptor
+                    break
+        elif isinstance(patch_descriptor, (classmethod, staticmethod)):
+            patch_spec = method
 
         def reset_last_call():
             spy_obj.spy_return = None
@@ -243,26 +293,69 @@ class MockerFixture:
                 raise
             return record_return(r)
 
-        if inspect.iscoroutinefunction(method):
-            wrapped = functools.update_wrapper(async_wrapper, method)
+        if inspect.iscoroutinefunction(autospec_source):
+            wrapped = functools.update_wrapper(
+                async_wrapper, autospec_source, updated=()
+            )
         else:
-            wrapped = functools.update_wrapper(wrapper, method)
+            wrapped = functools.update_wrapper(wrapper, autospec_source, updated=())
 
-        method_is_mock = issubclass(type(method), self.mock_module.NonCallableMock)
         autospec_mock = getattr(method, "mock", None)
         if autospec_mock is not None:
             method_is_mock = method_is_mock or issubclass(
                 type(autospec_mock), self.mock_module.NonCallableMock
             )
-        autospec = not method_is_mock and (
+        # A class-level spy must remain a descriptor so nested spies still bind
+        # ``self``. Autospec handles functions created by an earlier autospec
+        # patch; the backing ``.mock`` only identifies the call-tracking mock.
+        autospec: object = not method_is_mock and (
             inspect.ismethod(method) or inspect.isfunction(method)
         )
+        if isinstance(patch_descriptor, staticmethod):
+            autospec = False
+        if isinstance(patch_descriptor, classmethod):
+            autospec = False
+        if isinstance(obj, type) and method_is_mock:
+            # The current class attribute is a mock from an active spy. Use a
+            # clean function as autospec source so the replacement binds self.
+            cast(Any, wrapped).__signature__ = inspect.signature(autospec_source)
+            wrapped.__dict__.pop("__wrapped__", None)
+            if isinstance(patch_descriptor, (classmethod, staticmethod)):
+                autospec = False
+                spec = patch_spec
+            else:
+                autospec = wrapped
+                spec = None
+        else:
+            spec = (
+                patch_spec
+                if isinstance(patch_descriptor, (classmethod, staticmethod))
+                else None
+            )
 
         spy_obj = cast(
             SpyType,
-            self.patch.object(obj, name, side_effect=wrapped, autospec=autospec),
+            self.patch.object(
+                obj, name, side_effect=wrapped, autospec=autospec, spec=spec
+            ),
         )
         mock_item = self._mock_cache.find(spy_obj)
+        mock_item.patch_descriptor = patch_descriptor
+        method_function = getattr(method, "__func__", method)
+        method_mock = getattr(method_function, "mock", None)
+        mock_item.patch_dependencies = (
+            *mock_item.patch_dependencies,
+            *(
+                item.mock
+                for item in self._mock_cache
+                if item is not mock_item
+                and (
+                    item.mock is method
+                    or item.mock is method_function
+                    or item.mock is method_mock
+                )
+            ),
+        )
         mock_item.is_spy = True
         mock_item.spy_side_effect = wrapped
         _reset_spy(spy_obj)
@@ -336,7 +429,39 @@ class MockerFixture:
             """
             p = mock_func(*args, **kwargs)
             mocked: MockType = p.start()
-            self.__mock_cache.add(mock=mocked, patch=p)
+            mock_item = self.__mock_cache.add(mock=mocked, patch=p)
+            patchers = (p, *getattr(p, "additional_patchers", ()))
+            target_attributes = []
+            original_values: list[Any] = []
+            for patcher in patchers:
+                target = getattr(patcher, "target", None)
+                attribute = getattr(patcher, "attribute", None)
+                if target is None:
+                    try:
+                        target = patcher.getter()
+                    except (AttributeError, TypeError):
+                        continue
+                if attribute is not None:
+                    target_attributes.append((target, attribute))
+                    if not original_values or patcher is not p:
+                        original_values.append(patcher.temp_original)
+            mock_item.patch_attributes = tuple(target_attributes)
+            if target_attributes:
+                mock_item.patch_target, mock_item.patch_attribute = target_attributes[0]
+            for original in original_values:
+                original_function = getattr(original, "__func__", original)
+                for active_item in self.__mock_cache.cache[:-1]:
+                    active_function = getattr(
+                        active_item.mock, "__func__", active_item.mock
+                    )
+                    if (
+                        original is active_item.mock
+                        or original_function is active_function
+                    ) and not any(
+                        dependency is active_item.mock
+                        for dependency in mock_item.patch_dependencies
+                    ):
+                        mock_item.patch_dependencies += (active_item.mock,)
             if hasattr(mocked, "reset_mock"):  # noqa:SIM102
                 # check if `mocked` is actually a mock object, as depending on autospec or target
                 # parameters `mocked` can be anything
@@ -366,7 +491,7 @@ class MockerFixture:
             """API to mock.patch.object"""
             if new is self.DEFAULT:
                 new = self.mock_module.DEFAULT
-            return self._start_patch(
+            mocked = self._start_patch(
                 self.mock_module.patch.object,
                 True,
                 target,
@@ -379,6 +504,10 @@ class MockerFixture:
                 new_callable=new_callable,
                 **kwargs,
             )
+            mock_item = self.__mock_cache.find(mocked)
+            mock_item.patch_target = target
+            mock_item.patch_attribute = attribute
+            return mocked
 
         def context_manager(
             self,

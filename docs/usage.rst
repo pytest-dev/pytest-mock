@@ -97,6 +97,10 @@ Use ``mocker.spy_context`` to limit a spy to a block. It yields the same spy
 object as ``mocker.spy`` and restores the method when the block exits, including
 when the block raises an exception. The fixture still tracks the spy, so it can
 also be stopped with ``mocker.stop`` or ``mocker.stopall`` inside the block.
+When spies or patches overlap on the same attribute, stop them in reverse
+order. Stopping an outer patch while a later overlapping patch is active raises
+``RuntimeError`` and leaves both patches registered; stop the inner patch first
+or use ``mocker.stopall()`` to restore all patches.
 
 .. code-block:: python
 

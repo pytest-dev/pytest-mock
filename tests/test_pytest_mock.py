@@ -689,6 +689,77 @@ class TestSpy:
             inner.assert_awaited_once()
             outer.assert_awaited_once()
 
+    @pytest.mark.parametrize("name", ["class_bar", "static_bar"])
+    def test_class_descriptor_spies_validate_signature_before_recording(
+        self, mocker: MockerFixture, name: str
+    ) -> None:
+        class Foo:
+            @classmethod
+            def class_bar(cls, value: int) -> int:
+                return value
+
+            @staticmethod
+            def static_bar(value: int) -> int:
+                return value
+
+        with mocker.spy_context(Foo, name) as spy:
+            with pytest.raises(TypeError):
+                getattr(Foo, name)(unknown=42)
+            assert spy.call_count == 0
+            assert getattr(Foo, name)(42) == 42
+            assert getattr(Foo(), name)(43) == 43
+            assert spy.call_count == 2
+
+    @pytest.mark.asyncio
+    async def test_async_class_descriptor_spies_preserve_async_behavior(
+        self, mocker: MockerFixture
+    ) -> None:
+        class Foo:
+            @classmethod
+            async def class_bar(cls, value: int) -> int:
+                return value
+
+            @staticmethod
+            async def static_bar(value: int) -> int:
+                return value
+
+        for name in ("class_bar", "static_bar"):
+            with (
+                mocker.spy_context(Foo, name) as outer,
+                mocker.spy_context(Foo, name) as inner,
+            ):
+                if hasattr(inspect, "markcoroutinefunction"):
+                    assert inspect.iscoroutinefunction(getattr(Foo, name))
+                with pytest.raises(TypeError):
+                    getattr(Foo, name)(unknown=42)
+                assert inner.call_count == 0
+                assert inner.await_count == 0
+                assert outer.call_count == 0
+                assert await getattr(Foo(), name)(42) == 42
+                assert await getattr(Foo, name)(43) == 43
+                assert inner.await_count == 2
+                assert outer.await_count == 2
+
+    def test_nested_instance_spies_validate_signature_before_recording(
+        self, mocker: MockerFixture
+    ) -> None:
+        class Foo:
+            def bar(self, value: int) -> int:
+                return value
+
+        foo = Foo()
+        with (
+            mocker.spy_context(foo, "bar") as outer,
+            mocker.spy_context(foo, "bar") as inner,
+        ):
+            with pytest.raises(TypeError):
+                cast(Any, foo.bar)(unknown=42)
+            assert inner.call_count == 0
+            assert outer.call_count == 0
+            assert foo.bar(42) == 42
+            assert inner.call_count == 1
+            assert outer.call_count == 1
+
     def test_stopping_spy_with_later_patch_of_same_attribute_is_rejected(
         self, mocker: MockerFixture
     ) -> None:

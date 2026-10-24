@@ -311,21 +311,22 @@ class MockerFixture:
         autospec: object = not method_is_mock and (
             inspect.ismethod(method) or inspect.isfunction(method)
         )
-        if isinstance(patch_descriptor, staticmethod):
-            autospec = False
-        if isinstance(patch_descriptor, classmethod):
-            autospec = False
-        if isinstance(obj, type) and method_is_mock:
+        if method_is_mock:
             # The current class attribute is a mock from an active spy. Use a
             # clean function as autospec source so the replacement binds self.
             cast(Any, wrapped).__signature__ = inspect.signature(autospec_source)
             wrapped.__dict__.pop("__wrapped__", None)
-            if isinstance(patch_descriptor, (classmethod, staticmethod)):
-                autospec = False
-                spec = patch_spec
-            else:
-                autospec = wrapped
-                spec = None
+            autospec = (
+                patch_descriptor
+                if isinstance(patch_descriptor, (classmethod, staticmethod))
+                else wrapped
+            )
+            spec = None
+        elif isinstance(patch_descriptor, (classmethod, staticmethod)):
+            # Keep the descriptor for patch's signature guard and let its
+            # autospec wrapper preserve class/instance descriptor access.
+            autospec = patch_descriptor
+            spec = None
         else:
             spec = (
                 patch_spec
@@ -450,6 +451,7 @@ class MockerFixture:
                 mock_item.patch_target, mock_item.patch_attribute = target_attributes[0]
             for original in original_values:
                 original_function = getattr(original, "__func__", original)
+                original_mock = getattr(original_function, "mock", None)
                 for active_item in self.__mock_cache.cache[:-1]:
                     active_function = getattr(
                         active_item.mock, "__func__", active_item.mock
@@ -457,6 +459,7 @@ class MockerFixture:
                     if (
                         original is active_item.mock
                         or original_function is active_function
+                        or original_mock is active_item.mock
                     ) and not any(
                         dependency is active_item.mock
                         for dependency in mock_item.patch_dependencies

@@ -23,7 +23,7 @@ jobs:
     - uses: actions/checkout@v7
 
     - name: Build and Check Package
-      uses: hynek/build-and-inspect-python-package@v3.0.1
+      uses: hynek/build-and-inspect-python-package@v3.0.2
       with:
         attest-build-provenance-github: 'true'
 
@@ -47,7 +47,7 @@ jobs:
         path: dist
 
     - name: Publish package to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.14.2
+      uses: pypa/gh-action-pypi-publish@v1.14.3
       with:
         attestations: true
 

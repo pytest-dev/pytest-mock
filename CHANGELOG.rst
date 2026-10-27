@@ -1,6 +1,11 @@
 Releases
 ========
 
+UNRELEASED
+----------
+
+* `#655 <https://github.com/pytest-dev/pytest-mock/pull/655>`_: Mocks created by ``mocker.patch.multiple()`` now warn when used as context managers and can be stopped individually with ``mocker.stop()``.
+
 3.17.0
 ------
 

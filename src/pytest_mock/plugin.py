@@ -56,9 +56,6 @@ class MockCacheItem:
     is_spy: bool = False
     # The ``side_effect`` a spy uses to call the spied code, restored by ``resetall``.
     spy_side_effect: Callable[..., Any] | None = None
-    # The objects ``resetall`` resets instead of ``mock``, for patches such as
-    # ``patch.multiple`` whose ``mock`` is a dict of the patched values.
-    reset_mocks: tuple[Any, ...] | None = None
 
 
 @dataclass
@@ -153,13 +150,9 @@ class MockerFixture:
             calling the spied code.
         """
         for mock_item in self._mock_cache:
-            reset_mocks = mock_item.reset_mocks
-            if reset_mocks is None:
-                reset_mocks = (mock_item.mock,)
-            for mock in reset_mocks:
-                self._reset_mock(
-                    mock, return_value=return_value, side_effect=side_effect
-                )
+            self._reset_mock(
+                mock_item.mock, return_value=return_value, side_effect=side_effect
+            )
             # Spies are flagged when created: checking the spy attributes with
             # ``hasattr`` would also match any ``MagicMock``.
             if mock_item.is_spy:
@@ -305,22 +298,29 @@ class MockerFixture:
             module, registering the patch to stop it later and returns the
             mock object resulting from the mock call.
             """
-            p = mock_func(*args, **kwargs)
-            mocked: MockType = p.start()
-            self.__mock_cache.add(mock=mocked, patch=p)
-            if hasattr(mocked, "reset_mock"):  # noqa:SIM102
-                # check if `mocked` is actually a mock object, as depending on autospec or target
-                # parameters `mocked` can be anything
-                if hasattr(mocked, "__enter__") and warn_on_mock_enter:
-                    mocked.__enter__.side_effect = lambda: warnings.warn(
-                        "Mocks returned by pytest-mock do not need to be used as context managers. "
-                        "The mocker fixture automatically undoes mocking at the end of a test. "
-                        "This warning can be ignored if it was triggered by mocking a context manager. "
-                        "https://pytest-mock.readthedocs.io/en/latest/usage.html#usage-as-context-manager",
-                        PytestMockWarning,
-                        stacklevel=5,
-                    )
+            return self._start_patcher(mock_func(*args, **kwargs), warn_on_mock_enter)
+
+        def _start_patcher(self, patcher: Any, warn_on_mock_enter: bool) -> MockType:
+            mocked: MockType = patcher.start()
+            self.__mock_cache.add(mock=mocked, patch=patcher)
+            self._warn_about_context_manager(mocked, warn_on_mock_enter)
             return mocked
+
+        @staticmethod
+        def _warn_about_context_manager(mocked: Any, warn_on_mock_enter: bool) -> None:
+            if (
+                hasattr(mocked, "reset_mock")
+                and hasattr(mocked, "__enter__")
+                and warn_on_mock_enter
+            ):
+                mocked.__enter__.side_effect = lambda: warnings.warn(
+                    "Mocks returned by pytest-mock do not need to be used as context managers. "
+                    "The mocker fixture automatically undoes mocking at the end of a test. "
+                    "This warning can be ignored if it was triggered by mocking a context manager. "
+                    "https://pytest-mock.readthedocs.io/en/latest/usage.html#usage-as-context-manager",
+                    PytestMockWarning,
+                    stacklevel=5,
+                )
 
         def object(
             self,
@@ -392,9 +392,7 @@ class MockerFixture:
             **kwargs: Any,
         ) -> dict[str, MockType]:
             """API to mock.patch.multiple"""
-            mocked = self._start_patch(
-                self.mock_module.patch.multiple,
-                True,
+            patcher = self.mock_module.patch.multiple(
                 target,
                 spec=spec,
                 create=create,
@@ -403,15 +401,17 @@ class MockerFixture:
                 new_callable=new_callable,
                 **kwargs,
             )
-            # The returned dict only holds the mocks created for ``DEFAULT``
-            # values, so the values passed explicitly are collected from the
-            # patchers.
-            mock_item = self.__mock_cache.find(mocked)
-            patchers = [mock_item.patch, *mock_item.patch.additional_patchers]
-            mock_item.reset_mocks = (
-                *mocked.values(),
-                *(p.new for p in patchers if p.new is not self.mock_module.DEFAULT),
-            )
+            # Register each patch independently so callers can stop a single
+            # mock returned by patch.multiple without undoing the others.
+            patchers = [patcher, *patcher.additional_patchers]
+            patcher.additional_patchers = []
+            mocked = {}
+            for patcher in patchers:
+                created = patcher.new is self.mock_module.DEFAULT
+                patcher.attribute_name = None
+                mock = self._start_patcher(patcher, True)
+                if created:
+                    mocked[patcher.attribute] = mock
             return mocked
 
         def dict(

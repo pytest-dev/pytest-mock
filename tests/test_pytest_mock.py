@@ -166,6 +166,24 @@ class TestPatch:
         mocker.resetall()
         mocker.stopall()
 
+    def test_patch_multiple_mocks_warn_as_context_managers(
+        self, mocker: MockerFixture
+    ) -> None:
+        mocks = mocker.patch.multiple(UnixFS, rm=mocker.DEFAULT)
+
+        with pytest.warns(PytestMockWarning), mocks["rm"]:
+            pass
+
+    def test_patch_multiple_mock_can_be_stopped(self, mocker: MockerFixture) -> None:
+        original_rm, original_ls = UnixFS.rm, UnixFS.ls
+        mocks = mocker.patch.multiple(UnixFS, rm=mocker.DEFAULT, ls=mocker.DEFAULT)
+
+        mocker.stop(mocks["rm"])
+
+        assert UnixFS.rm == original_rm
+        assert UnixFS.ls is mocks["ls"]
+        assert UnixFS.ls != original_ls
+
     def test_dict(self, mocker: MockerFixture) -> None:
         """
         Testing

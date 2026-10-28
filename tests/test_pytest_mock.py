@@ -1,3 +1,4 @@
+import inspect
 import os
 import platform
 import re
@@ -9,6 +10,7 @@ from collections.abc import Iterable
 from collections.abc import Iterator
 from contextlib import contextmanager
 from typing import Any
+from typing import cast
 from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
 from unittest.mock import call
@@ -544,6 +546,366 @@ class TestMockerStub:
 
 class TestSpy:
     """``mocker.spy``."""
+
+    def test_spy_context_restores_on_normal_exit(self, mocker: MockerFixture) -> None:
+        class Foo:
+            def bar(self, value: int) -> int:
+                return value * 2
+
+        foo = Foo()
+        original = Foo.bar
+        with mocker.spy_context(Foo, "bar") as spy:
+            assert foo.bar(3) == 6
+            assert spy.spy_return == 6
+        assert Foo.bar is original
+        assert foo.bar(4) == 8
+        assert spy.call_count == 1
+
+    def test_spy_context_restores_on_exception(self, mocker: MockerFixture) -> None:
+        class Foo:
+            def bar(self) -> str:
+                return "original"
+
+        foo = Foo()
+        original = Foo.bar
+        with (
+            pytest.raises(RuntimeError, match="boom"),
+            mocker.spy_context(foo, "bar") as spy,
+        ):
+            assert foo.bar() == "original"
+            raise RuntimeError("boom")
+        assert foo.bar() == "original"
+        assert "bar" not in vars(foo)
+        assert Foo.bar is original
+        assert spy.call_count == 1
+
+    def test_spy_context_supports_class_and_static_methods(
+        self, mocker: MockerFixture
+    ) -> None:
+        class Foo:
+            @classmethod
+            def class_bar(cls) -> str:
+                return cls.__name__
+
+            @staticmethod
+            def static_bar() -> int:
+                return 42
+
+        with mocker.spy_context(Foo, "class_bar") as class_spy:
+            assert Foo.class_bar() == "Foo"
+            class_spy.assert_called_once_with()
+        with mocker.spy_context(Foo, "static_bar") as static_spy:
+            assert Foo.static_bar() == 42
+            static_spy.assert_called_once_with()
+
+    def test_nested_spy_contexts_restore_outer_spy(self, mocker: MockerFixture) -> None:
+        class Foo:
+            def bar(self) -> int:
+                return 42
+
+        foo = Foo()
+        with mocker.spy_context(foo, "bar") as outer:
+            assert foo.bar() == 42
+            with mocker.spy_context(foo, "bar") as inner:
+                assert foo.bar() == 42
+            assert foo.bar() == 42
+            assert inner.call_count == 1
+            assert outer.call_count == 3
+        assert foo.bar() == 42
+        assert outer.call_count == 3
+
+    def test_nested_class_spies_keep_method_binding(
+        self, mocker: MockerFixture
+    ) -> None:
+        class Foo:
+            def bar(self) -> int:
+                return 42
+
+        with (
+            mocker.spy_context(Foo, "bar") as outer,
+            mocker.spy_context(Foo, "bar") as inner,
+        ):
+            assert Foo().bar() == 42
+            inner.assert_called_once()
+            outer.assert_called_once()
+
+    def test_three_nested_class_spies_keep_method_binding(
+        self, mocker: MockerFixture
+    ) -> None:
+        class Foo:
+            def bar(self) -> int:
+                return 42
+
+        with (
+            mocker.spy_context(Foo, "bar") as outer,
+            mocker.spy_context(Foo, "bar") as middle,
+            mocker.spy_context(Foo, "bar") as inner,
+        ):
+            assert Foo().bar() == 42
+            inner.assert_called_once()
+            middle.assert_called_once()
+            outer.assert_called_once()
+
+    def test_nested_classmethod_and_staticmethod_spies(
+        self, mocker: MockerFixture
+    ) -> None:
+        class Foo:
+            @classmethod
+            def class_bar(cls) -> str:
+                return cls.__name__
+
+            @staticmethod
+            def static_bar() -> int:
+                return 42
+
+        with (
+            mocker.spy_context(Foo, "class_bar"),
+            mocker.spy_context(Foo, "class_bar"),
+        ):
+            assert Foo.class_bar() == "Foo"
+            assert Foo().class_bar() == "Foo"
+        with (
+            mocker.spy_context(Foo, "static_bar"),
+            mocker.spy_context(Foo, "static_bar"),
+        ):
+            assert Foo.static_bar() == 42
+            assert Foo().static_bar() == 42
+        assert isinstance(inspect.getattr_static(Foo, "class_bar"), classmethod)
+        assert isinstance(inspect.getattr_static(Foo, "static_bar"), staticmethod)
+
+    @pytest.mark.asyncio
+    async def test_nested_async_class_spies_keep_method_binding(
+        self, mocker: MockerFixture
+    ) -> None:
+        class Foo:
+            async def bar(self) -> int:
+                return 42
+
+        with (
+            mocker.spy_context(Foo, "bar") as outer,
+            mocker.spy_context(Foo, "bar") as inner,
+        ):
+            assert await Foo().bar() == 42
+            inner.assert_awaited_once()
+            outer.assert_awaited_once()
+
+    @pytest.mark.parametrize("name", ["class_bar", "static_bar"])
+    def test_class_descriptor_spies_validate_signature_before_recording(
+        self, mocker: MockerFixture, name: str
+    ) -> None:
+        class Foo:
+            @classmethod
+            def class_bar(cls, value: int) -> int:
+                return value
+
+            @staticmethod
+            def static_bar(value: int) -> int:
+                return value
+
+        with mocker.spy_context(Foo, name) as spy:
+            with pytest.raises(TypeError):
+                getattr(Foo, name)(unknown=42)
+            assert spy.call_count == 0
+            assert getattr(Foo, name)(42) == 42
+            assert getattr(Foo(), name)(43) == 43
+            assert spy.call_count == 2
+
+    @pytest.mark.asyncio
+    async def test_async_class_descriptor_spies_preserve_async_behavior(
+        self, mocker: MockerFixture
+    ) -> None:
+        class Foo:
+            @classmethod
+            async def class_bar(cls, value: int) -> int:
+                return value
+
+            @staticmethod
+            async def static_bar(value: int) -> int:
+                return value
+
+        for name in ("class_bar", "static_bar"):
+            with (
+                mocker.spy_context(Foo, name) as outer,
+                mocker.spy_context(Foo, name) as inner,
+            ):
+                if hasattr(inspect, "markcoroutinefunction"):
+                    assert inspect.iscoroutinefunction(getattr(Foo, name))
+                with pytest.raises(TypeError):
+                    getattr(Foo, name)(unknown=42)
+                assert inner.call_count == 0
+                assert inner.await_count == 0
+                assert outer.call_count == 0
+                assert await getattr(Foo(), name)(42) == 42
+                assert await getattr(Foo, name)(43) == 43
+                assert inner.await_count == 2
+                assert outer.await_count == 2
+
+    def test_nested_instance_spies_validate_signature_before_recording(
+        self, mocker: MockerFixture
+    ) -> None:
+        class Foo:
+            def bar(self, value: int) -> int:
+                return value
+
+        foo = Foo()
+        with (
+            mocker.spy_context(foo, "bar") as outer,
+            mocker.spy_context(foo, "bar") as inner,
+        ):
+            with pytest.raises(TypeError):
+                cast(Any, foo.bar)(unknown=42)
+            assert inner.call_count == 0
+            assert outer.call_count == 0
+            assert foo.bar(42) == 42
+            assert inner.call_count == 1
+            assert outer.call_count == 1
+
+    def test_stopping_spy_with_later_patch_of_same_attribute_is_rejected(
+        self, mocker: MockerFixture
+    ) -> None:
+        class Foo:
+            def bar(self) -> int:
+                return 42
+
+        foo = Foo()
+        with mocker.spy_context(foo, "bar") as outer:
+            later = mocker.patch.object(foo, "bar", return_value=0)
+            with pytest.raises(RuntimeError, match="later patch"):
+                mocker.stop(outer)
+            mocker.stop(later)
+
+    def test_stopping_spy_with_later_patch_multiple_is_rejected(
+        self, mocker: MockerFixture
+    ) -> None:
+        class Foo:
+            def bar(self) -> int:
+                return 42
+
+            def other(self) -> int:
+                return 7
+
+        foo = Foo()
+        with mocker.spy_context(foo, "bar") as outer:
+            later = mocker.patch.multiple(foo, bar=mocker.DEFAULT, other=mocker.DEFAULT)
+            with pytest.raises(RuntimeError, match="later patch"):
+                mocker.stop(outer)
+            assert later["bar"] is foo.bar
+            mocker.stopall()
+        assert foo.bar() == 42
+
+    def test_nested_class_spy_preserves_signature(self, mocker: MockerFixture) -> None:
+        class Foo:
+            def bar(self, value: int) -> int:
+                return value
+
+        with (
+            mocker.spy_context(Foo, "bar") as outer,
+            mocker.spy_context(Foo, "bar") as inner,
+        ):
+            with pytest.raises(TypeError):
+                cast(Any, Foo().bar)(unknown=42)
+            assert inner.call_count == 0
+            assert outer.call_count == 0
+
+    def test_stopping_outer_spy_with_dependent_spy_is_rejected(
+        self, mocker: MockerFixture
+    ) -> None:
+        class Foo:
+            def bar(self) -> int:
+                return 42
+
+        foo = Foo()
+        with (
+            mocker.spy_context(Foo, "bar") as outer,
+            mocker.spy_context(foo, "bar"),
+        ):
+            with pytest.raises(RuntimeError, match="later patch"):
+                mocker.stop(outer)
+            assert foo.bar() == 42
+        assert Foo().bar() == 42
+        assert Foo.bar.__name__ == "bar"
+
+    def test_stopping_outer_of_three_nested_spies_is_rejected(
+        self, mocker: MockerFixture
+    ) -> None:
+        class Foo:
+            def bar(self) -> int:
+                return 42
+
+        foo = Foo()
+        with (
+            mocker.spy_context(foo, "bar") as outer,
+            mocker.spy_context(foo, "bar"),
+            mocker.spy_context(foo, "bar"),
+        ):
+            with pytest.raises(RuntimeError, match="later patch"):
+                mocker.stop(outer)
+            assert foo.bar() == 42
+        assert foo.bar() == 42
+        assert foo.bar() == 42
+
+    def test_stopall_inside_nested_spy_restores_original(
+        self, mocker: MockerFixture
+    ) -> None:
+        class Foo:
+            def bar(self) -> int:
+                return 42
+
+        foo = Foo()
+        with mocker.spy_context(foo, "bar"), mocker.spy_context(foo, "bar"):
+            mocker.stopall()
+            assert foo.bar() == 42
+        assert foo.bar() == 42
+
+    def test_spy_context_can_be_stopped_manually(self, mocker: MockerFixture) -> None:
+        class Foo:
+            def bar(self) -> int:
+                return 42
+
+        foo = Foo()
+        with mocker.spy_context(foo, "bar") as spy:
+            mocker.stop(spy)
+            assert foo.bar() == 42
+        assert foo.bar() == 42
+
+    def test_spy_context_after_stopall(self, mocker: MockerFixture) -> None:
+        class Foo:
+            def bar(self) -> int:
+                return 42
+
+        foo = Foo()
+        with mocker.spy_context(foo, "bar"):
+            mocker.stopall()
+            assert foo.bar() == 42
+        assert foo.bar() == 42
+
+    @pytest.mark.asyncio
+    async def test_async_spy_context(self, mocker: MockerFixture) -> None:
+        class Foo:
+            async def bar(self, value: int) -> int:
+                return value * 2
+
+        foo = Foo()
+        with mocker.spy_context(foo, "bar") as spy:
+            assert await foo.bar(3) == 6
+            assert spy.spy_return == 6
+        assert await foo.bar(4) == 8
+        assert spy.await_count == 1
+
+    def test_spy_context_preserves_iterator_tracking(
+        self, mocker: MockerFixture
+    ) -> None:
+        class Foo:
+            def values(self) -> Iterator[int]:
+                return iter([1, 2, 3])
+
+        foo = Foo()
+        with mocker.spy_context(foo, "values", duplicate_iterators=True) as spy:
+            result = foo.values()
+            assert list(result) == [1, 2, 3]
+            assert spy.spy_return_iter is not None
+            assert list(spy.spy_return_iter) == [1, 2, 3]
+            assert spy.spy_return_list == [result]
 
     @staticmethod
     def assert_spy_has_no_return(spy: SpyType) -> None:

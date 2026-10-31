@@ -1,3 +1,4 @@
+import json
 import os
 import platform
 import re
@@ -70,6 +71,104 @@ class UnixFS:
     @classmethod
     def ls(cls, path):
         return os.listdir(path)
+
+
+class TestCopyingMock:
+    @pytest.fixture(params=["unittest.mock", "mock"])
+    def copying_mocker(
+        self, request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch
+    ) -> Generator[MockerFixture, None, None]:
+        backend = pytest.importorskip(request.param)
+        monkeypatch.setattr(
+            "pytest_mock.plugin.get_mock_module", lambda config: backend
+        )
+        fixture = MockerFixture(request.config)
+        yield fixture
+        fixture.stopall()
+
+    def test_mutable_arguments(self, copying_mocker: MockerFixture) -> None:
+        mock = copying_mocker.CopyingMock(return_value=42)
+        data = {"values": [1]}
+        assert mock(data, values=data["values"]) == 42
+        data["values"].append(2)
+        mock(data, values=data["values"])
+        data.clear()
+        assert mock.call_args_list == [
+            copying_mocker.call({"values": [1]}, values=[1]),
+            copying_mocker.call({"values": [1, 2]}, values=[1, 2]),
+        ]
+
+    def test_shared_and_recursive_arguments(
+        self, copying_mocker: MockerFixture
+    ) -> None:
+        mock = copying_mocker.CopyingMock()
+        data: list[Any] = []
+        data.append(data)
+        mock(data, same=data)
+        args, kwargs = mock.call_args
+        assert args[0] is kwargs["same"]
+        assert args[0][0] is args[0]
+        assert args[0] is not data
+
+    @pytest.mark.parametrize("child", ["attribute", "return_value"])
+    def test_child_mocks(self, copying_mocker: MockerFixture, child: str) -> None:
+        parent = copying_mocker.CopyingMock()
+        mock = parent.child if child == "attribute" else parent()
+        data = [1]
+        mock(data)
+        data.clear()
+        mock.assert_called_once_with([1])
+        assert isinstance(mock, copying_mocker.CopyingMock)
+
+    @pytest.mark.parametrize("patch_object", [False, True])
+    def test_patch_lifecycle(
+        self, copying_mocker: MockerFixture, patch_object: bool
+    ) -> None:
+        original = json.dumps
+        if patch_object:
+            mock = copying_mocker.patch.object(
+                json, "dumps", new_callable=copying_mocker.CopyingMock
+            )
+        else:
+            mock = copying_mocker.patch(
+                "json.dumps", new_callable=copying_mocker.CopyingMock
+            )
+        data = ["path"]
+        json.dumps(data)
+        data.clear()
+        mock.assert_called_once_with(["path"])
+        copying_mocker.resetall()
+        mock.assert_not_called()
+        copying_mocker.stop(mock)
+        assert json.dumps is original
+
+    def test_side_effect_receives_copy(self, copying_mocker: MockerFixture) -> None:
+        data = [1]
+        received: list[list[int]] = []
+        mock = copying_mocker.CopyingMock(side_effect=received.append)
+        mock(data)
+        assert received == [[1]]
+        assert received[0] is not data
+
+    def test_uncopyable_argument(self, copying_mocker: MockerFixture) -> None:
+        class Uncopyable:
+            def __deepcopy__(self, memo: dict[int, Any]) -> Any:
+                raise TypeError("cannot copy")
+
+        mock = copying_mocker.CopyingMock()
+        with pytest.raises(TypeError, match="cannot copy"):
+            mock(Uncopyable())
+        mock.assert_not_called()
+
+    def test_spec_and_default_mock(self, copying_mocker: MockerFixture) -> None:
+        mock = copying_mocker.CopyingMock(spec_set=["allowed"])
+        with pytest.raises(AttributeError):
+            _ = mock.missing
+        ordinary = copying_mocker.MagicMock()
+        data = [1]
+        ordinary(data)
+        data.clear()
+        ordinary.assert_called_once_with([])
 
 
 class AutospecTarget:

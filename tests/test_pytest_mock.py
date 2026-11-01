@@ -1,3 +1,4 @@
+import functools
 import os
 import platform
 import re
@@ -775,6 +776,60 @@ class TestSpy:
             assert other.bar(arg=10) == 20
             calls = [mocker.call(foo, arg=10), mocker.call(other, arg=10)]
             assert spy.call_args_list == calls
+
+        @pytest.mark.parametrize("cache", [functools.cache, functools.lru_cache()])
+        def test_cached_instance_method(
+            self,
+            mocker: MockerFixture,
+            cache: Callable[[Callable[..., Any]], Callable[..., Any]],
+        ) -> None:
+            calls = []
+
+            class Foo:
+                @cache
+                def bar(self, arg):
+                    calls.append((self, arg))
+                    return arg * 2
+
+            original = Foo.bar
+            spy = mocker.spy(Foo, "bar")
+            foo = Foo()
+            other = Foo()
+            assert foo.bar(10) == 20
+            assert foo.bar(10) == 20
+            assert other.bar(arg=10) == 20
+            assert spy.call_args_list == [
+                mocker.call(foo, 10),
+                mocker.call(foo, 10),
+                mocker.call(other, arg=10),
+            ]
+            assert calls == [(foo, 10), (other, 10)]
+            assert spy.spy_return_list == [20, 20, 20]
+            mocker.resetall()
+            with pytest.raises(TypeError):
+                foo.bar()
+            spy.assert_not_called()
+            assert foo.bar(10) == 20
+            spy.assert_called_once_with(foo, 10)
+            mocker.stop(spy)
+            assert Foo.bar is original
+            assert foo.bar(10) == 20
+            assert calls == [(foo, 10), (other, 10)]
+
+        @pytest.mark.parametrize("method_type", [staticmethod, classmethod])
+        def test_cached_static_and_class_method(
+            self, mocker: MockerFixture, method_type: Any
+        ) -> None:
+            class Foo:
+                @method_type
+                @functools.lru_cache(maxsize=2)  # noqa: B019
+                def bar(*args):
+                    return args[-1] * 2
+
+            spy = mocker.spy(Foo, "bar")
+            assert Foo.bar(10) == 20
+            assert Foo().bar(10) == 20
+            assert spy.call_args_list == [mocker.call(10), mocker.call(10)]
 
         def test_instance_method_subclass(self, mocker: MockerFixture) -> None:
             class Base:

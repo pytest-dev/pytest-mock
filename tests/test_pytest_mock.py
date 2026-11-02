@@ -1772,6 +1772,41 @@ class TestStop:
         mocker.stop(handle_get)
         assert Class1.get() == 1
 
+    def test_patch_multiple(self, mocker: MockerFixture) -> None:
+        class Target:
+            a = 1
+            b = 2
+            c = 3
+
+        explicit = mocker.MagicMock()
+        mocks = mocker.patch.multiple(
+            Target, a=mocker.DEFAULT, b=explicit, c=mocker.DEFAULT
+        )
+        assert Target.a is mocks["a"]
+        assert Target.b is explicit
+        assert Target.c is mocks["c"]
+
+        mocker.stop(mocks["a"])
+        assert Target.a == 1
+        assert Target.b is explicit
+        assert Target.c is mocks["c"]
+
+        mocker.stop(explicit)
+        assert Target.b == 2
+        assert Target.c is mocks["c"]
+
+        with pytest.raises(ValueError, match="not registered"):
+            mocker.stop(mocks["a"])
+
+    def test_patch_multiple_partial_failure(self, mocker: MockerFixture) -> None:
+        class Target:
+            a = 1
+
+        with pytest.raises(AttributeError):
+            mocker.patch.multiple(Target, a=mocker.DEFAULT, missing=mocker.DEFAULT)
+
+        assert Target.a == 1
+
 
 class TestContextManagerWarnings:
     """Warnings when patches are misused as context managers."""
@@ -1813,6 +1848,25 @@ class TestContextManagerWarnings:
                 PytestMockWarning, match=re.escape(expected_warning_msg)
             ) as warn_record,
             mocker.patch("json.loads"),
+        ):
+            pass
+
+        assert warn_record[0].filename == __file__
+
+    def test_patch_multiple(self, mocker: MockerFixture) -> None:
+        expected_warning_msg = (
+            "Mocks returned by pytest-mock do not need to be used as context managers. "
+            "The mocker fixture automatically undoes mocking at the end of a test. "
+            "This warning can be ignored if it was triggered by mocking a context manager. "
+            "https://pytest-mock.readthedocs.io/en/latest/usage.html#usage-as-context-manager"
+        )
+
+        mocks = mocker.patch.multiple(UnixFS, rm=mocker.DEFAULT, ls=mocker.DEFAULT)
+        with (
+            pytest.warns(
+                PytestMockWarning, match=re.escape(expected_warning_msg)
+            ) as warn_record,
+            mocks["rm"],
         ):
             pass
 

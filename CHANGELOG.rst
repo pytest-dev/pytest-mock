@@ -1,6 +1,11 @@
 Releases
 ========
 
+UNRELEASED
+----------
+
+* `#650 <https://github.com/pytest-dev/pytest-mock/pull/650>`_: Entering a mock created by ``mocker.patch`` as a context manager now returns its ``__enter__.return_value`` instead of always ``None``, while still issuing the warning about using mocks as context managers.
+
 3.17.0
 ------
 

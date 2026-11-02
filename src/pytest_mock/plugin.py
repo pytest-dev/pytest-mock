@@ -312,14 +312,20 @@ class MockerFixture:
                 # check if `mocked` is actually a mock object, as depending on autospec or target
                 # parameters `mocked` can be anything
                 if hasattr(mocked, "__enter__") and warn_on_mock_enter:
-                    mocked.__enter__.side_effect = lambda: warnings.warn(
-                        "Mocks returned by pytest-mock do not need to be used as context managers. "
-                        "The mocker fixture automatically undoes mocking at the end of a test. "
-                        "This warning can be ignored if it was triggered by mocking a context manager. "
-                        "https://pytest-mock.readthedocs.io/en/latest/usage.html#usage-as-context-manager",
-                        PytestMockWarning,
-                        stacklevel=5,
-                    )
+
+                    def warn_on_enter() -> Any:
+                        warnings.warn(
+                            "Mocks returned by pytest-mock do not need to be used as context managers. "
+                            "The mocker fixture automatically undoes mocking at the end of a test. "
+                            "This warning can be ignored if it was triggered by mocking a context manager. "
+                            "https://pytest-mock.readthedocs.io/en/latest/usage.html#usage-as-context-manager",
+                            PytestMockWarning,
+                            stacklevel=5,
+                        )
+                        # Let the mock return its ``return_value`` as usual.
+                        return self.mock_module.DEFAULT
+
+                    mocked.__enter__.side_effect = warn_on_enter
             return mocked
 
         def object(

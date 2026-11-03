@@ -406,12 +406,19 @@ class MockerFixture:
             patchers = [patcher, *patcher.additional_patchers]
             patcher.additional_patchers = []
             mocked = {}
-            for patcher in patchers:
-                created = patcher.new is self.mock_module.DEFAULT
-                patcher.attribute_name = None
-                mock = self._start_patcher(patcher, True)
-                if created:
-                    mocked[patcher.attribute] = mock
+            started: list[MockType] = []
+            try:
+                for patcher in patchers:
+                    created = patcher.new is self.mock_module.DEFAULT
+                    patcher.attribute_name = None
+                    mock = self._start_patcher(patcher, True)
+                    started.append(mock)
+                    if created:
+                        mocked[patcher.attribute] = mock
+            except BaseException:
+                for mock in reversed(started):
+                    self.__mock_cache.remove(mock)
+                raise
             return mocked
 
         def dict(

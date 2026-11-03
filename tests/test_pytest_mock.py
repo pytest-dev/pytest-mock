@@ -184,6 +184,17 @@ class TestPatch:
         assert UnixFS.ls is mocks["ls"]
         assert UnixFS.ls != original_ls
 
+    def test_patch_multiple_failure_rolls_back_earlier_mocks(
+        self, mocker: MockerFixture
+    ) -> None:
+        original_rm = UnixFS.rm
+        with pytest.raises(AttributeError):
+            mocker.patch.multiple(
+                UnixFS, rm=mocker.DEFAULT, invalid_attribute=mocker.DEFAULT
+            )
+
+        assert UnixFS.rm == original_rm
+
     def test_dict(self, mocker: MockerFixture) -> None:
         """
         Testing

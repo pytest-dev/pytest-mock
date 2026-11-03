@@ -239,16 +239,28 @@ class MockerFixture:
                 raise
             return record_return(r)
 
-        if inspect.iscoroutinefunction(method):
+        is_async = inspect.iscoroutinefunction(method)
+        if not is_async and callable(method):
+            is_async = inspect.iscoroutinefunction(method.__call__)
+        if is_async:
             wrapped = functools.update_wrapper(async_wrapper, method)
         else:
             wrapped = functools.update_wrapper(wrapper, method)
 
-        autospec = inspect.ismethod(method) or inspect.isfunction(method)
+        autospec = (
+            True if inspect.ismethod(method) or inspect.isfunction(method) else None
+        )
+        new_callable = self.AsyncMock if is_async and autospec is None else None
 
         spy_obj = cast(
             SpyType,
-            self.patch.object(obj, name, side_effect=wrapped, autospec=autospec),
+            self.patch.object(
+                obj,
+                name,
+                side_effect=wrapped,
+                autospec=autospec,
+                new_callable=new_callable,
+            ),
         )
         mock_item = self._mock_cache.find(spy_obj)
         mock_item.is_spy = True

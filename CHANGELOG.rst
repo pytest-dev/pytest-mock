@@ -1,6 +1,11 @@
 Releases
 ========
 
+UNRELEASED
+----------
+
+* `#661 <https://github.com/pytest-dev/pytest-mock/pull/661>`_: Fixed ``mocker.spy()`` on a ``classmethod`` or ``staticmethod`` inherited from a base class raising ``TypeError`` when the spied method is called through an instance, a regression in ``3.13.0``.
+
 3.17.0
 ------
 

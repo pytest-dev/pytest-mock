@@ -244,7 +244,16 @@ class MockerFixture:
         else:
             wrapped = functools.update_wrapper(wrapper, method)
 
-        autospec = inspect.ismethod(method) or inspect.isfunction(method)
+        autospec: object = inspect.ismethod(method) or inspect.isfunction(method)
+        if autospec and inspect.isclass(obj):
+            # ``mock.patch.object`` only sees a classmethod or staticmethod
+            # defined directly on ``obj``. For one inherited from a base class
+            # it autospecs the bound or plain function instead, and that is
+            # bound to the instance when called through one, passing an extra
+            # ``self``. Pass the descriptor so both cases are specced alike.
+            descriptor = inspect.getattr_static(obj, name, None)
+            if isinstance(descriptor, (classmethod, staticmethod)):
+                autospec = descriptor
 
         spy_obj = cast(
             SpyType,

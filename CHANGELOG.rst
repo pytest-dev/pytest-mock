@@ -1,6 +1,11 @@
 Releases
 ========
 
+UNRELEASED
+----------
+
+* `#636 <https://github.com/pytest-dev/pytest-mock/issues/636>`_: Fixed spies on ``classmethod``, ``staticmethod``, builtins and classes returning a ``MagicMock`` instead of calling the spied code after calling ``spy.reset_mock(side_effect=True)``. Also ensures ``spy.reset_mock()`` resets recorded spy attributes (``spy_return``, etc.).
+
 3.17.0
 ------
 

@@ -254,6 +254,18 @@ class MockerFixture:
         mock_item.is_spy = True
         mock_item.spy_side_effect = wrapped
         _reset_spy(spy_obj)
+        if hasattr(spy_obj, "reset_mock"):
+            orig_reset_mock = spy_obj.reset_mock
+
+            @functools.wraps(orig_reset_mock)
+            def _spy_reset_mock(*args: Any, **kwargs: Any) -> Any:
+                ret = orig_reset_mock(*args, **kwargs)
+                _reset_spy(spy_obj)
+                if kwargs.get("side_effect", False):
+                    spy_obj.side_effect = wrapped
+                return ret
+
+            spy_obj.reset_mock = _spy_reset_mock  # type: ignore[method-assign]
         return spy_obj
 
     def stub(self, name: str | None = None) -> unittest.mock.MagicMock:

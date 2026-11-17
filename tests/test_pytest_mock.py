@@ -461,6 +461,101 @@ class TestResetAll:
         assert call() == 4
         assert spy.spy_return == 4
 
+    @pytest.mark.parametrize("return_value", [False, True])
+    @pytest.mark.parametrize("side_effect", [False, True])
+    @pytest.mark.parametrize(
+        "target",
+        [
+            "classmethod",
+            "staticmethod",
+            "builtin",
+            "class",
+        ],
+    )
+    def test_spy_reset_mock_keeps_calling_through(
+        self, mocker: MockerFixture, target: str, return_value: bool, side_effect: bool
+    ) -> None:
+        """Spies keep calling the spied code after ``spy.reset_mock()``."""
+
+        class Foo:
+            Int = int
+
+            @classmethod
+            def class_bar(cls, arg: int) -> int:
+                return arg * 3
+
+            @staticmethod
+            def static_bar(arg: int) -> int:
+                return arg * 4
+
+        if target == "classmethod":
+            spy = mocker.spy(Foo, "class_bar")
+            call: Callable[[], object] = lambda: Foo.class_bar(2)
+            expected: object = 6
+        elif target == "staticmethod":
+            spy = mocker.spy(Foo, "static_bar")
+            call = lambda: Foo.static_bar(2)
+            expected = 8
+        elif target == "builtin":
+            expected = os.getcwd()
+            spy = mocker.spy(os, "getcwd")
+            call = os.getcwd
+        else:
+            spy = mocker.spy(Foo, "Int")
+            call = lambda: Foo.Int("5")
+            expected = 5
+        assert call() == expected
+
+        spy.reset_mock(return_value=return_value, side_effect=side_effect)
+
+        assert spy.call_count == 0
+        assert spy.spy_return_list == []
+        assert call() == expected
+        assert spy.spy_return == expected
+        assert spy.spy_return_list == [expected]
+
+    def test_spy_reset_mock_side_effect_override(self, mocker: MockerFixture) -> None:
+        """``spy.reset_mock(side_effect=True)`` clears a ``side_effect`` set on a spy,
+        going back to calling the spied code."""
+
+        class Foo:
+            @classmethod
+            def class_bar(cls, arg: int) -> int:
+                return arg * 2
+
+        spy = mocker.spy(Foo, "class_bar")
+        call = lambda: Foo.class_bar(2)
+        spy.side_effect = ValueError
+        with pytest.raises(ValueError):
+            call()
+
+        spy.reset_mock(side_effect=True)
+
+        assert call() == 4
+        assert spy.spy_return == 4
+
+    def test_function_spy_reset_mock(self, mocker: MockerFixture) -> None:
+        """Function and method spies reset recorded spy attributes on ``spy.reset_mock()``."""
+
+        class Foo:
+            def bar(self, arg: int) -> int:
+                return arg * 2
+
+        foo = Foo()
+        spy = mocker.spy(foo, "bar")
+        assert foo.bar(2) == 4
+        assert spy.call_count == 1
+        assert spy.spy_return == 4
+        assert spy.spy_return_list == [4]
+
+        spy.reset_mock()
+
+        assert spy.call_count == 0
+        assert spy.spy_return_list == []
+        assert foo.bar(3) == 6
+        assert spy.spy_return == 6
+        assert spy.spy_return_list == [6]
+
     def test_mock_spy_attributes(self, mocker: MockerFixture) -> None:
         """Attributes named like the spy attributes on mocks that are not spies
         are reset like any other attribute, not replaced."""

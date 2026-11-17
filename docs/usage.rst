@@ -49,6 +49,38 @@ the appropriate fixture:
 * ``session_mocker``
 
 
+Copying mutable arguments
+-------------------------
+
+Ordinary mocks store references to their call arguments. If a list or dictionary
+is changed after a call, the recorded arguments reflect those changes too.
+Use ``mocker.CopyingMock`` to deep-copy arguments before each call:
+
+.. code-block:: python
+
+    def test_callback(mocker):
+        callback = mocker.CopyingMock()
+        payload = {"items": ["first"]}
+
+        callback(payload)
+        payload["items"].append("second")
+
+        callback.assert_called_once_with({"items": ["first"]})
+
+``CopyingMock`` subclasses the configured backend's ``MagicMock``. It can also
+be used with ``mocker.patch`` or ``mocker.patch.object`` by passing
+``new_callable=mocker.CopyingMock``. Such patches are tracked by ``resetall``
+and automatically undone at the end of the test. Like ``mocker.MagicMock()``,
+directly constructed instances are not tracked by ``resetall``.
+
+Child mocks and the default return-value mock also copy their arguments.
+Positional and keyword arguments are copied together, preserving shared
+references between them. Objects must support ``copy.deepcopy``; failures to
+copy an argument propagate to the caller. A ``side_effect`` or ``wraps`` callable
+receives the copies as well, and can still mutate the recorded copies. Use a
+regular mock when the original objects' identity or mutation matters.
+
+
 Spy
 ---
 

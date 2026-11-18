@@ -891,6 +891,52 @@ class TestSpy:
             assert spy.spy_return_iter is None
             assert spy.spy_return_list == [20]
 
+        def test_class_method_subclass_called_on_instance(
+            self, mocker: MockerFixture
+        ) -> None:
+            class Base:
+                @classmethod
+                def bar(cls, arg):
+                    return cls, arg * 2
+
+            class Foo(Base):
+                pass
+
+            spy = mocker.spy(Foo, "bar")
+            foo = Foo()
+            assert foo.bar(arg=10) == (Foo, 20)
+            spy.assert_called_once_with(arg=10)
+            assert spy.spy_return == (Foo, 20)
+            with pytest.raises(TypeError):
+                foo.bar(10, 20)  # type: ignore[call-arg]
+
+            mocker.stop(spy)
+            assert "bar" not in Foo.__dict__
+            assert foo.bar(arg=10) == (Foo, 20)
+
+        def test_static_method_subclass_called_on_instance(
+            self, mocker: MockerFixture
+        ) -> None:
+            class Base:
+                @staticmethod
+                def bar(arg):
+                    return arg * 2
+
+            class Foo(Base):
+                pass
+
+            spy = mocker.spy(Foo, "bar")
+            foo = Foo()
+            assert foo.bar(arg=10) == 20
+            spy.assert_called_once_with(arg=10)
+            assert spy.spy_return == 20
+            with pytest.raises(TypeError):
+                foo.bar(10, 20)  # type: ignore[call-arg]
+
+            mocker.stop(spy)
+            assert "bar" not in Foo.__dict__
+            assert foo.bar(arg=10) == 20
+
 
 class TestSpyReturnIter:
     """``spy_return_iter``, enabled with ``duplicate_iterators=True``."""

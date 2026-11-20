@@ -263,7 +263,7 @@ class MockerFixture:
                     spy_obj.side_effect = wrapped
                 _reset_spy(spy_obj)
 
-            setattr(spy_obj, "reset_mock", reset_mock)
+            spy_obj.reset_mock = reset_mock
 
         _reset_spy(spy_obj)
         return spy_obj

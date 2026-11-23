@@ -1,3 +1,4 @@
+import asyncio
 import os
 import platform
 import re
@@ -758,6 +759,90 @@ class TestSpy:
 
         spy.assert_called_once_with(10)
         assert result == 20
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        ("first_outcome", "last_outcome"),
+        [
+            ("error", "value"),
+            ("error", "iterator"),
+            ("iterator", "error"),
+            ("iterator", "value"),
+        ],
+    )
+    async def test_overlapping_calls(
+        self, mocker: MockerFixture, first_outcome: str, last_outcome: str
+    ) -> None:
+        started = [asyncio.Event(), asyncio.Event()]
+        release = [asyncio.Event(), asyncio.Event()]
+        outcomes = [first_outcome, last_outcome]
+
+        class Foo:
+            async def bar(self, index: int) -> object:
+                started[index].set()
+                await release[index].wait()
+                if outcomes[index] == "error":
+                    raise ValueError(index)
+                if outcomes[index] == "iterator":
+                    return iter([index])
+                return index
+
+        foo = Foo()
+        spy = mocker.spy(foo, "bar", duplicate_iterators=True)
+        first = asyncio.create_task(foo.bar(0))
+        await started[0].wait()
+        last = asyncio.create_task(foo.bar(1))
+        await started[1].wait()
+        release[0].set()
+        first_result = (await asyncio.gather(first, return_exceptions=True))[0]
+        release[1].set()
+        last_result = (await asyncio.gather(last, return_exceptions=True))[0]
+
+        assert spy.await_count == 2
+        assert spy.spy_return_list == [
+            result
+            for result in (first_result, last_result)
+            if not isinstance(result, ValueError)
+        ]
+        if last_outcome == "error":
+            assert spy.spy_exception is last_result
+            assert spy.spy_return is None
+        else:
+            assert spy.spy_exception is None
+            assert spy.spy_return is last_result
+        if last_outcome == "iterator":
+            assert spy.spy_return_iter is not None
+            assert list(spy.spy_return_iter) == [1]
+        else:
+            assert spy.spy_return_iter is None
+
+    @pytest.mark.parametrize("outer_raises", [False, True])
+    def test_reentrant_calls(self, mocker: MockerFixture, outer_raises: bool) -> None:
+        class Foo:
+            def bar(self, nested: bool = False) -> object:
+                if nested:
+                    if not outer_raises:
+                        raise ValueError("inner")
+                    return iter([1])
+                try:
+                    self.bar(nested=True)
+                except ValueError:
+                    return 2
+                raise ValueError("outer")
+
+        foo = Foo()
+        spy = mocker.spy(foo, "bar", duplicate_iterators=True)
+        if outer_raises:
+            with pytest.raises(ValueError, match="outer") as exc_info:
+                foo.bar()
+            assert spy.spy_exception is exc_info.value
+            assert spy.spy_return is None
+        else:
+            assert foo.bar() == 2
+            assert spy.spy_exception is None
+            assert spy.spy_return == 2
+        assert spy.spy_return_iter is None
+        assert spy.call_count == 2
 
     @skip_pypy
     class TestOnClass:

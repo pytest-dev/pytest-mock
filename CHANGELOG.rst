@@ -1,6 +1,11 @@
 Releases
 ========
 
+UNRELEASED
+----------
+
+* `#664 <https://github.com/pytest-dev/pytest-mock/pull/664>`_: Fixed ``mocker.spy`` retaining return values, iterator copies or exceptions from earlier calls when asynchronous calls overlap or synchronous calls recurse.
+
 3.17.0
 ------
 

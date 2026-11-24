@@ -214,6 +214,7 @@ class MockerFixture:
             spy_obj.spy_exception = None
 
         def record_return(r):
+            reset_last_call()
             if duplicate_iterators and isinstance(r, Iterator):
                 r, duplicated_iterator = itertools.tee(r, 2)
                 spy_obj.spy_return_iter = duplicated_iterator
@@ -226,6 +227,7 @@ class MockerFixture:
             try:
                 r = method(*args, **kwargs)
             except BaseException as e:
+                reset_last_call()
                 spy_obj.spy_exception = e
                 raise
             return record_return(r)
@@ -235,6 +237,7 @@ class MockerFixture:
             try:
                 r = await method(*args, **kwargs)
             except BaseException as e:
+                reset_last_call()
                 spy_obj.spy_exception = e
                 raise
             return record_return(r)

@@ -1570,6 +1570,36 @@ class TestConfiguration:
         with pytest.raises(ValueError):
             parse_ini_boolean("foo")
 
+    @pytest.mark.parametrize("value", ["yes", "on", "1", "y", "YES", " on "])
+    def test_parse_ini_boolean_truthy_spellings(self, value: str) -> None:
+        """Accept the spellings pytest itself allows for an ini boolean."""
+        from pytest_mock._util import parse_ini_boolean
+
+        assert parse_ini_boolean(value) is True
+
+    @pytest.mark.parametrize("value", ["no", "off", "0", "n", "OFF", " 0 "])
+    def test_parse_ini_boolean_falsy_spellings(self, value: str) -> None:
+        from pytest_mock._util import parse_ini_boolean
+
+        assert parse_ini_boolean(value) is False
+
+    def test_ini_boolean_spelling_in_pytest_ini(self, testdir: Any) -> None:
+        """A valid pytest ini boolean must not blow up the plugin."""
+        testdir.makepyfile(
+            """
+            def test_foo(mocker):
+                assert mocker.MagicMock() is not None
+            """
+        )
+        testdir.makeini(
+            """
+            [pytest]
+            mock_traceback_monkeypatch = yes
+        """
+        )
+        result = testdir.runpytest()
+        assert result.ret == 0
+
     def test_monkeypatch_native(self, testdir: Any) -> None:
         """Automatically disable monkeypatching when --tb=native."""
         testdir.makepyfile(

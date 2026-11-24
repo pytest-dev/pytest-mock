@@ -24,11 +24,17 @@ def get_mock_module(config):
     return _mock_module
 
 
+#: Spellings pytest itself accepts for an ini boolean, see ``_pytest.config._strtobool``.
+_TRUTHY = frozenset({"y", "yes", "t", "true", "on", "1"})
+_FALSY = frozenset({"n", "no", "f", "false", "off", "0"})
+
+
 def parse_ini_boolean(value: bool | str) -> bool:
     if isinstance(value, bool):
         return value
-    if value.lower() == "true":
+    normalized = value.strip().lower()
+    if normalized in _TRUTHY:
         return True
-    if value.lower() == "false":
+    if normalized in _FALSY:
         return False
     raise ValueError(f"unknown string for bool: {value!r}")

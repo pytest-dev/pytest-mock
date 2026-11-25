@@ -9,6 +9,7 @@ from collections.abc import Generator
 from collections.abc import Iterable
 from collections.abc import Iterator
 from collections.abc import Mapping
+from copy import deepcopy
 from dataclasses import dataclass
 from dataclasses import field
 from typing import Any
@@ -120,6 +121,16 @@ class MockerFixture:
         # aliases for convenience
         self.Mock = mock_module.Mock
         self.MagicMock = mock_module.MagicMock
+
+        # The base class depends on the configured mock backend.
+        class CopyingMock(mock_module.MagicMock):  # type: ignore[name-defined, misc]
+            """A MagicMock that deep-copies arguments before each call."""
+
+            def __call__(self, *args: Any, **kwargs: Any) -> Any:
+                args, kwargs = deepcopy((args, kwargs))
+                return super().__call__(*args, **kwargs)
+
+        self.CopyingMock = CopyingMock
         self.NonCallableMock = mock_module.NonCallableMock
         self.NonCallableMagicMock = mock_module.NonCallableMagicMock
         self.PropertyMock = mock_module.PropertyMock

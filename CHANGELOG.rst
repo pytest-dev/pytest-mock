@@ -1,6 +1,11 @@
 Releases
 ========
 
+UNRELEASED
+----------
+
+* `#656 <https://github.com/pytest-dev/pytest-mock/pull/656>`_: Added ``mocker.CopyingMock`` to deep-copy mutable call arguments, with support for both mock backends and ``new_callable`` patches.
+
 3.17.0
 ------
 

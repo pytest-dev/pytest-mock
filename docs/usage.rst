@@ -87,7 +87,7 @@ are available (like ``assert_called_once_with`` or ``call_count`` in the example
 * ``spy_exception``: contain the last exception value raised by the spied function/method when
   it was last called, or ``None`` if no exception was raised.
 
-``mocker.resetall()`` sets these attributes back to their initial values.
+``mocker.resetall()`` and ``spy.reset_mock()`` set these attributes back to their initial values.
 
 Besides functions and normal methods, ``mocker.spy`` also works for class and static methods.
 

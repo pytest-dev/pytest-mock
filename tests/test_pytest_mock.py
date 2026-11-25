@@ -461,6 +461,51 @@ class TestResetAll:
         assert call() == 4
         assert spy.spy_return == 4
 
+    @pytest.mark.parametrize(
+        "target", ["classmethod", "staticmethod", "builtin", "class"]
+    )
+    def test_spy_reset_mock_keeps_calling_through(
+        self, mocker: MockerFixture, target: str
+    ) -> None:
+        """Direct ``reset_mock(side_effect=True)`` keeps a spy calling through."""
+
+        class Foo:
+            Int = int
+
+            @classmethod
+            def class_bar(cls, arg: int) -> int:
+                return arg * 3
+
+            @staticmethod
+            def static_bar(arg: int) -> int:
+                return arg * 4
+
+        if target == "classmethod":
+            spy = mocker.spy(Foo, "class_bar")
+            call: Callable[[], int] = lambda: Foo.class_bar(2)
+            expected = 6
+        elif target == "staticmethod":
+            spy = mocker.spy(Foo, "static_bar")
+            call = lambda: Foo.static_bar(2)
+            expected = 8
+        elif target == "builtin":
+            expected = os.getcwd()
+            spy = mocker.spy(os, "getcwd")
+            call = os.getcwd
+        else:
+            spy = mocker.spy(Foo, "Int")
+            call = lambda: Foo.Int("5")
+            expected = 5
+
+        assert call() == expected
+        assert spy.call_count == 1
+        spy.reset_mock(side_effect=True)
+
+        assert spy.call_count == 0
+        assert spy.spy_return is None
+        assert call() == expected
+        assert spy.call_count == 1
+
     def test_mock_spy_attributes(self, mocker: MockerFixture) -> None:
         """Attributes named like the spy attributes on mocks that are not spies
         are reset like any other attribute, not replaced."""

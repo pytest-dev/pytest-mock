@@ -253,6 +253,18 @@ class MockerFixture:
         mock_item = self._mock_cache.find(spy_obj)
         mock_item.is_spy = True
         mock_item.spy_side_effect = wrapped
+
+        if isinstance(spy_obj, self.NonCallableMock):
+            reset_mock_orig = spy_obj.reset_mock
+
+            def reset_mock(*args: Any, **kwargs: Any) -> None:
+                reset_mock_orig(*args, **kwargs)
+                if kwargs.get("side_effect", False):
+                    spy_obj.side_effect = wrapped
+                _reset_spy(spy_obj)
+
+            spy_obj.reset_mock = reset_mock
+
         _reset_spy(spy_obj)
         return spy_obj
 

@@ -244,7 +244,16 @@ class MockerFixture:
         else:
             wrapped = functools.update_wrapper(wrapper, method)
 
-        autospec = inspect.ismethod(method) or inspect.isfunction(method)
+        autospec: bool | Callable[..., Any] = inspect.ismethod(
+            method
+        ) or inspect.isfunction(method)
+        if not autospec and inspect.isclass(obj) and callable(method):
+            descriptor = inspect.getattr_static(obj, name)
+            if hasattr(descriptor, "__get__") and not isinstance(
+                descriptor, staticmethod
+            ):
+                # Use the function wrapper to preserve instance method binding.
+                autospec = wrapped
 
         spy_obj = cast(
             SpyType,

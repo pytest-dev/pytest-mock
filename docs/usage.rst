@@ -93,6 +93,27 @@ Besides functions and normal methods, ``mocker.spy`` also works for class and st
 
 As of version 3.0.0, ``mocker.spy`` also works with ``async def`` functions.
 
+Use ``mocker.spy_context`` to limit a spy to a block. It yields the same spy
+object as ``mocker.spy`` and restores the method when the block exits, including
+when the block raises an exception. The fixture still tracks the spy, so it can
+also be stopped with ``mocker.stop`` or ``mocker.stopall`` inside the block.
+When spies or patches overlap on the same attribute, stop them in reverse
+order. Stopping an outer patch while a later overlapping patch is active raises
+``RuntimeError`` and leaves both patches registered; stop the inner patch first
+or use ``mocker.stopall()`` to restore all patches.
+
+.. code-block:: python
+
+    def test_spy_context(mocker):
+        class Foo:
+            def bar(self):
+                return 42
+
+        foo = Foo()
+        with mocker.spy_context(foo, "bar") as spy:
+            assert foo.bar() == 42
+            spy.assert_called_once_with()
+
 .. note::
 
     In versions earlier than ``2.0``, the attributes were called ``return_value`` and

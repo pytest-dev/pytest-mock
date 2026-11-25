@@ -1,6 +1,11 @@
 Releases
 ========
 
+UNRELEASED
+----------
+
+* `#646 <https://github.com/pytest-dev/pytest-mock/pull/646>`_: ``mocker.resetall(side_effect=True)`` no longer removes the warning about using mocks returned by ``mocker.patch`` and friends as context managers.
+
 3.17.0
 ------
 
